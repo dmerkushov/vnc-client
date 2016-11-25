@@ -5,14 +5,34 @@
  */
 package ru.dmerkushov.vnc.client.rfb.messages;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+
 /**
  *
  * @author dmerkushov
  */
 public interface Message {
 
-	public byte[] getBytes () throws MessageException;
+	/**
+	 * Write this message to an output stream (with message type byte, if
+	 * needed). Won't close the stream.
+	 *
+	 * @param out
+	 * @throws MessageException
+	 * @throws java.io.IOException
+	 */
+	public void write (OutputStream out) throws MessageException, IOException;
 
-	public void fromBytes (byte[] bytes) throws MessageException;
+	/**
+	 * Read this message from an input stream (without message type byte, for
+	 * some RFB messages). Won't close the stream.
+	 *
+	 * @param in
+	 * @throws MessageException
+	 * @throws java.io.IOException
+	 */
+	public void read (InputStream in) throws MessageException, IOException;
 
 }

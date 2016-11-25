@@ -17,11 +17,20 @@ import static ru.dmerkushov.vnc.client.rfb.session.RfbSessionState.Initial;
  */
 public class RfbSession {
 
+	/**
+	 * RFB version to use in this session
+	 */
 	RfbVersion rfbVersion = RfbVersion.Rfb38;
 
+	/**
+	 * Current session state
+	 */
 	RfbSessionState sessionState = Initial;
 
-	java.net.Socket socket;
+	/**
+	 * Socket to use in this session
+	 */
+	Socket socket;
 
 	public RfbSession (Socket socket) {
 		Objects.requireNonNull (socket);
