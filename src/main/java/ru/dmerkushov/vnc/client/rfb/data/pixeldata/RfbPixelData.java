@@ -10,6 +10,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Objects;
 import ru.dmerkushov.vnc.client.rfb.data.RfbRectangle;
+import ru.dmerkushov.vnc.client.rfb.session.RfbFramebuffer;
 
 /**
  *
@@ -28,4 +29,6 @@ public abstract class RfbPixelData {
 	public abstract void read (InputStream in) throws IOException;
 
 	public abstract void write (OutputStream out) throws IOException;
+
+	public abstract void updateFramebuffer (RfbFramebuffer framebuffer) throws RfbPixelDataException;
 }

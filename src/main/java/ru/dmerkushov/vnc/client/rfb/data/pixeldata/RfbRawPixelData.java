@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import ru.dmerkushov.vnc.client.rfb.data.RfbRectangle;
+import ru.dmerkushov.vnc.client.rfb.session.RfbFramebuffer;
 
 /**
  *
@@ -35,6 +36,12 @@ public class RfbRawPixelData extends RfbPixelData {
 	@Override
 	public void write (OutputStream out) throws IOException {
 		//TODO Implement write()
+		throw new UnsupportedOperationException ("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+	}
+
+	@Override
+	public void updateFramebuffer (RfbFramebuffer framebuffer) throws RfbPixelDataException {
+		//TODO Implement updateFramebuffer() in RfbRawPixelData
 		throw new UnsupportedOperationException ("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 	}
 

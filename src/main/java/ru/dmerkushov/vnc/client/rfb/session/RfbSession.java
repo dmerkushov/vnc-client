@@ -20,17 +20,22 @@ public class RfbSession {
 	/**
 	 * RFB version to use in this session
 	 */
-	RfbVersion rfbVersion = RfbVersion.Rfb38;
+	private RfbVersion rfbVersion = RfbVersion.Rfb38;
 
 	/**
 	 * Current session state
 	 */
-	RfbSessionState sessionState = Initial;
+	private RfbSessionState sessionState = Initial;
 
 	/**
 	 * Socket to use in this session
 	 */
-	Socket socket;
+	private Socket socket;
+
+	/**
+	 * Framebuffer to use in this session
+	 */
+	private RfbFramebuffer framebuffer;
 
 	public RfbSession (Socket socket) {
 		Objects.requireNonNull (socket);
@@ -94,6 +99,24 @@ public class RfbSession {
 		}
 
 		// TODO Implement finishSessionClientSide()
+	}
+
+	public RfbFramebuffer getFramebuffer () {
+		return framebuffer;
+	}
+
+	void attachFramebuffer (RfbFramebuffer framebuffer) {
+		Objects.requireNonNull (framebuffer, "framebuffer");
+
+		this.framebuffer = framebuffer;
+	}
+
+	public void detachFramebuffer () {
+		this.framebuffer = null;
+	}
+
+	public boolean isFramebufferAttached () {
+		return framebuffer != null;
 	}
 
 }

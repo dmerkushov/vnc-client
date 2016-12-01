@@ -212,6 +212,19 @@ public class RfbMessagesUtil {
 		out.write (bb8.array (), 4, 4);
 	}
 
+	public static void writeS32 (OutputStream out, int value) throws IOException {
+		Objects.requireNonNull (out, "out");
+
+		if (Integer.BYTES != 4) {
+			throw new IllegalStateException ("Integer.BYTES is not 4: " + Integer.BYTES);
+		}
+
+		ByteBuffer bb4 = allocateBB (4);
+		bb4.putInt (value);
+		bb4.flip ();
+		out.write (bb4.array (), 0, 4);
+	}
+
 	public static void writeBoolean (OutputStream out, boolean value) throws IOException {
 		Objects.requireNonNull (out);
 
