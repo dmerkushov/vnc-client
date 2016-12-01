@@ -8,17 +8,22 @@ package ru.dmerkushov.vnc.client.rfb.messages.handshake;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 import ru.dmerkushov.vnc.client.rfb.messages.MessageException;
+import static ru.dmerkushov.vnc.client.rfb.messages.util.RfbMessagesUtil.readU32;
+import static ru.dmerkushov.vnc.client.rfb.messages.util.RfbMessagesUtil.readString;
+import static ru.dmerkushov.vnc.client.rfb.messages.util.RfbMessagesUtil.writeU32;
+import static ru.dmerkushov.vnc.client.rfb.messages.util.RfbMessagesUtil.writeString;
 import ru.dmerkushov.vnc.client.rfb.messages.RfbMessage;
 import ru.dmerkushov.vnc.client.rfb.session.RfbSession;
 
 /**
+ * This is the security result handshake, a message sent by the server to the
+ * client (S2C) after the client has sent its password response, to inform of
+ * the results of the security check. Described in RFC 6143, paragraph 7.1.3
  *
  * @author dmerkushov
  */
@@ -38,11 +43,7 @@ public class SecurityResultHandshake_S2C extends RfbMessage {
 	public SecurityResultHandshake_S2C (RfbSession session, long status, String reason) {
 		this (session);
 
-		if (!SECRESULT_POSSIBLE.contains (status)) {
-			throw new IllegalArgumentException ("Status " + status + " is not one of the possible: " + Arrays.toString (SECRESULT_POSSIBLE.toArray (new Integer[0])));
-		}
-
-		this.status = status;
+		setStatus (status);
 
 		if (status == SECRESULT_STATUS_FAILED) {
 			Objects.requireNonNull (reason, "Reason may not be null if result is FAILED");
@@ -51,20 +52,35 @@ public class SecurityResultHandshake_S2C extends RfbMessage {
 		}
 	}
 
+	public final void setStatus (long status) {
+		if (!SECRESULT_POSSIBLE.contains (status)) {
+			throw new IllegalArgumentException ("Status " + status + " is not one of the possible: " + Arrays.toString (SECRESULT_POSSIBLE.toArray (new Integer[0])));
+		}
+
+		this.status = status;
+	}
+
 	@Override
 	public void write (OutputStream out) throws MessageException, IOException {
-		ByteBuffer bb = ByteBuffer.allocate (4);
-		bb.order (ByteOrder.BIG_ENDIAN);
-		bb.putInt ((int) ((int) status & 0xFFFFFFFFL));
-		byte[] bytes = bb.array ();
+		writeU32 (out, (int) status);
 
-		out.write (bb.);
+		if (status != SECRESULT_STATUS_OK) {
+			if (reason == null) {
+				throw new IllegalStateException ("reason is null when status is FAILED");
+			}
+
+			writeString (out, reason);
+		}
 
 	}
 
 	@Override
 	public void read (InputStream in) throws MessageException, IOException {
-		throw new UnsupportedOperationException ("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		setStatus (readU32 (in));
+
+		if (status != SECRESULT_STATUS_OK) {
+			reason = readString (in);
+		}
 	}
 
 }

@@ -3,19 +3,19 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package ru.dmerkushov.vnc.client.rfb.messages;
+package ru.dmerkushov.vnc.client.rfb.messages.normal.s2c;
 
+import ru.dmerkushov.vnc.client.rfb.messages.normal.NormalMessage;
 import ru.dmerkushov.vnc.client.rfb.session.RfbSession;
 
 /**
  *
  * @author dmerkushov
  */
-public class MessageParser {
+public abstract class S2CMessage extends NormalMessage {
 
-	public static Message parseBytes (RfbSession session, byte[] bytes) {
-		//TODO Implement parseBytes()
-		return null;
+	public S2CMessage (RfbSession session) {
+		super (session);
 	}
 
 }
