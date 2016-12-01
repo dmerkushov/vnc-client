@@ -5,9 +5,11 @@
  */
 package ru.dmerkushov.vnc.client.ui;
 
+import java.awt.Dimension;
 import java.awt.Graphics;
 import java.util.Objects;
 import javax.swing.JComponent;
+import ru.dmerkushov.vnc.client.rfb.session.RfbFramebuffer;
 import ru.dmerkushov.vnc.client.rfb.session.RfbSession;
 
 /**
@@ -24,7 +26,21 @@ public class VncView extends JComponent {
 
 	@Override
 	public void paint (Graphics g) {
-		g.drawImage (session.getFramebuffer (), 0, 0, this);
+		if (session.isFramebufferAttached ()) {
+			g.drawImage (session.getFramebuffer (), 0, 0, this);
+		}
+	}
+
+	@Override
+	public Dimension getPreferredSize () {
+		Dimension size;
+		if (session.isFramebufferAttached ()) {
+			RfbFramebuffer frm = session.getFramebuffer ();
+
+			return new Dimension (frm.getWidth (), frm.getHeight ());
+		} else {
+			return new Dimension (0, 0);
+		}
 	}
 
 }

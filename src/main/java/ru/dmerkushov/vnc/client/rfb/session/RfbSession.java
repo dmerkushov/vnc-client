@@ -5,7 +5,10 @@
  */
 package ru.dmerkushov.vnc.client.rfb.session;
 
+import java.io.IOException;
+import java.net.InetAddress;
 import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.Objects;
 import static ru.dmerkushov.vnc.client.rfb.session.RfbSessionState.Error;
 import static ru.dmerkushov.vnc.client.rfb.session.RfbSessionState.Finished;
@@ -36,6 +39,14 @@ public class RfbSession {
 	 * Framebuffer to use in this session
 	 */
 	private RfbFramebuffer framebuffer;
+
+	public RfbSession (String serverHost, int serverPort) throws UnknownHostException, IOException {
+		this (new Socket (serverHost, serverPort));
+	}
+
+	public RfbSession (InetAddress serverHost, int serverPort) throws UnknownHostException, IOException {
+		this (new Socket (serverHost, serverPort));
+	}
 
 	public RfbSession (Socket socket) {
 		Objects.requireNonNull (socket);
