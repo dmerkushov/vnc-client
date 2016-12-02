@@ -11,7 +11,7 @@ import java.util.Objects;
 import ru.dmerkushov.vnc.client.rfb.messages.MessageException;
 import ru.dmerkushov.vnc.client.rfb.messages.normal.MessageFactoryException;
 import static ru.dmerkushov.vnc.client.rfb.messages.util.RfbMessagesUtil.readU8;
-import ru.dmerkushov.vnc.client.rfb.session.RfbSession;
+import ru.dmerkushov.vnc.client.rfb.session.RfbClientSession;
 
 /**
  *
@@ -31,7 +31,7 @@ public class S2CMessageFactory {
 		return instance;
 	}
 
-	public S2CMessage readMessage (RfbSession session, InputStream in) throws MessageFactoryException, IOException {
+	public S2CMessage readMessage (RfbClientSession session, InputStream in) throws MessageFactoryException, IOException {
 		Objects.requireNonNull (session, "session");
 		Objects.requireNonNull (in, "in");
 

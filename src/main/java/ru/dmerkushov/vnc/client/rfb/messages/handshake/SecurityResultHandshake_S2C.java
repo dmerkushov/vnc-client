@@ -18,7 +18,7 @@ import static ru.dmerkushov.vnc.client.rfb.messages.util.RfbMessagesUtil.readStr
 import static ru.dmerkushov.vnc.client.rfb.messages.util.RfbMessagesUtil.writeU32;
 import static ru.dmerkushov.vnc.client.rfb.messages.util.RfbMessagesUtil.writeString;
 import ru.dmerkushov.vnc.client.rfb.messages.RfbMessage;
-import ru.dmerkushov.vnc.client.rfb.session.RfbSession;
+import ru.dmerkushov.vnc.client.rfb.session.RfbClientSession;
 
 /**
  * This is the security result handshake, a message sent by the server to the
@@ -36,11 +36,11 @@ public class SecurityResultHandshake_S2C extends RfbMessage {
 	private long status;
 	private String reason = null;
 
-	public SecurityResultHandshake_S2C (RfbSession session) {
+	public SecurityResultHandshake_S2C (RfbClientSession session) {
 		super (session);
 	}
 
-	public SecurityResultHandshake_S2C (RfbSession session, long status, String reason) {
+	public SecurityResultHandshake_S2C (RfbClientSession session, long status, String reason) {
 		this (session);
 
 		setStatus (status);

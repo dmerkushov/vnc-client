@@ -51,6 +51,15 @@ public class RfbPixelFormat {
 		this.blueShift = blueShift;
 	}
 
+	private static RfbPixelFormat defaultPixelFormat;
+
+	public static RfbPixelFormat getDefaultPixelFormat () {
+		if (defaultPixelFormat == null) {
+			defaultPixelFormat = new RfbPixelFormat (32, 24, true, true, 0xFF, 0xFF, 0xFF, 16, 8, 0);
+		}
+		return defaultPixelFormat;
+	}
+
 	public void read (InputStream in) throws IOException {
 		bitsPerPixel = readU8 (in);
 		depth = readU8 (in);

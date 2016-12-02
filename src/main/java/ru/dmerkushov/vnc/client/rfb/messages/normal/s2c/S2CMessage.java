@@ -6,7 +6,7 @@
 package ru.dmerkushov.vnc.client.rfb.messages.normal.s2c;
 
 import ru.dmerkushov.vnc.client.rfb.messages.normal.NormalMessage;
-import ru.dmerkushov.vnc.client.rfb.session.RfbSession;
+import ru.dmerkushov.vnc.client.rfb.session.RfbClientSession;
 
 /**
  *
@@ -14,7 +14,7 @@ import ru.dmerkushov.vnc.client.rfb.session.RfbSession;
  */
 public abstract class S2CMessage extends NormalMessage {
 
-	public S2CMessage (RfbSession session) {
+	public S2CMessage (RfbClientSession session) {
 		super (session);
 	}
 

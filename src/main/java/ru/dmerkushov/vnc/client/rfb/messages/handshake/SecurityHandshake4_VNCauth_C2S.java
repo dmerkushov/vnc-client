@@ -21,7 +21,7 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import ru.dmerkushov.vnc.client.rfb.messages.MessageException;
 import ru.dmerkushov.vnc.client.rfb.messages.RfbMessage;
-import ru.dmerkushov.vnc.client.rfb.session.RfbSession;
+import ru.dmerkushov.vnc.client.rfb.session.RfbClientSession;
 
 /**
  * This is the security handshake, phase 4, in case of VNC authentication. Sent
@@ -37,11 +37,11 @@ public class SecurityHandshake4_VNCauth_C2S extends RfbMessage {
 	public static final int RESPONSE_STD_LENGTH = 16;
 	public static final int PASSWORD_STD_LENGTH = 8;
 
-	public SecurityHandshake4_VNCauth_C2S (RfbSession session) {
+	public SecurityHandshake4_VNCauth_C2S (RfbClientSession session) {
 		super (session);
 	}
 
-	public SecurityHandshake4_VNCauth_C2S (RfbSession session, byte[] challenge, String password) throws MessageException {
+	public SecurityHandshake4_VNCauth_C2S (RfbClientSession session, byte[] challenge, String password) throws MessageException {
 		this (session);
 
 		Objects.requireNonNull (challenge);

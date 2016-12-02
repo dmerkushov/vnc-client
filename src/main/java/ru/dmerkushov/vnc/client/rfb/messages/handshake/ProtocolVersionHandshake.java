@@ -11,7 +11,7 @@ import java.io.OutputStream;
 import java.util.Objects;
 import ru.dmerkushov.vnc.client.rfb.messages.MessageException;
 import ru.dmerkushov.vnc.client.rfb.messages.RfbMessage;
-import ru.dmerkushov.vnc.client.rfb.session.RfbSession;
+import ru.dmerkushov.vnc.client.rfb.session.RfbClientSession;
 import ru.dmerkushov.vnc.client.rfb.session.RfbVersion;
 
 /**
@@ -28,13 +28,13 @@ public class ProtocolVersionHandshake extends RfbMessage {
 	public static final String PROTOSTR_VER37 = "RFB 003.007\n";
 	public static final String PROTOSTR_VER38 = "RFB 003.008\n";
 
-	public ProtocolVersionHandshake (RfbSession session) {
+	public ProtocolVersionHandshake (RfbClientSession session) {
 		super (session);
 
 		this.version = RfbVersion.Rfb33;
 	}
 
-	public ProtocolVersionHandshake (RfbSession session, RfbVersion version) {
+	public ProtocolVersionHandshake (RfbClientSession session, RfbVersion version) {
 		super (session);
 
 		Objects.requireNonNull (version, "version");
@@ -88,6 +88,10 @@ public class ProtocolVersionHandshake extends RfbMessage {
 			default:
 				version = RfbVersion.Rfb33;
 		}
+	}
+
+	public RfbVersion getVersion () {
+		return version;
 	}
 
 }

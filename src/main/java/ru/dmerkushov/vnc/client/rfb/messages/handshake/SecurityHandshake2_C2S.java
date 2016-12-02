@@ -10,8 +10,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Objects;
 import ru.dmerkushov.vnc.client.rfb.messages.RfbMessage;
+import ru.dmerkushov.vnc.client.rfb.session.RfbClientSession;
 import ru.dmerkushov.vnc.client.rfb.session.RfbSecurityType;
-import ru.dmerkushov.vnc.client.rfb.session.RfbSession;
 
 /**
  * This is the security handshake, phase 2. Sent by the client to the server
@@ -25,11 +25,7 @@ public class SecurityHandshake2_C2S extends RfbMessage {
 	int secTypeInt;
 	RfbSecurityType secType;
 
-	public SecurityHandshake2_C2S (RfbSession session) {
-		super (session);
-	}
-
-	public SecurityHandshake2_C2S (RfbSession session, RfbSecurityType secType) {
+	public SecurityHandshake2_C2S (RfbClientSession session, RfbSecurityType secType) {
 		super (session);
 
 		Objects.requireNonNull (secType);

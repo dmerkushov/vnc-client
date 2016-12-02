@@ -11,7 +11,7 @@ import java.io.OutputStream;
 import java.util.Objects;
 import ru.dmerkushov.vnc.client.rfb.messages.MessageException;
 import ru.dmerkushov.vnc.client.rfb.messages.RfbMessage;
-import ru.dmerkushov.vnc.client.rfb.session.RfbSession;
+import ru.dmerkushov.vnc.client.rfb.session.RfbClientSession;
 
 /**
  * This is the security handshake, phase 3, in case of VNC authentication. Sent
@@ -26,11 +26,11 @@ public class SecurityHandshake3_VNCauth_S2C extends RfbMessage {
 
 	public static final int CHALLENGE_STD_LENGTH = 16;
 
-	public SecurityHandshake3_VNCauth_S2C (RfbSession session) {
+	public SecurityHandshake3_VNCauth_S2C (RfbClientSession session) {
 		super (session);
 	}
 
-	public SecurityHandshake3_VNCauth_S2C (RfbSession session, byte[] challenge) {
+	public SecurityHandshake3_VNCauth_S2C (RfbClientSession session, byte[] challenge) {
 		this (session);
 
 		Objects.requireNonNull (challenge);

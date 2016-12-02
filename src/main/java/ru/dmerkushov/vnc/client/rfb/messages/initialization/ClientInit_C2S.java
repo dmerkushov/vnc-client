@@ -12,7 +12,7 @@ import ru.dmerkushov.vnc.client.rfb.messages.MessageException;
 import ru.dmerkushov.vnc.client.rfb.messages.RfbMessage;
 import static ru.dmerkushov.vnc.client.rfb.messages.util.RfbMessagesUtil.readBoolean;
 import static ru.dmerkushov.vnc.client.rfb.messages.util.RfbMessagesUtil.writeBoolean;
-import ru.dmerkushov.vnc.client.rfb.session.RfbSession;
+import ru.dmerkushov.vnc.client.rfb.session.RfbClientSession;
 
 /**
  * This is the ClientInit message, a message sent by the client to the server
@@ -31,11 +31,11 @@ public class ClientInit_C2S extends RfbMessage {
 
 	private boolean sharedDesktop;
 
-	public ClientInit_C2S (RfbSession session) {
+	public ClientInit_C2S (RfbClientSession session) {
 		super (session);
 	}
 
-	public ClientInit_C2S (RfbSession session, boolean sharedDesktop) {
+	public ClientInit_C2S (RfbClientSession session, boolean sharedDesktop) {
 		this (session);
 
 		this.sharedDesktop = sharedDesktop;

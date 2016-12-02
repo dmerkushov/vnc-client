@@ -6,10 +6,16 @@
 package ru.dmerkushov.vnc.client.rfb.session;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.Objects;
+import ru.dmerkushov.vnc.client.rfb.operation.HandshakeOperation;
+import ru.dmerkushov.vnc.client.rfb.operation.InitializationOperation;
+import ru.dmerkushov.vnc.client.rfb.operation.NormalOperation;
+import ru.dmerkushov.vnc.client.rfb.operation.Operation;
 import static ru.dmerkushov.vnc.client.rfb.session.RfbSessionState.Error;
 import static ru.dmerkushov.vnc.client.rfb.session.RfbSessionState.Finished;
 import static ru.dmerkushov.vnc.client.rfb.session.RfbSessionState.Initial;
@@ -18,7 +24,7 @@ import static ru.dmerkushov.vnc.client.rfb.session.RfbSessionState.Initial;
  *
  * @author dmerkushov
  */
-public class RfbSession {
+public class RfbClientSession {
 
 	/**
 	 * RFB version to use in this session
@@ -33,25 +39,41 @@ public class RfbSession {
 	/**
 	 * Socket to use in this session
 	 */
-	private Socket socket;
+	private final Socket socket;
+
+	private final InetAddress serverHost;
+
+	private final int serverPort;
+
+	/**
+	 * Operation of the session
+	 */
+	private Operation operation;
 
 	/**
 	 * Framebuffer to use in this session
 	 */
 	private RfbFramebuffer framebuffer;
 
-	public RfbSession (String serverHost, int serverPort) throws UnknownHostException, IOException {
-		this (new Socket (serverHost, serverPort));
+	private InputStream in;
+
+	private OutputStream out;
+
+	public RfbClientSession (String serverHost, int serverPort) throws UnknownHostException, IOException {
+		this (new Socket (), InetAddress.getByName (serverHost), serverPort);
 	}
 
-	public RfbSession (InetAddress serverHost, int serverPort) throws UnknownHostException, IOException {
-		this (new Socket (serverHost, serverPort));
+	public RfbClientSession (InetAddress serverHost, int serverPort) throws UnknownHostException, IOException {
+		this (new Socket (), serverHost, serverPort);
 	}
 
-	public RfbSession (Socket socket) {
+	public RfbClientSession (Socket socket, InetAddress serverHost, int serverPort) {
 		Objects.requireNonNull (socket);
+		Objects.requireNonNull (serverHost, "serverHost");
 
 		this.socket = socket;
+		this.serverHost = serverHost;
+		this.serverPort = serverPort;
 	}
 
 	public RfbVersion getRfbVersion () {
@@ -98,8 +120,13 @@ public class RfbSession {
 		return socket;
 	}
 
-	public void startSession () throws RfbSessionException {
-		//TODO Implement startSession()
+	public void startSession () throws RfbSessionException, IOException {
+		operation = new HandshakeOperation (this);
+		operation.operate ();
+		operation = new InitializationOperation (this);
+		operation.operate ();
+		operation = new NormalOperation (this);
+		operation.operate ();
 	}
 
 	private void finishSessionClientSide (RfbSessionState sessionState) throws RfbSessionException {
@@ -109,7 +136,7 @@ public class RfbSession {
 			throw new RfbSessionException ("Cannot finish a session with a state other than " + Error + " or " + Finished + ". Ordered state: " + sessionState);
 		}
 
-		// TODO Implement finishSessionClientSide()
+		//TODO Implement finishSessionClientSide()
 	}
 
 	public RfbFramebuffer getFramebuffer () {
@@ -128,6 +155,34 @@ public class RfbSession {
 
 	public boolean isFramebufferAttached () {
 		return framebuffer != null;
+	}
+
+	public InetAddress getServerHost () {
+		return serverHost;
+	}
+
+	public int getServerPort () {
+		return serverPort;
+	}
+
+	public Operation getOperation () {
+		return operation;
+	}
+
+	public InputStream getIn () {
+		return in;
+	}
+
+	public void setIn (InputStream in) {
+		this.in = in;
+	}
+
+	public OutputStream getOut () {
+		return out;
+	}
+
+	public void setOut (OutputStream out) {
+		this.out = out;
 	}
 
 }

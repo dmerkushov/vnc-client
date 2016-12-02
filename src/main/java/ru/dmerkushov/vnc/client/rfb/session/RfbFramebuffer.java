@@ -14,9 +14,9 @@ import java.util.Objects;
  */
 public final class RfbFramebuffer extends BufferedImage {
 
-	private RfbSession session;
+	private RfbClientSession session;
 
-	public RfbFramebuffer (RfbSession session, int width, int height) {
+	public RfbFramebuffer (RfbClientSession session, int width, int height) {
 		super (width, height, BufferedImage.TYPE_INT_RGB);
 
 		Objects.requireNonNull (session, "session");
@@ -31,7 +31,7 @@ public final class RfbFramebuffer extends BufferedImage {
 	 *
 	 * @param session
 	 */
-	public void attachSession (RfbSession session) {
+	public void attachSession (RfbClientSession session) {
 		if (this.session != null) {
 			this.session.detachFramebuffer ();
 		}

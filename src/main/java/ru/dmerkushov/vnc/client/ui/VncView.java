@@ -10,7 +10,7 @@ import java.awt.Graphics;
 import java.util.Objects;
 import javax.swing.JComponent;
 import ru.dmerkushov.vnc.client.rfb.session.RfbFramebuffer;
-import ru.dmerkushov.vnc.client.rfb.session.RfbSession;
+import ru.dmerkushov.vnc.client.rfb.session.RfbClientSession;
 
 /**
  *
@@ -18,9 +18,9 @@ import ru.dmerkushov.vnc.client.rfb.session.RfbSession;
  */
 public class VncView extends JComponent {
 
-	RfbSession session;
+	RfbClientSession session;
 
-	public VncView (RfbSession session) {
+	public VncView (RfbClientSession session) {
 		Objects.requireNonNull (session, "session");
 	}
 

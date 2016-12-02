@@ -3,8 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package ru.dmerkushov.vnc.client.rfb.messages;
+package ru.dmerkushov.vnc.client.rfb.operation;
 
+import java.io.IOException;
 import java.util.Objects;
 import ru.dmerkushov.vnc.client.rfb.session.RfbClientSession;
 
@@ -12,18 +13,16 @@ import ru.dmerkushov.vnc.client.rfb.session.RfbClientSession;
  *
  * @author dmerkushov
  */
-public abstract class RfbMessage implements Message {
+public abstract class Operation {
 
 	final RfbClientSession session;
 
-	public RfbMessage (RfbClientSession session) {
+	public Operation (RfbClientSession session) {
 		Objects.requireNonNull (session, "session");
 
 		this.session = session;
 	}
 
-	public final RfbClientSession getSession () {
-		return session;
-	}
+	public abstract void operate () throws IOException, RfbOperationException;
 
 }
