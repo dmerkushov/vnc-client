@@ -10,6 +10,10 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.util.Objects;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
@@ -20,12 +24,21 @@ import javax.swing.JFrame;
  */
 public class ThumbnailView extends JComponent {
 
+	public final static String UPDATE_TIMER_NAME = "updateTimer";
+
+//	private long updateStartDelayMs = 2000L;
+	private long updatePeriodMs = 1000L;
 	private final JComponent innerComponent;
+
+	private Timer updateTimer;
+	private TimerTask updateTimerTask;
 
 	public ThumbnailView (JComponent innerComponent) {
 		Objects.requireNonNull (innerComponent, "innerComponent");
 
 		this.innerComponent = innerComponent;
+
+		restartUpdates ();
 	}
 
 	@Override
@@ -45,19 +58,78 @@ public class ThumbnailView extends JComponent {
 		g2.drawImage (img, 0, 0, w - 1, h - 1, 0, 0, innerW - 1, innerH - 1, null);
 	}
 
+//	public long getUpdateStartDelayMs () {
+//		return updateStartDelayMs;
+//	}
+//
+//	public void setUpdateStartDelayMs (long updateStartDelayMs) {
+//		setUpdateParameters (updateStartDelayMs, this.updatePeriodMs);
+//	}
+	public final long getUpdatePeriodMs () {
+		return updatePeriodMs;
+	}
+
+	public final void setUpdatePeriodMs (long updatePeriodMs) {
+		setUpdateParameters (0L,/*this.updateStartDelayMs,*/ updatePeriodMs);
+	}
+
+	public final void setUpdateParameters (long updateStartDelayMs, long updatePeriodMs) {
+		if (/*this.updateStartDelayMs == updateStartDelayMs &&*/this.updatePeriodMs == updatePeriodMs) {
+			restartUpdates ();
+			return;
+		}
+
+//		this.updateStartDelayMs = updateStartDelayMs;
+		this.updatePeriodMs = updatePeriodMs;
+		restartUpdates ();
+	}
+
+	public final void restartUpdates () {
+		if (updateTimer != null) {
+			updateTimer.cancel ();
+		}
+		updateTimer = new Timer (UPDATE_TIMER_NAME);
+		updateTimerTask = new TimerTask () {
+
+			@Override
+			public void run () {
+				ThumbnailView.this.repaint ();
+			}
+		};
+		updateTimer.schedule (updateTimerTask, 0L /*updateStartDelayMs*/, updatePeriodMs);
+	}
+
 	////////////////////////////////////////////////////////////////////////////
 	public static void main (String[] args) {
 		JFrame frame = new JFrame ();
 
-		JButton btn = new JButton ("Hi");
-		btn.setSize (500, 500);
+		final JButton btn = new JButton ("Hi");
+		btn.setSize (100, 100);
 
-		ThumbnailView thm = new ThumbnailView (btn);
+		final ThumbnailView thm = new ThumbnailView (btn);
+
+		Thread btnUpdateThread = new Thread (new Runnable () {
+
+			@Override
+			public void run () {
+				for (int i = 0; i < 10000; i++) {
+					try {
+						Thread.sleep (200L);
+					} catch (InterruptedException ex) {
+						Logger.getLogger (ThumbnailView.class.getName ()).log (Level.SEVERE, null, ex);
+					}
+					btn.setText (String.valueOf (i));
+				}
+
+			}
+
+		});
 
 		frame.add (thm);
 		frame.setSize (100, 200);
 
 		frame.setDefaultCloseOperation (JFrame.EXIT_ON_CLOSE);
+		btnUpdateThread.start ();
 		frame.setVisible (true);
 	}
 
