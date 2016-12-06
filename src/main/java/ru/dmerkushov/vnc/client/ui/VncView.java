@@ -7,10 +7,16 @@ package ru.dmerkushov.vnc.client.ui;
 
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.io.IOException;
 import java.util.Objects;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JComponent;
-import ru.dmerkushov.vnc.client.rfb.session.RfbFramebuffer;
+import javax.swing.SwingUtilities;
+import ru.dmerkushov.vnc.client.rfb.messages.MessageException;
+import ru.dmerkushov.vnc.client.rfb.messages.normal.c2s.FramebufferUpdateRequestMessage;
 import ru.dmerkushov.vnc.client.rfb.session.RfbClientSession;
+import ru.dmerkushov.vnc.client.rfb.session.RfbFramebuffer;
 
 /**
  *
@@ -22,18 +28,33 @@ public class VncView extends JComponent {
 
 	public VncView (RfbClientSession session) {
 		Objects.requireNonNull (session, "session");
+
+		this.session = session;
 	}
 
 	@Override
 	public void paint (Graphics g) {
 		if (session.isFramebufferAttached ()) {
-			g.drawImage (session.getFramebuffer (), 0, 0, this);
+			SwingUtilities.invokeLater (new Runnable () {
+				@Override
+				public void run () {
+					FramebufferUpdateRequestMessage furm = new FramebufferUpdateRequestMessage (session, session.getFramebuffer ());
+					try {
+						furm.write (session.getOut ());
+					} catch (MessageException | IOException ex) {
+						Logger.getLogger (VncView.class.getName ()).log (Level.SEVERE, null, ex);
+					}
+					g.drawImage (session.getFramebuffer (), 0, 0, VncView.this);
+				}
+			});
+
+		} else {
+			System.err.println ("No framebuffer attached to session");
 		}
 	}
 
 	@Override
 	public Dimension getPreferredSize () {
-		Dimension size;
 		if (session.isFramebufferAttached ()) {
 			RfbFramebuffer frm = session.getFramebuffer ();
 

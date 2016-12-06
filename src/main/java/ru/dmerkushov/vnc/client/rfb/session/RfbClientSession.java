@@ -19,6 +19,8 @@ import ru.dmerkushov.vnc.client.rfb.operation.Operation;
 import static ru.dmerkushov.vnc.client.rfb.session.RfbSessionState.Error;
 import static ru.dmerkushov.vnc.client.rfb.session.RfbSessionState.Finished;
 import static ru.dmerkushov.vnc.client.rfb.session.RfbSessionState.Initial;
+import ru.dmerkushov.vnc.client.rfb.session.password.PasswordSupplier;
+import ru.dmerkushov.vnc.client.rfb.session.password.UiPasswordSupplier;
 
 /**
  *
@@ -59,130 +61,144 @@ public class RfbClientSession {
 
 	private OutputStream out;
 
-	public RfbClientSession (String serverHost, int serverPort) throws UnknownHostException, IOException {
-		this (new Socket (), InetAddress.getByName (serverHost), serverPort);
+	private PasswordSupplier passwordSupplier;
+
+	public RfbClientSession(String serverHost, int serverPort) throws UnknownHostException, IOException {
+		this(new Socket(), InetAddress.getByName(serverHost), serverPort);
 	}
 
-	public RfbClientSession (InetAddress serverHost, int serverPort) throws UnknownHostException, IOException {
-		this (new Socket (), serverHost, serverPort);
+	public RfbClientSession(InetAddress serverHost, int serverPort) throws UnknownHostException, IOException {
+		this(new Socket(), serverHost, serverPort);
 	}
 
-	public RfbClientSession (Socket socket, InetAddress serverHost, int serverPort) {
-		Objects.requireNonNull (socket);
-		Objects.requireNonNull (serverHost, "serverHost");
+	public RfbClientSession(Socket socket, InetAddress serverHost, int serverPort) {
+		Objects.requireNonNull(socket);
+		Objects.requireNonNull(serverHost, "serverHost");
 
 		this.socket = socket;
 		this.serverHost = serverHost;
 		this.serverPort = serverPort;
+
+		this.passwordSupplier = new UiPasswordSupplier();
 	}
 
-	public RfbVersion getRfbVersion () {
+	public RfbVersion getRfbVersion() {
 		return rfbVersion;
 	}
 
-	public void setRfbVersion (RfbVersion rfbVersion) throws RfbSessionException {
-		Objects.requireNonNull (rfbVersion);
+	public void setRfbVersion(RfbVersion rfbVersion) throws RfbSessionException {
+		Objects.requireNonNull(rfbVersion);
 
 		if (sessionState != Initial) {
-			throw new RfbSessionException ("Cannot change RFB version when the session is not in state " + Initial + ". Current state is " + sessionState);
+			throw new RfbSessionException("Cannot change RFB version when the session is not in state " + Initial + ". Current state is " + sessionState);
 		}
 
 		this.rfbVersion = rfbVersion;
 	}
 
-	public void setSessionState (RfbSessionState sessionState) throws RfbSessionException {
-		Objects.requireNonNull (sessionState);
+	public void setSessionState(RfbSessionState sessionState) throws RfbSessionException {
+		Objects.requireNonNull(sessionState);
 
 		boolean ok = false;
 
-		if (sessionState.value () >= this.sessionState.value) {
+		if (sessionState.value() >= this.sessionState.value) {
 			ok = true;
 		} else if (sessionState == Error || sessionState == Finished) {
 			ok = true;
 		}
 
 		if (!ok) {
-			throw new RfbSessionException ("Cannot transfer session from state " + this.sessionState + " to " + sessionState);
+			throw new RfbSessionException("Cannot transfer session from state " + this.sessionState + " to " + sessionState);
 		}
 
 		if ((this.sessionState != Error && sessionState == Error) || (this.sessionState != Finished && sessionState == Finished)) {
-			finishSessionClientSide (sessionState);
+			finishSessionClientSide(sessionState);
 		}
 
 		this.sessionState = sessionState;
 	}
 
-	public RfbSessionState getSessionState () {
+	public RfbSessionState getSessionState() {
 		return sessionState;
 	}
 
-	public Socket getSocket () {
+	public Socket getSocket() {
 		return socket;
 	}
 
-	public void startSession () throws RfbSessionException, IOException {
-		operation = new HandshakeOperation (this);
-		operation.operate ();
-		operation = new InitializationOperation (this);
-		operation.operate ();
-		operation = new NormalOperation (this);
-		operation.operate ();
+	public void startSession() throws RfbSessionException, IOException {
+		operation = new HandshakeOperation(this);
+		operation.operate();
+		operation = new InitializationOperation(this);
+		operation.operate();
+		operation = new NormalOperation(this);
+		operation.operate();
 	}
 
-	private void finishSessionClientSide (RfbSessionState sessionState) throws RfbSessionException {
-		Objects.requireNonNull (sessionState);
+	private void finishSessionClientSide(RfbSessionState sessionState) throws RfbSessionException {
+		Objects.requireNonNull(sessionState);
 
 		if (sessionState != Error && sessionState != Finished) {
-			throw new RfbSessionException ("Cannot finish a session with a state other than " + Error + " or " + Finished + ". Ordered state: " + sessionState);
+			throw new RfbSessionException("Cannot finish a session with a state other than " + Error + " or " + Finished + ". Ordered state: " + sessionState);
 		}
 
 		//TODO Implement finishSessionClientSide()
 	}
 
-	public RfbFramebuffer getFramebuffer () {
+	public RfbFramebuffer getFramebuffer() {
 		return framebuffer;
 	}
 
-	void attachFramebuffer (RfbFramebuffer framebuffer) {
-		Objects.requireNonNull (framebuffer, "framebuffer");
+	void attachFramebuffer(RfbFramebuffer framebuffer) {
+		Objects.requireNonNull(framebuffer, "framebuffer");
 
 		this.framebuffer = framebuffer;
 	}
 
-	public void detachFramebuffer () {
+	public void detachFramebuffer() {
 		this.framebuffer = null;
 	}
 
-	public boolean isFramebufferAttached () {
+	public boolean isFramebufferAttached() {
 		return framebuffer != null;
 	}
 
-	public InetAddress getServerHost () {
+	public InetAddress getServerHost() {
 		return serverHost;
 	}
 
-	public int getServerPort () {
+	public int getServerPort() {
 		return serverPort;
 	}
 
-	public Operation getOperation () {
+	public Operation getOperation() {
 		return operation;
 	}
 
-	public InputStream getIn () {
+	public InputStream getIn() {
 		return in;
 	}
 
-	public void setIn (InputStream in) {
+	public void setIn(InputStream in) {
 		this.in = in;
 	}
 
-	public OutputStream getOut () {
+	public OutputStream getOut() {
 		return out;
 	}
 
-	public void setOut (OutputStream out) {
+	public void setOut(OutputStream out) {
 		this.out = out;
+	}
+
+	public PasswordSupplier getPasswordSupplier() {
+		return passwordSupplier;
+	}
+
+	public void setPasswordSupplier(PasswordSupplier passwordSupplier) {
+		Objects.requireNonNull(passwordSupplier, "passwordSupplier");
+
+		this.passwordSupplier = passwordSupplier;
 	}
 
 }

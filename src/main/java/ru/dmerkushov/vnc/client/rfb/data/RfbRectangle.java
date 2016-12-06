@@ -96,4 +96,8 @@ public class RfbRectangle {
 		pixelData.write (out);
 	}
 
+	public RfbPixelData getPixelData () {
+		return pixelData;
+	}
+
 }

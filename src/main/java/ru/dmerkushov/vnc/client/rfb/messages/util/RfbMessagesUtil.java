@@ -40,7 +40,10 @@ public class RfbMessagesUtil {
 
 		ByteBuffer bb4 = allocateBB (4);
 		byte[] bytes = readBytes (in, 1);
-		bb4.put (bytes, 3, 1);
+		bb4.put ((byte) 0);
+		bb4.put ((byte) 0);
+		bb4.put ((byte) 0);
+		bb4.put (bytes);
 		bb4.flip ();
 
 		return bb4.getInt ();
@@ -62,7 +65,9 @@ public class RfbMessagesUtil {
 
 		ByteBuffer bb4 = allocateBB (4);
 		byte[] bytes = readBytes (in, 2);
-		bb4.put (bytes, 2, 2);
+		bb4.put ((byte) 0);
+		bb4.put ((byte) 0);
+		bb4.put (bytes);
 		bb4.flip ();
 
 		return bb4.getInt ();
@@ -84,7 +89,11 @@ public class RfbMessagesUtil {
 
 		ByteBuffer bb8 = allocateBB (8);
 		byte[] bytes = readBytes (in, 4);
-		bb8.put (bytes, 4, 4);
+		bb8.put ((byte) 0);
+		bb8.put ((byte) 0);
+		bb8.put ((byte) 0);
+		bb8.put ((byte) 0);
+		bb8.put (bytes);
 		bb8.flip ();
 
 		return bb8.getLong ();
@@ -129,7 +138,7 @@ public class RfbMessagesUtil {
 				startPos += readBytes;
 			}
 		} else if (readBytes == -1) {
-			throw new IOException ("The end of input stream has been reached unexpectedly");
+			throw new IOException ("The end of input stream has been reached unexpectedly. readBytes=" + readBytes + ", startPos=" + startPos);
 		}
 
 		return bytes;
@@ -147,7 +156,7 @@ public class RfbMessagesUtil {
 		int strLen = (int) readU32 (in);
 		byte[] strBytes = readBytes (in, strLen);
 
-		String str = new String (strBytes);
+		String str = new String (strBytes, "ISO-8859-1");
 
 		return str;
 	}
@@ -239,7 +248,7 @@ public class RfbMessagesUtil {
 
 		writeU32 (out, valueLen);
 
-		byte[] valueBytes = value.getBytes ();
+		byte[] valueBytes = value.getBytes ("ISO-8859-1");
 		out.write (valueBytes);
 	}
 

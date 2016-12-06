@@ -13,11 +13,11 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 import ru.dmerkushov.vnc.client.rfb.messages.MessageException;
-import static ru.dmerkushov.vnc.client.rfb.messages.util.RfbMessagesUtil.readU32;
-import static ru.dmerkushov.vnc.client.rfb.messages.util.RfbMessagesUtil.readString;
-import static ru.dmerkushov.vnc.client.rfb.messages.util.RfbMessagesUtil.writeU32;
-import static ru.dmerkushov.vnc.client.rfb.messages.util.RfbMessagesUtil.writeString;
 import ru.dmerkushov.vnc.client.rfb.messages.RfbMessage;
+import static ru.dmerkushov.vnc.client.rfb.messages.util.RfbMessagesUtil.readString;
+import static ru.dmerkushov.vnc.client.rfb.messages.util.RfbMessagesUtil.readU32;
+import static ru.dmerkushov.vnc.client.rfb.messages.util.RfbMessagesUtil.writeString;
+import static ru.dmerkushov.vnc.client.rfb.messages.util.RfbMessagesUtil.writeU32;
 import ru.dmerkushov.vnc.client.rfb.session.RfbClientSession;
 
 /**
@@ -31,55 +31,63 @@ public class SecurityResultHandshake_S2C extends RfbMessage {
 
 	public static final long SECRESULT_STATUS_OK = 0;
 	public static final long SECRESULT_STATUS_FAILED = 1;
-	public static final Set<Long> SECRESULT_POSSIBLE = new HashSet<> (Arrays.asList (SECRESULT_STATUS_OK, SECRESULT_STATUS_FAILED));
+	public static final Set<Long> SECRESULT_POSSIBLE = new HashSet<>(Arrays.asList(SECRESULT_STATUS_OK, SECRESULT_STATUS_FAILED));
 
 	private long status;
 	private String reason = null;
 
-	public SecurityResultHandshake_S2C (RfbClientSession session) {
-		super (session);
+	public SecurityResultHandshake_S2C(RfbClientSession session) {
+		super(session);
 	}
 
-	public SecurityResultHandshake_S2C (RfbClientSession session, long status, String reason) {
-		this (session);
+	public SecurityResultHandshake_S2C(RfbClientSession session, long status, String reason) {
+		this(session);
 
-		setStatus (status);
+		setStatus(status);
 
 		if (status == SECRESULT_STATUS_FAILED) {
-			Objects.requireNonNull (reason, "Reason may not be null if result is FAILED");
+			Objects.requireNonNull(reason, "Reason may not be null if result is FAILED");
 
 			this.reason = reason;
 		}
 	}
 
-	public final void setStatus (long status) {
-		if (!SECRESULT_POSSIBLE.contains (status)) {
-			throw new IllegalArgumentException ("Status " + status + " is not one of the possible: " + Arrays.toString (SECRESULT_POSSIBLE.toArray (new Integer[0])));
+	public final void setStatus(long status) {
+		if (!SECRESULT_POSSIBLE.contains(status)) {
+			throw new IllegalArgumentException("Status " + status + " is not one of the possible: " + Arrays.toString(SECRESULT_POSSIBLE.toArray(new Integer[0])));
 		}
 
 		this.status = status;
 	}
 
+	public long getStatus() {
+		return status;
+	}
+
+	public String getReason() {
+		return reason;
+	}
+
 	@Override
-	public void write (OutputStream out) throws MessageException, IOException {
-		writeU32 (out, (int) status);
+	public void write(OutputStream out) throws MessageException, IOException {
+		writeU32(out, (int) status);
 
 		if (status != SECRESULT_STATUS_OK) {
 			if (reason == null) {
-				throw new IllegalStateException ("reason is null when status is FAILED");
+				throw new IllegalStateException("reason is null when status is FAILED");
 			}
 
-			writeString (out, reason);
+			writeString(out, reason);
 		}
 
 	}
 
 	@Override
-	public void read (InputStream in) throws MessageException, IOException {
-		setStatus (readU32 (in));
+	public void read(InputStream in) throws MessageException, IOException {
+		setStatus(readU32(in));
 
 		if (status != SECRESULT_STATUS_OK) {
-			reason = readString (in);
+			reason = readString(in);
 		}
 	}
 

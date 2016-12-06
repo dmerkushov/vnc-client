@@ -31,7 +31,7 @@ public class ProtocolVersionHandshake extends RfbMessage {
 	public ProtocolVersionHandshake (RfbClientSession session) {
 		super (session);
 
-		this.version = RfbVersion.Rfb33;
+		this.version = RfbVersion.Rfb38;
 	}
 
 	public ProtocolVersionHandshake (RfbClientSession session, RfbVersion version) {
@@ -59,7 +59,7 @@ public class ProtocolVersionHandshake extends RfbMessage {
 				break;
 		}
 
-		out.write (protoString.getBytes ());
+		out.write (protoString.getBytes ("ISO-8859-1"));
 	}
 
 	@Override
@@ -75,6 +75,9 @@ public class ProtocolVersionHandshake extends RfbMessage {
 		}
 
 		String protoString = new String (bytes).toUpperCase ();
+
+		System.out.println ("ProtoString by the server: " + protoString);
+
 		switch (protoString) {
 			case PROTOSTR_VER33:
 				version = RfbVersion.Rfb33;

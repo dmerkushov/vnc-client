@@ -76,4 +76,16 @@ public class ServerInit_S2C extends RfbMessage {
 		name = readString (in);
 	}
 
+	public int getFramebufferWidth () {
+		return framebufferWidth;
+	}
+
+	public int getFramebufferHeight () {
+		return framebufferHeight;
+	}
+
+	public RfbPixelFormat getPixelFormat () {
+		return pixelFormat;
+	}
+
 }

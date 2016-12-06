@@ -12,8 +12,9 @@ import java.util.LinkedHashSet;
 import java.util.Objects;
 import ru.dmerkushov.vnc.client.rfb.messages.MessageException;
 import ru.dmerkushov.vnc.client.rfb.messages.RfbMessage;
-import ru.dmerkushov.vnc.client.rfb.session.RfbSecurityType;
+import static ru.dmerkushov.vnc.client.rfb.messages.util.RfbMessagesUtil.readString;
 import ru.dmerkushov.vnc.client.rfb.session.RfbClientSession;
+import ru.dmerkushov.vnc.client.rfb.session.RfbSecurityType;
 
 /**
  * This is the security handshake, phase 1. Sent by the server to the client
@@ -53,25 +54,40 @@ public class SecurityHandshake1_S2C extends RfbMessage {
 
 		secTypeCount = in.read ();
 
+		System.out.println ("secTypeCount: " + secTypeCount);
+
 		secTypes = new LinkedHashSet<> ();
 
-		if (secTypeCount == 1) {
-			secTypesInt = new int[1];
-			secTypesInt[0] = in.read ();
-			secTypes.add (RfbSecurityType.getSecTypeByValue (secTypesInt[0]));
-		} else {
-			secTypesInt = new int[secTypeCount];
-			for (int i = 1; i < secTypeCount; i++) {
-				try {
-					secTypesInt[i - 1] = in.read ();
-				} catch (IOException ex) {
-					throw new IOException ("When reading secType #" + (i - 1), ex);
-				}
-				secTypes.add (RfbSecurityType.getSecTypeByValue (secTypesInt[i - 1]));
-			}
-		}
+		switch (secTypeCount) {
+			case 0:
+				String reason = readString (in);
 
-		//TODO Implement support for error in S2C security handshake 1 ("If number-of-security-types is zero..."), page 9 of the protocol spec
+				throw new MessageException ("Security handshake 1 failed. Reason supplied by the server is: " + reason + "(reason length " + reason.length () + ")");
+			case 1:
+				secTypesInt = new int[1];
+				secTypesInt[0] = in.read ();
+				secTypes.add (RfbSecurityType.getSecTypeByValue (secTypesInt[0]));
+				break;
+			default:
+				secTypesInt = new int[secTypeCount];
+				for (int i = 0; i < secTypeCount; i++) {
+					try {
+						secTypesInt[i] = in.read ();
+					} catch (IOException ex) {
+						throw new IOException ("When reading secType #" + (i), ex);
+					}
+
+					RfbSecurityType secType = RfbSecurityType.getSecTypeByValue (secTypesInt[i]);
+
+					if (secType == null) {
+						System.err.println ("Unknown security type: " + secTypesInt[i]);
+					} else {
+						System.out.println ("Adding secType " + secTypesInt[i] + " - " + secType.name ());
+						secTypes.add (secType);
+					}
+				}
+				break;
+		}
 	}
 
 	public LinkedHashSet<RfbSecurityType> getSecurityTypes () {

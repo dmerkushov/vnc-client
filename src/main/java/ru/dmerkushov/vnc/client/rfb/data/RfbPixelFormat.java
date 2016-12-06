@@ -5,6 +5,7 @@
  */
 package ru.dmerkushov.vnc.client.rfb.data;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -55,7 +56,8 @@ public class RfbPixelFormat {
 
 	public static RfbPixelFormat getDefaultPixelFormat () {
 		if (defaultPixelFormat == null) {
-			defaultPixelFormat = new RfbPixelFormat (32, 24, true, true, 0xFF, 0xFF, 0xFF, 16, 8, 0);
+//			defaultPixelFormat = new RfbPixelFormat (32, 24, true, true, 0xFF, 0xFF, 0xFF, 16, 8, 0);
+			defaultPixelFormat = new RfbPixelFormat (32, 24, true, true, 0xFF, 0xFF, 0xFF, 24, 16, 8);
 		}
 		return defaultPixelFormat;
 	}
@@ -75,19 +77,31 @@ public class RfbPixelFormat {
 	}
 
 	public void write (OutputStream out) throws IOException {
-		writeU8 (out, bitsPerPixel);
-		writeU8 (out, depth);
-		writeBoolean (out, bigEndian);
-		writeBoolean (out, trueColor);
-		writeU16 (out, redMax);
-		writeU16 (out, greenMax);
-		writeU16 (out, blueMax);
-		writeU8 (out, redShift);
-		writeU8 (out, greenShift);
-		writeU8 (out, blueShift);
-		writeU8 (out, 0);	// Padding
-		writeU8 (out, 0);	//
-		writeU8 (out, 0);	//
+		ByteArrayOutputStream baos = new ByteArrayOutputStream (16);
+
+		writeU8 (baos, bitsPerPixel);
+		writeU8 (baos, depth);
+		writeBoolean (baos, bigEndian);
+		writeBoolean (baos, trueColor);
+		writeU16 (baos, redMax);
+		writeU16 (baos, greenMax);
+		writeU16 (baos, blueMax);
+		writeU8 (baos, redShift);
+		writeU8 (baos, greenShift);
+		writeU8 (baos, blueShift);
+		writeU8 (baos, 0);	// Padding
+		writeU8 (baos, 0);	//
+		writeU8 (baos, 0);	//
+
+		byte[] bytes = baos.toByteArray ();
+
+		out.write (bytes);
+
+		System.out.println ("PixelFormat written:");
+		for (int i = 0; i < 16; i++) {
+			System.out.printf (" %x", bytes[i]);
+		}
+		System.out.println ();
 	}
 
 	private int normalizeOrder (int value) {

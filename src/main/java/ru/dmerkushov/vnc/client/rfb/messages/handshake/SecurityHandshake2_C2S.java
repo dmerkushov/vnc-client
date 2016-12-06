@@ -10,6 +10,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Objects;
 import ru.dmerkushov.vnc.client.rfb.messages.RfbMessage;
+import static ru.dmerkushov.vnc.client.rfb.messages.util.RfbMessagesUtil.writeU8;
 import ru.dmerkushov.vnc.client.rfb.session.RfbClientSession;
 import ru.dmerkushov.vnc.client.rfb.session.RfbSecurityType;
 
@@ -31,13 +32,14 @@ public class SecurityHandshake2_C2S extends RfbMessage {
 		Objects.requireNonNull (secType);
 
 		this.secType = secType;
+		this.secTypeInt = secType.getValue ();
 	}
 
 	@Override
 	public void write (OutputStream out) throws IOException {
 		Objects.requireNonNull (out);
 
-		out.write (secTypeInt);
+		writeU8 (out, secTypeInt);
 	}
 
 	@Override
