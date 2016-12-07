@@ -5,8 +5,12 @@
  */
 package ru.dmerkushov.vnc.client.ui;
 
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Point;
+import java.awt.Toolkit;
+import java.awt.image.BufferedImage;
 import java.util.Objects;
 import javax.swing.JComponent;
 import ru.dmerkushov.vnc.client.VncCommon;
@@ -39,16 +43,14 @@ public class VncView extends JComponent {
 		this.addMouseWheelListener (mouseEvents);
 		this.addKeyListener (keyboardEvents);
 
-//		BufferedImage cursorImg = new BufferedImage (16, 16, BufferedImage.TYPE_INT_ARGB);
-//		Cursor blankCursor = Toolkit.getDefaultToolkit ().createCustomCursor (cursorImg, new Point (0, 0), "blank cursor");
-//		this.setCursor (blankCursor);
+		BufferedImage cursorImg = new BufferedImage (16, 16, BufferedImage.TYPE_INT_ARGB);
+		Cursor blankCursor = Toolkit.getDefaultToolkit ().createCustomCursor (cursorImg, new Point (0, 0), "blank cursor");
+		this.setCursor (blankCursor);
 	}
 
 	@Override
 	public void paint (Graphics g) {
 		if (session.isFramebufferAttached ()) {
-//			FramebufferUpdateRequestMessage furm = new FramebufferUpdateRequestMessage (session, false);
-//			session.sendMessage (furm);
 			g.drawImage (session.getFramebuffer (), 0, 0, VncView.this);
 		} else {
 			VncCommon.getLogger ().warning ("No framebuffer attached to session");

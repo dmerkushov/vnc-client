@@ -31,18 +31,7 @@ public class VncViewMouseEvents implements MouseListener, MouseMotionListener, M
 
 	@Override
 	public void mouseClicked (MouseEvent e) {
-		int x = e.getX ();
-		int y = e.getY ();
-
-		int eventType = PointerEventMessageSequence.EVENTTYPE_CLICK_LEFT;
-		if (e.getButton () == MouseEvent.BUTTON1) {
-			eventType = PointerEventMessageSequence.EVENTTYPE_CLICK_LEFT;
-		} else if (e.getButton () == MouseEvent.BUTTON3) {
-			eventType = PointerEventMessageSequence.EVENTTYPE_CLICK_RIGHT;
-		}
-
-		PointerEventMessageSequence pointerEventMsg = new PointerEventMessageSequence (session, eventType, x, y);
-		session.sendMessage (pointerEventMsg);
+		// Do nothing: this will be translated into two events: mousePressed(), and mouseReleased()
 	}
 
 	@Override

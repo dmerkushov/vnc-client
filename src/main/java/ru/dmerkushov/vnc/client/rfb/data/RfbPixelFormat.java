@@ -12,6 +12,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.logging.Level;
+import ru.dmerkushov.vnc.client.VncCommon;
 import static ru.dmerkushov.vnc.client.rfb.messages.util.RfbMessagesUtil.readBoolean;
 import static ru.dmerkushov.vnc.client.rfb.messages.util.RfbMessagesUtil.readBytes;
 import static ru.dmerkushov.vnc.client.rfb.messages.util.RfbMessagesUtil.readU16;
@@ -64,15 +66,19 @@ public class RfbPixelFormat {
 	}
 
 	public void read (InputStream in) throws IOException {
-		byte[] pixelFormatBytes = readBytes (in, 16);
+		byte[] bytes = readBytes (in, 16);
 
-		System.out.println ("Read pixel format:");
-		for (int i = 0; i < pixelFormatBytes.length; i++) {
-			System.out.printf (" %x", pixelFormatBytes[i]);
+		if (VncCommon.getLogger ().isLoggable (Level.INFO)) {
+			StringBuilder logMsgBuilder = new StringBuilder ();
+
+			logMsgBuilder.append ("Read PixelFormat:");
+			for (int i = 0; i < 16; i++) {
+				logMsgBuilder.append (String.format (" %x", bytes[i]));
+			}
+			VncCommon.getLogger ().info (logMsgBuilder.toString ());
 		}
-		System.out.println ();
 
-		ByteArrayInputStream bais = new ByteArrayInputStream (pixelFormatBytes);
+		ByteArrayInputStream bais = new ByteArrayInputStream (bytes);
 
 		bitsPerPixel = readU8 (bais);
 		depth = readU8 (bais);
@@ -108,11 +114,15 @@ public class RfbPixelFormat {
 
 		out.write (bytes);
 
-		System.out.println ("PixelFormat written:");
-		for (int i = 0; i < 16; i++) {
-			System.out.printf (" %x", bytes[i]);
+		if (VncCommon.getLogger ().isLoggable (Level.INFO)) {
+			StringBuilder logMsgBuilder = new StringBuilder ();
+
+			logMsgBuilder.append ("Wrote PixelFormat:");
+			for (int i = 0; i < 16; i++) {
+				logMsgBuilder.append (String.format (" %x", bytes[i]));
+			}
+			VncCommon.getLogger ().info (logMsgBuilder.toString ());
 		}
-		System.out.println ();
 	}
 
 	private int normalizeOrder (int value) {
