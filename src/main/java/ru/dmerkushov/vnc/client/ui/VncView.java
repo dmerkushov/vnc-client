@@ -12,6 +12,7 @@ import javax.swing.JComponent;
 import ru.dmerkushov.vnc.client.VncCommon;
 import ru.dmerkushov.vnc.client.rfb.session.RfbClientSession;
 import ru.dmerkushov.vnc.client.rfb.session.RfbFramebuffer;
+import ru.dmerkushov.vnc.client.ui.events.VncViewKeyboardEvents;
 import ru.dmerkushov.vnc.client.ui.events.VncViewMouseEvents;
 
 /**
@@ -29,10 +30,14 @@ public class VncView extends JComponent {
 		session.attachView (this);
 
 		VncViewMouseEvents mouseEvents = new VncViewMouseEvents (session);
+		VncViewKeyboardEvents keyboardEvents = new VncViewKeyboardEvents (session);
+
+		this.setFocusable (true);
 
 		this.addMouseMotionListener (mouseEvents);
 		this.addMouseListener (mouseEvents);
 		this.addMouseWheelListener (mouseEvents);
+		this.addKeyListener (keyboardEvents);
 
 //		BufferedImage cursorImg = new BufferedImage (16, 16, BufferedImage.TYPE_INT_ARGB);
 //		Cursor blankCursor = Toolkit.getDefaultToolkit ().createCustomCursor (cursorImg, new Point (0, 0), "blank cursor");
