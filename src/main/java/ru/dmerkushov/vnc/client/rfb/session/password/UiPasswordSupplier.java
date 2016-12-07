@@ -18,25 +18,25 @@ import ru.dmerkushov.vnc.client.rfb.operation.RfbOperationException;
  */
 public class UiPasswordSupplier implements PasswordSupplier {
 
-	private static final ResourceBundle vncViewRB = ResourceBundle.getBundle("VncViewRB");
+	private static final ResourceBundle vncViewRB = ResourceBundle.getBundle ("VncViewRB");
 
 	@Override
-	public String getPassword() throws RfbOperationException {
+	public String getPassword () throws RfbOperationException {
 		String passwordEntered;
 
-		JPanel panel = new JPanel();
-		JLabel label = new JLabel(vncViewRB.getString("LBL_PASSWORDREQUEST"));
-		JPasswordField pass = new JPasswordField(10);
-		panel.add(label);
-		panel.add(pass);
-		String[] options = new String[]{vncViewRB.getString("BTN_OK"), vncViewRB.getString("BTN_CANCEL")};
-		int option = JOptionPane.showOptionDialog(null, panel, vncViewRB.getString("TITLE_VNCPASSWORD"),
+		JPanel panel = new JPanel ();
+		JLabel label = new JLabel (vncViewRB.getString ("LBL_PASSWORDREQUEST"));
+		JPasswordField pass = new JPasswordField (10);
+		panel.add (label);
+		panel.add (pass);
+		String[] options = new String[]{vncViewRB.getString ("BTN_CANCEL"), vncViewRB.getString ("BTN_OK")};
+		int option = JOptionPane.showOptionDialog (null, panel, vncViewRB.getString ("TITLE_VNCPASSWORD"),
 				JOptionPane.NO_OPTION, JOptionPane.PLAIN_MESSAGE,
 				null, options, options[1]);
-		if (option == 0) {
-			passwordEntered = new String(pass.getPassword());
+		if (option == 1) {
+			passwordEntered = new String (pass.getPassword ());
 		} else {
-			throw new RfbOperationException("The server requires VNC authorization, but password entering cancelled by user");
+			throw new RfbOperationException ("The server requires VNC authorization, but password entering cancelled by user");
 		}
 
 		return passwordEntered;

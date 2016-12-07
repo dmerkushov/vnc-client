@@ -19,10 +19,23 @@ import ru.dmerkushov.vnc.client.rfb.session.RfbClientSession;
  */
 public abstract class NormalMessage extends RfbMessage {
 
-	private int messageType;
+	public static final int MESSAGETYPE_C2S_SETPIXELFORMAT = 0;
+	public static final int MESSAGETYPE_C2S_SETENCODINGS = 2;
+	public static final int MESSAGETYPE_C2S_FRAMEBUFFERUPDATEREQUEST = 3;
+	public static final int MESSAGETYPE_C2S_KEYEVENT = 4;
+	public static final int MESSAGETYPE_C2S_POINTEREVENT = 5;
+	public static final int MESSAGETYPE_C2S_CLIENTCUTTEXT = 6;
+	public static final int MESSAGETYPE_S2C_FRAMEBUFFERUPDATE = 0;
+	public static final int MESSAGETYPE_S2C_SETCOLORMAPENTRIES = 1;
+	public static final int MESSAGETYPE_S2C_BELL = 2;
+	public static final int MESSAGETYPE_S2C_SERVERCUTTEXT = 3;
 
-	public NormalMessage (RfbClientSession session) {
+	private final int messageType;
+
+	public NormalMessage (RfbClientSession session, int messageType) {
 		super (session);
+
+		this.messageType = messageType;
 	}
 
 	@Override
@@ -32,6 +45,10 @@ public abstract class NormalMessage extends RfbMessage {
 
 	@Override
 	public void read (InputStream in) throws MessageException, IOException {
+	}
+
+	public int getMessageType () {
+		return messageType;
 	}
 
 }

@@ -9,12 +9,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import ru.dmerkushov.vnc.client.rfb.messages.MessageException;
+import ru.dmerkushov.vnc.client.rfb.messages.normal.NormalMessage;
 import static ru.dmerkushov.vnc.client.rfb.messages.util.RfbMessagesUtil.readBoolean;
 import static ru.dmerkushov.vnc.client.rfb.messages.util.RfbMessagesUtil.readU16;
 import static ru.dmerkushov.vnc.client.rfb.messages.util.RfbMessagesUtil.writeBoolean;
 import static ru.dmerkushov.vnc.client.rfb.messages.util.RfbMessagesUtil.writeU16;
-import ru.dmerkushov.vnc.client.rfb.session.RfbFramebuffer;
 import ru.dmerkushov.vnc.client.rfb.session.RfbClientSession;
+import ru.dmerkushov.vnc.client.rfb.session.RfbFramebuffer;
 
 /**
  *
@@ -28,23 +29,25 @@ public class FramebufferUpdateRequestMessage extends C2SMessage {
 	int height;
 	boolean incremental;
 
-	public FramebufferUpdateRequestMessage (RfbClientSession session, RfbFramebuffer framebuffer) {
-		super (session);
+	public FramebufferUpdateRequestMessage (RfbClientSession session, boolean incremental) {
+		super (session, NormalMessage.MESSAGETYPE_C2S_FRAMEBUFFERUPDATEREQUEST);
+
+		RfbFramebuffer framebuffer = session.getFramebuffer ();
 
 		xPosition = 0;
 		yPosition = 0;
 		width = framebuffer.getWidth ();
-		height = framebuffer.getWidth ();
-		incremental = false;
+		height = framebuffer.getHeight ();
+		this.incremental = incremental;
 	}
 
 	@Override
 	public void read (InputStream in) throws MessageException, IOException {
 		incremental = readBoolean (in);
-		xPosition = readU16 (in);
-		yPosition = readU16 (in);
-		width = readU16 (in);
-		height = readU16 (in);
+		xPosition = readU16 (in, true);
+		yPosition = readU16 (in, true);
+		width = readU16 (in, true);
+		height = readU16 (in, true);
 	}
 
 	@Override
@@ -52,10 +55,10 @@ public class FramebufferUpdateRequestMessage extends C2SMessage {
 		super.write (out);
 
 		writeBoolean (out, incremental);
-		writeU16 (out, xPosition);
-		writeU16 (out, yPosition);
-		writeU16 (out, width);
-		writeU16 (out, height);
+		writeU16 (out, xPosition, true);
+		writeU16 (out, yPosition, true);
+		writeU16 (out, width, true);
+		writeU16 (out, height, true);
 	}
 
 }

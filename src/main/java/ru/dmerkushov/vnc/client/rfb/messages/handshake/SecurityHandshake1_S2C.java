@@ -54,8 +54,6 @@ public class SecurityHandshake1_S2C extends RfbMessage {
 
 		secTypeCount = in.read ();
 
-		System.out.println ("secTypeCount: " + secTypeCount);
-
 		secTypes = new LinkedHashSet<> ();
 
 		switch (secTypeCount) {

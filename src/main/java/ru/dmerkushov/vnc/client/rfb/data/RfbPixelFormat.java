@@ -5,6 +5,7 @@
  */
 package ru.dmerkushov.vnc.client.rfb.data;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -63,17 +64,27 @@ public class RfbPixelFormat {
 	}
 
 	public void read (InputStream in) throws IOException {
-		bitsPerPixel = readU8 (in);
-		depth = readU8 (in);
-		bigEndian = readBoolean (in);
-		trueColor = readBoolean (in);
-		redMax = readU16 (in);
-		greenMax = readU16 (in);
-		blueMax = readU16 (in);
-		redShift = readU8 (in);
-		greenShift = readU8 (in);
-		blueShift = readU8 (in);
-		readBytes (in, 3);		// Padding
+		byte[] pixelFormatBytes = readBytes (in, 16);
+
+		System.out.println ("Read pixel format:");
+		for (int i = 0; i < pixelFormatBytes.length; i++) {
+			System.out.printf (" %x", pixelFormatBytes[i]);
+		}
+		System.out.println ();
+
+		ByteArrayInputStream bais = new ByteArrayInputStream (pixelFormatBytes);
+
+		bitsPerPixel = readU8 (bais);
+		depth = readU8 (bais);
+		bigEndian = readBoolean (bais);
+		trueColor = readBoolean (bais);
+		redMax = readU16 (bais, true);
+		greenMax = readU16 (bais, true);
+		blueMax = readU16 (bais, true);
+		redShift = readU8 (bais);
+		greenShift = readU8 (bais);
+		blueShift = readU8 (bais);
+		readBytes (bais, 3);		// Padding
 	}
 
 	public void write (OutputStream out) throws IOException {
@@ -83,9 +94,9 @@ public class RfbPixelFormat {
 		writeU8 (baos, depth);
 		writeBoolean (baos, bigEndian);
 		writeBoolean (baos, trueColor);
-		writeU16 (baos, redMax);
-		writeU16 (baos, greenMax);
-		writeU16 (baos, blueMax);
+		writeU16 (baos, redMax, true);
+		writeU16 (baos, greenMax, true);
+		writeU16 (baos, blueMax, true);
 		writeU8 (baos, redShift);
 		writeU8 (baos, greenShift);
 		writeU8 (baos, blueShift);

@@ -6,16 +6,18 @@
 package ru.dmerkushov.vnc.client.rfb.operation;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Objects;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import ru.dmerkushov.vnc.client.VncCommon;
 import ru.dmerkushov.vnc.client.rfb.data.RfbRectangle;
 import ru.dmerkushov.vnc.client.rfb.data.pixeldata.RfbPixelDataException;
 import ru.dmerkushov.vnc.client.rfb.messages.MessageException;
 import ru.dmerkushov.vnc.client.rfb.messages.normal.MessageFactoryException;
+import ru.dmerkushov.vnc.client.rfb.messages.normal.c2s.C2SMessage;
 import ru.dmerkushov.vnc.client.rfb.messages.normal.c2s.FramebufferUpdateRequestMessage;
 import ru.dmerkushov.vnc.client.rfb.messages.normal.s2c.FramebufferUpdateMessage;
 import ru.dmerkushov.vnc.client.rfb.messages.normal.s2c.S2CMessage;
@@ -29,9 +31,11 @@ import ru.dmerkushov.vnc.client.rfb.session.RfbClientSession;
 public class NormalOperation extends Operation {
 
 	Thread getMessagesThread;
-	final Queue<S2CMessage> messagesQueue;
+	final Queue<S2CMessage> incomingMessagesQueue;
 	Thread processMessagesThread;
 	Thread framebufferUpdateRequestThread;
+	final Queue<C2SMessage> outgoingMessagesQueue;
+	Thread sendMessagesThread;
 
 	public NormalOperation (RfbClientSession session) {
 		super (session);
@@ -39,25 +43,33 @@ public class NormalOperation extends Operation {
 		getMessagesThread = new Thread (new GetMessagesRunnable ());
 		processMessagesThread = new Thread (new ProcessMessagesRunnable ());
 		framebufferUpdateRequestThread = new Thread (new FramebufferUpdateRequestRunnable ());
-		messagesQueue = new ConcurrentLinkedQueue<> ();
+		incomingMessagesQueue = new ConcurrentLinkedQueue<> ();
+		outgoingMessagesQueue = new ConcurrentLinkedQueue<> ();
+		sendMessagesThread = new Thread (new SendMessagesRunnable ());
 	}
 
 	@Override
 	public void operate () {
 		getMessagesThread.start ();
 		processMessagesThread.start ();
-//		framebufferUpdateRequestThread.start ();
+		framebufferUpdateRequestThread.start ();
+		sendMessagesThread.start ();
+	}
+
+	public void sendMessage (C2SMessage message) {
+		Objects.requireNonNull (message, "message");
+
+		outgoingMessagesQueue.add (message);
 	}
 
 	class GetMessagesRunnable implements Runnable {
 
 		@Override
 		public void run () {
-			InputStream in = session.getIn ();
 			while (true) {
 				S2CMessage message = null;
 				try {
-					message = S2CMessageFactory.getInstance ().readMessage (session, in);
+					message = S2CMessageFactory.getInstance ().readMessage (session);
 				} catch (MessageFactoryException | IOException ex) {
 					Logger.getLogger (NormalOperation.class.getName ()).log (Level.SEVERE, null, ex);
 				}
@@ -65,10 +77,36 @@ public class NormalOperation extends Operation {
 					processMessagesThread.interrupt ();
 					break;
 				}
-				messagesQueue.add (message);
+				incomingMessagesQueue.add (message);
 			}
 		}
+	}
 
+	class SendMessagesRunnable implements Runnable {
+
+		@Override
+		public void run () {
+			OutputStream out = session.getOut ();
+			C2SMessage message = null;
+			lbl:
+			while (true) {
+				message = outgoingMessagesQueue.poll ();
+				while (message == null) {
+					try {
+						Thread.sleep (10l);
+					} catch (InterruptedException ex) {
+						break lbl;
+					}
+					message = outgoingMessagesQueue.poll ();
+				}
+
+				try {
+					message.write (out);
+				} catch (MessageException | IOException ex) {
+					Logger.getLogger (NormalOperation.class.getName ()).log (Level.SEVERE, null, ex);
+				}
+			}
+		}
 	}
 
 	class ProcessMessagesRunnable implements Runnable {
@@ -76,19 +114,26 @@ public class NormalOperation extends Operation {
 		@Override
 		public void run () {
 			while (true) {
-				S2CMessage message = messagesQueue.poll ();
+				S2CMessage message = incomingMessagesQueue.poll ();
 				if (message instanceof FramebufferUpdateMessage && session.isFramebufferAttached ()) {
 					FramebufferUpdateMessage fbuMessage = (FramebufferUpdateMessage) message;
 					RfbRectangle[] rectangles = fbuMessage.getRectangles ();
-					for (RfbRectangle rectangle : rectangles) {
-						try {
-							rectangle.getPixelData ().updateFramebuffer (session.getFramebuffer ());
-						} catch (RfbPixelDataException ex) {
-							Logger.getLogger (NormalOperation.class.getName ()).log (Level.SEVERE, null, ex);
+					for (int i = 0; i < rectangles.length; i++) {
+						RfbRectangle rectangle = rectangles[i];
+						if (rectangle != null) {
+
+							try {
+								rectangle.getPixelData ().updateFramebuffer (session.getFramebuffer ());
+							} catch (RfbPixelDataException ex) {
+								VncCommon.getLogger ().log (Level.SEVERE, null, ex);
+							}
+						} else {
+							VncCommon.getLogger ().log (Level.WARNING, "Rectangle #{0} of {1} is null", new Object[]{i, rectangles.length});
 						}
 					}
+					session.getView ().repaint ();
 				}
-				if (messagesQueue.isEmpty ()) {
+				if (incomingMessagesQueue.isEmpty ()) {
 					try {
 						Thread.sleep (10l);
 					} catch (InterruptedException ex) {
@@ -97,29 +142,30 @@ public class NormalOperation extends Operation {
 				}
 			}
 		}
-
 	}
 
 	class FramebufferUpdateRequestRunnable implements Runnable {
 
 		@Override
 		public void run () {
-			OutputStream out = session.getOut ();
+			int counter = 1;
 			while (session.getSocket ().isConnected ()) {
-				FramebufferUpdateRequestMessage furm = new FramebufferUpdateRequestMessage (session, session.getFramebuffer ());
-				try {
-					furm.write (out);
-				} catch (MessageException | IOException ex) {
-					Logger.getLogger (NormalOperation.class.getName ()).log (Level.SEVERE, null, ex);
+				FramebufferUpdateRequestMessage furm = new FramebufferUpdateRequestMessage (session, (counter / 256.0 != 0));
+
+				session.sendMessage (furm);
+
+				if (counter == 256) {
+					counter = 1;
+				} else {
+					counter++;
 				}
+
 				try {
-					Thread.sleep (100l);
+					Thread.sleep (50l);
 				} catch (InterruptedException ex) {
 					break;
 				}
 			}
 		}
-
 	}
-
 }

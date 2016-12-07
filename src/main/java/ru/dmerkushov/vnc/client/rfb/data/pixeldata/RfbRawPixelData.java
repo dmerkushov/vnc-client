@@ -7,6 +7,7 @@ package ru.dmerkushov.vnc.client.rfb.data.pixeldata;
 
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
+import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -17,7 +18,6 @@ import java.util.HashSet;
 import java.util.Objects;
 import ru.dmerkushov.vnc.client.rfb.data.RfbPixelFormat;
 import ru.dmerkushov.vnc.client.rfb.data.RfbRectangle;
-import static ru.dmerkushov.vnc.client.rfb.messages.util.RfbMessagesUtil.readBytes;
 import ru.dmerkushov.vnc.client.rfb.session.RfbFramebuffer;
 
 /**
@@ -54,21 +54,18 @@ public class RfbRawPixelData extends RfbPixelData {
 	public void read (InputStream in) throws IOException {
 		int bytesCount = width * height * bytesPerPixel;
 
-		bytes = readBytes (in, bytesCount);
+		DataInputStream dis = new DataInputStream (in);
+		byte[] bytes = new byte[bytesCount];
+		dis.readFully (bytes);
 
-		innerImage = new BufferedImage (width, height, BufferedImage.TYPE_INT_ARGB);
-
-		if (pixelFormat.isTrueColor ()) {
-
-			ByteBuffer bb = ByteBuffer.allocate (bytesPerPixel);
+		if (bytesPerPixel == 4 && pixelFormat.isTrueColor ()) {
+			innerImage = new BufferedImage (width, height, BufferedImage.TYPE_INT_ARGB);
 
 			int[] argbs = new int[width * height];
 
-			int argb;
-			int red;
-			int green;
-			int blue;
-			int readValue;
+			ByteBuffer bb = ByteBuffer.wrap (bytes);
+			bb.order (pixelFormat.isBigEndian () ? ByteOrder.BIG_ENDIAN : ByteOrder.LITTLE_ENDIAN);
+
 			int redMax = pixelFormat.getRedMax ();
 			int redShift = pixelFormat.getRedShift ();
 			int greenMax = pixelFormat.getGreenMax ();
@@ -76,22 +73,30 @@ public class RfbRawPixelData extends RfbPixelData {
 			int blueMax = pixelFormat.getBlueMax ();
 			int blueShift = pixelFormat.getBlueShift ();
 
-			for (int i = 0; i < bytes.length; i += bytesPerPixel) {
-				bb.order (ByteOrder.BIG_ENDIAN);
-				bb.put (bytes, i, bytesPerPixel);
-				bb.flip ();
-				if (!pixelFormat.isBigEndian ()) {
-					bb.order (ByteOrder.LITTLE_ENDIAN);
-				}
-				readValue = bb.getInt ();
-				bb.flip ();
-				red = (((readValue >> redShift) & redMax) * 0xFF / redMax) & 0xFF;
-				green = (((readValue >> greenShift) & greenMax) * 0xFF / greenMax) & 0xFF;
-				blue = (((readValue >> blueShift) & blueMax) * 0xFF / blueMax) & 0xFF;
-				argb = (red << 16) | (green << 8) | blue;
-				argbs[i / bytesPerPixel] = argb;
+			int pixel;
+			int red;
+			int green;
+			int blue;
+			int innerPixel;
+			int[] innerPixels = new int[width * height];
+
+			for (int innerPixelIndex = 0; innerPixelIndex < innerPixels.length; innerPixelIndex++) {
+				pixel = bb.getInt ();
+
+				red = (((pixel >> redShift) & redMax) * 0xFF / redMax) & 0xFF;
+				green = (((pixel >> greenShift) & greenMax) * 0xFF / greenMax) & 0xFF;
+				blue = (((pixel >> blueShift) & blueMax) * 0xFF / blueMax) & 0xFF;
+
+				innerPixel = (0xFF << 24) | (red << 16) | (green << 8) | blue;
+
+//				if (pixel != 0) {
+//					VncCommon.getLogger ().log (Level.INFO, "Image has a non-0 pixel at: {0} - {1} - {2}", new Object[]{innerPixelIndex, pixel, innerPixel});
+//				}
+				innerPixels[innerPixelIndex] = innerPixel;
 			}
-			innerImage.setRGB (0, 0, width, height, argbs, 0, width);
+			innerImage.setRGB (0, 0, width, height, innerPixels, 0, width);
+		} else {
+			throw new IllegalStateException ("Unsupported pixel format");
 		}
 	}
 
@@ -108,7 +113,20 @@ public class RfbRawPixelData extends RfbPixelData {
 
 		Graphics fbg = framebuffer.getGraphics ();
 
-		fbg.drawImage (innerImage, 0, 0, null);
+		fbg.drawImage (innerImage, rectangle.getxPosition (), rectangle.getyPosition (), null);
+
+//		if (VncCommon.getLogger ().isLoggable (Level.INFO)) {
+//			VncCommon.getLogger ().log (Level.INFO, "Drawn image: size {0}x{1} pos {2}x{3}", new Object[]{width, height, rectangle.getxPosition (), rectangle.getyPosition ()});
+//
+//			for (int y = 0; y < height; y++) {
+//				for (int x = 0; x < width; x++) {
+//					if (innerImage.getRGB (x, y) != 0) {
+//						VncCommon.getLogger ().log (Level.INFO, "Image has a non-0 pixel at: {0}x{1}: {2}", new Object[]{x, y, innerImage.getRGB (x, y)});
+//						break;
+//					}
+//				}
+//			}
+//		}
 	}
 
 }

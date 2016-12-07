@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import ru.dmerkushov.vnc.client.rfb.messages.MessageException;
+import ru.dmerkushov.vnc.client.rfb.messages.normal.NormalMessage;
 import static ru.dmerkushov.vnc.client.rfb.messages.util.RfbMessagesUtil.readS32;
 import static ru.dmerkushov.vnc.client.rfb.messages.util.RfbMessagesUtil.readU16;
 import static ru.dmerkushov.vnc.client.rfb.messages.util.RfbMessagesUtil.readU8;
@@ -29,7 +30,7 @@ public class SetEncodingsMessage extends C2SMessage {
 	List<Integer> encodings;
 
 	public SetEncodingsMessage (RfbClientSession session, Collection<Integer> encodings) {
-		super (session);
+		super (session, NormalMessage.MESSAGETYPE_C2S_SETENCODINGS);
 
 		this.encodings = new ArrayList<> ();
 
@@ -42,9 +43,9 @@ public class SetEncodingsMessage extends C2SMessage {
 	public void read (InputStream in) throws MessageException, IOException {
 		readU8 (in);
 		readU8 (in);
-		int encodingsCount = readU16 (in);
+		int encodingsCount = readU16 (in, true);
 		for (int i = 0; i < encodingsCount; i++) {
-			encodings.add (readS32 (in));
+			encodings.add (readS32 (in, true));
 		}
 	}
 
@@ -53,9 +54,9 @@ public class SetEncodingsMessage extends C2SMessage {
 		super.write (out);
 
 		writeU8 (out, 0);	// Padding
-		writeU16 (out, encodings.size ());
+		writeU16 (out, encodings.size (), true);
 		for (int encoding : encodings) {
-			writeS32 (out, encoding);
+			writeS32 (out, encoding, true);
 		}
 	}
 

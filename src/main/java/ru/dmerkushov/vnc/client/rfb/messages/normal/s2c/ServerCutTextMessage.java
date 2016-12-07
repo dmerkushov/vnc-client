@@ -10,6 +10,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Objects;
 import ru.dmerkushov.vnc.client.rfb.messages.MessageException;
+import ru.dmerkushov.vnc.client.rfb.messages.normal.NormalMessage;
 import static ru.dmerkushov.vnc.client.rfb.messages.util.RfbMessagesUtil.readString;
 import static ru.dmerkushov.vnc.client.rfb.messages.util.RfbMessagesUtil.readU8;
 import static ru.dmerkushov.vnc.client.rfb.messages.util.RfbMessagesUtil.writeString;
@@ -24,7 +25,7 @@ public class ServerCutTextMessage extends S2CMessage {
 	String cutText;
 
 	public ServerCutTextMessage (RfbClientSession session) {
-		super (session);
+		super (session, NormalMessage.MESSAGETYPE_S2C_SERVERCUTTEXT);
 	}
 
 	@Override

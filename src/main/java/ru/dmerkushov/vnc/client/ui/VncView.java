@@ -7,16 +7,12 @@ package ru.dmerkushov.vnc.client.ui;
 
 import java.awt.Dimension;
 import java.awt.Graphics;
-import java.io.IOException;
 import java.util.Objects;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JComponent;
-import javax.swing.SwingUtilities;
-import ru.dmerkushov.vnc.client.rfb.messages.MessageException;
-import ru.dmerkushov.vnc.client.rfb.messages.normal.c2s.FramebufferUpdateRequestMessage;
+import ru.dmerkushov.vnc.client.VncCommon;
 import ru.dmerkushov.vnc.client.rfb.session.RfbClientSession;
 import ru.dmerkushov.vnc.client.rfb.session.RfbFramebuffer;
+import ru.dmerkushov.vnc.client.ui.events.VncViewMouseEvents;
 
 /**
  *
@@ -30,26 +26,27 @@ public class VncView extends JComponent {
 		Objects.requireNonNull (session, "session");
 
 		this.session = session;
+		session.attachView (this);
+
+		VncViewMouseEvents mouseEvents = new VncViewMouseEvents (session);
+
+		this.addMouseMotionListener (mouseEvents);
+		this.addMouseListener (mouseEvents);
+		this.addMouseWheelListener (mouseEvents);
+
+//		BufferedImage cursorImg = new BufferedImage (16, 16, BufferedImage.TYPE_INT_ARGB);
+//		Cursor blankCursor = Toolkit.getDefaultToolkit ().createCustomCursor (cursorImg, new Point (0, 0), "blank cursor");
+//		this.setCursor (blankCursor);
 	}
 
 	@Override
 	public void paint (Graphics g) {
 		if (session.isFramebufferAttached ()) {
-			SwingUtilities.invokeLater (new Runnable () {
-				@Override
-				public void run () {
-					FramebufferUpdateRequestMessage furm = new FramebufferUpdateRequestMessage (session, session.getFramebuffer ());
-					try {
-						furm.write (session.getOut ());
-					} catch (MessageException | IOException ex) {
-						Logger.getLogger (VncView.class.getName ()).log (Level.SEVERE, null, ex);
-					}
-					g.drawImage (session.getFramebuffer (), 0, 0, VncView.this);
-				}
-			});
-
+//			FramebufferUpdateRequestMessage furm = new FramebufferUpdateRequestMessage (session, false);
+//			session.sendMessage (furm);
+			g.drawImage (session.getFramebuffer (), 0, 0, VncView.this);
 		} else {
-			System.err.println ("No framebuffer attached to session");
+			VncCommon.getLogger ().warning ("No framebuffer attached to session");
 		}
 	}
 
@@ -60,7 +57,7 @@ public class VncView extends JComponent {
 
 			return new Dimension (frm.getWidth (), frm.getHeight ());
 		} else {
-			return new Dimension (0, 0);
+			return new Dimension (1000, 1000);
 		}
 	}
 

@@ -59,16 +59,16 @@ public class ServerInit_S2C extends RfbMessage {
 		Objects.requireNonNull (pixelFormat, "pixelFormat");
 		Objects.requireNonNull (name, "name");
 
-		writeU16 (out, framebufferWidth);
-		writeU16 (out, framebufferHeight);
+		writeU16 (out, framebufferWidth, true);
+		writeU16 (out, framebufferHeight, true);
 		pixelFormat.write (out);
 		writeString (out, name);
 	}
 
 	@Override
 	public void read (InputStream in) throws MessageException, IOException {
-		framebufferWidth = readU16 (in);
-		framebufferHeight = readU16 (in);
+		framebufferWidth = readU16 (in, true);
+		framebufferHeight = readU16 (in, true);
 
 		pixelFormat = new RfbPixelFormat ();
 		pixelFormat.read (in);

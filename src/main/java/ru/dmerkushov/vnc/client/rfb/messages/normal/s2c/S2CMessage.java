@@ -14,8 +14,8 @@ import ru.dmerkushov.vnc.client.rfb.session.RfbClientSession;
  */
 public abstract class S2CMessage extends NormalMessage {
 
-	public S2CMessage (RfbClientSession session) {
-		super (session);
+	public S2CMessage (RfbClientSession session, int messageType) {
+		super (session, messageType);
 	}
 
 }

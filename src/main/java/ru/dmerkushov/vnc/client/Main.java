@@ -22,6 +22,7 @@ public class Main {
 		RfbClientSession session = new RfbClientSession ("localhost", 5901);
 		VncView vncView = new VncView (session);
 
+//		frame.add (new ru.dmerkushov.vnc.client.ui.ThumbnailView (vncView));
 		frame.add (vncView);
 
 		frame.setDefaultCloseOperation (JFrame.EXIT_ON_CLOSE);
@@ -31,5 +32,7 @@ public class Main {
 		session.startSession ();
 
 		frame.setVisible (true);
+
+		vncView.repaint ();
 	}
 }

@@ -10,6 +10,6 @@ package ru.dmerkushov.vnc.client.rfb.session;
  * @author dmerkushov
  */
 public enum RfbVersion {
-	Rfb33, Rfb37, Rfb38
+	RFB_VER_3_3, RFB_VER_3_7, RFB_VER_3_8
 
 }

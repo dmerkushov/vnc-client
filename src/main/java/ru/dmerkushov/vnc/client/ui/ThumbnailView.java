@@ -43,9 +43,9 @@ public class ThumbnailView extends JComponent {
 
 	@Override
 	public void paint (Graphics g) {
-		Dimension innerSize = innerComponent.getSize ();
-		int innerW = innerSize.width;
-		int innerH = innerSize.height;
+		Dimension innerSize = innerComponent.getPreferredSize ();
+		int innerW = innerSize.width <= 0 ? 100 : innerSize.width;
+		int innerH = innerSize.height <= 0 ? 100 : innerSize.height;
 		int w = getWidth ();
 		int h = getHeight ();
 

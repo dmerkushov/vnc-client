@@ -32,15 +32,15 @@ public class RfbColorMap {
 	}
 
 	public void read (InputStream in) throws IOException {
-		int first = readU16 (in);
-		int colorCount = readU16 (in);
+		int first = readU16 (in, true);
+		int colorCount = readU16 (in, true);
 
 		for (int i = 0; i < colorCount; i++) {
 			int current = first + i;
 
-			int red = readU16 (in) >> 8;
-			int green = readU16 (in) >> 8;
-			int blue = readU16 (in) >> 8;
+			int red = readU16 (in, true) >> 8;
+			int green = readU16 (in, true) >> 8;
+			int blue = readU16 (in, true) >> 8;
 			int rgb = (red << 16) | (green << 8) | blue;
 
 			colors.put (current, rgb);
@@ -62,8 +62,8 @@ public class RfbColorMap {
 
 		int colorCount = max - min;
 
-		writeU16 (out, min);
-		writeU16 (out, colorCount);
+		writeU16 (out, min, true);
+		writeU16 (out, colorCount, true);
 
 		for (int i = min; i < max; i++) {
 			Integer current = colors.get (i);
@@ -74,9 +74,9 @@ public class RfbColorMap {
 			int green = (current & 0xFF00);
 			int blue = (current & 0xFF) << 8;
 
-			writeU16 (out, red);
-			writeU16 (out, green);
-			writeU16 (out, blue);
+			writeU16 (out, red, true);
+			writeU16 (out, green, true);
+			writeU16 (out, blue, true);
 		}
 
 	}

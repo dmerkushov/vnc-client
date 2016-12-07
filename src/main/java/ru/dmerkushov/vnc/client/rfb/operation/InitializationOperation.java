@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import ru.dmerkushov.vnc.client.rfb.data.RfbPixelFormat;
 import ru.dmerkushov.vnc.client.rfb.data.pixeldata.RfbPixelData;
 import ru.dmerkushov.vnc.client.rfb.messages.initialization.ClientInit_C2S;
 import ru.dmerkushov.vnc.client.rfb.messages.initialization.ServerInit_S2C;
@@ -41,12 +42,17 @@ public class InitializationOperation extends Operation {
 		new RfbFramebuffer (session, serverInit_S2C.getFramebufferWidth (), serverInit_S2C.getFramebufferHeight ());
 
 		// SetPixelFormat and SetEncoding also go here not to drop the logic of NormalOperation
-//		SetPixelFormatMessage setPixelFormatMsg = new SetPixelFormatMessage (session, RfbPixelFormat.getDefaultPixelFormat ());
-		SetPixelFormatMessage setPixelFormatMsg = new SetPixelFormatMessage (session, serverInit_S2C.getPixelFormat ());
-		setPixelFormatMsg.write (out);
 		ArrayList<Integer> encodings = new ArrayList<> (1);
 		encodings.add (RfbPixelData.ENCODINGTYPE_RAW);
 		SetEncodingsMessage setEncodingsMsg = new SetEncodingsMessage (session, encodings);
 		setEncodingsMsg.write (out);
+
+		RfbPixelFormat pixelFormat = RfbPixelFormat.getDefaultPixelFormat ();
+//		RfbPixelFormat pixelFormat = serverInit_S2C.getPixelFormat ();
+
+		SetPixelFormatMessage setPixelFormatMsg = new SetPixelFormatMessage (session, pixelFormat);
+		setPixelFormatMsg.write (out);
+
+		session.setPixelFormat (pixelFormat);
 	}
 }

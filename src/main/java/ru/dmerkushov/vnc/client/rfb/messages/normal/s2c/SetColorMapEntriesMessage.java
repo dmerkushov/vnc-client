@@ -11,6 +11,7 @@ import java.io.OutputStream;
 import java.util.Objects;
 import ru.dmerkushov.vnc.client.rfb.data.RfbColorMap;
 import ru.dmerkushov.vnc.client.rfb.messages.MessageException;
+import ru.dmerkushov.vnc.client.rfb.messages.normal.NormalMessage;
 import static ru.dmerkushov.vnc.client.rfb.messages.util.RfbMessagesUtil.readU8;
 import ru.dmerkushov.vnc.client.rfb.session.RfbClientSession;
 
@@ -23,7 +24,7 @@ public class SetColorMapEntriesMessage extends S2CMessage {
 	RfbColorMap colorMap;
 
 	public SetColorMapEntriesMessage (RfbClientSession session) {
-		super (session);
+		super (session, NormalMessage.MESSAGETYPE_S2C_SETCOLORMAPENTRIES);
 	}
 
 	@Override
@@ -39,7 +40,7 @@ public class SetColorMapEntriesMessage extends S2CMessage {
 		Objects.requireNonNull (out, "out");
 		Objects.requireNonNull (colorMap, "colorMap");
 
-		super.write (out); //To change body of generated methods, choose Tools | Templates.
+		super.write (out);
 
 		colorMap.write (out);
 	}

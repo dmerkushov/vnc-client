@@ -11,6 +11,7 @@ import java.io.OutputStream;
 import java.util.Objects;
 import ru.dmerkushov.vnc.client.rfb.data.RfbRectangle;
 import ru.dmerkushov.vnc.client.rfb.messages.MessageException;
+import ru.dmerkushov.vnc.client.rfb.messages.normal.NormalMessage;
 import static ru.dmerkushov.vnc.client.rfb.messages.util.RfbMessagesUtil.readU16;
 import static ru.dmerkushov.vnc.client.rfb.messages.util.RfbMessagesUtil.readU8;
 import static ru.dmerkushov.vnc.client.rfb.messages.util.RfbMessagesUtil.writeU16;
@@ -26,20 +27,23 @@ public class FramebufferUpdateMessage extends S2CMessage {
 	private RfbRectangle[] rectangles;
 
 	public FramebufferUpdateMessage (RfbClientSession session) {
-		super (session);
+		super (session, NormalMessage.MESSAGETYPE_S2C_FRAMEBUFFERUPDATE);
 	}
 
 	@Override
 	public void read (InputStream in) throws MessageException, IOException {
 		readU8 (in);		// Padding
 
-		int rectangleCount = readU16 (in);
+		int rectangleCount = readU16 (in, true);
 
 		rectangles = new RfbRectangle[rectangleCount];
 
 		for (int i = 0; i < rectangleCount; i++) {
-			RfbRectangle rectangle = new RfbRectangle (null);
+			RfbRectangle rectangle = new RfbRectangle (getSession ().getPixelFormat ());
+
 			rectangle.read (in);
+
+			rectangles[i] = rectangle;
 		}
 	}
 
@@ -52,7 +56,7 @@ public class FramebufferUpdateMessage extends S2CMessage {
 
 		writeU8 (out, 0);	// Padding
 
-		writeU16 (out, rectangles.length);
+		writeU16 (out, rectangles.length, true);
 
 		for (RfbRectangle rectangle : rectangles) {
 			rectangle.write (out);
@@ -62,9 +66,5 @@ public class FramebufferUpdateMessage extends S2CMessage {
 
 	public RfbRectangle[] getRectangles () {
 		return rectangles;
-	}
-
-	public void setRectangles (RfbRectangle[] rectangles) {
-		this.rectangles = rectangles;
 	}
 }

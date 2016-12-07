@@ -11,6 +11,7 @@ import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 import java.util.Objects;
+import ru.dmerkushov.vnc.client.VncCommon;
 import ru.dmerkushov.vnc.client.rfb.messages.MessageException;
 import ru.dmerkushov.vnc.client.rfb.messages.RfbMessage;
 import static ru.dmerkushov.vnc.client.rfb.messages.util.RfbMessagesUtil.readBytes;
@@ -49,7 +50,7 @@ public class SecurityHandshake4_VNCauth_C2S extends RfbMessage {
 
 		byte[] passwordBytes;
 		try {
-			passwordBytes = Arrays.copyOf (password.getBytes ("ISO-8859-1"), PASSWORD_STD_LENGTH);
+			passwordBytes = Arrays.copyOf (password.getBytes (VncCommon.STRINGENCODING), PASSWORD_STD_LENGTH);
 		} catch (UnsupportedEncodingException ex) {
 			throw new MessageException (ex);
 		}

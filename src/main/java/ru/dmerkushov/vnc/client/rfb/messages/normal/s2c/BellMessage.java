@@ -5,6 +5,7 @@
  */
 package ru.dmerkushov.vnc.client.rfb.messages.normal.s2c;
 
+import ru.dmerkushov.vnc.client.rfb.messages.normal.NormalMessage;
 import ru.dmerkushov.vnc.client.rfb.session.RfbClientSession;
 
 /**
@@ -14,6 +15,6 @@ import ru.dmerkushov.vnc.client.rfb.session.RfbClientSession;
 public class BellMessage extends S2CMessage {
 
 	public BellMessage (RfbClientSession session) {
-		super (session);
+		super (session, NormalMessage.MESSAGETYPE_S2C_BELL);
 	}
 }

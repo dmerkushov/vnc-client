@@ -8,10 +8,13 @@ package ru.dmerkushov.vnc.client.rfb.operation;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.ConnectException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
 import java.util.Set;
+import java.util.logging.Level;
+import ru.dmerkushov.vnc.client.VncCommon;
 import ru.dmerkushov.vnc.client.rfb.messages.handshake.ProtocolVersionHandshake;
 import ru.dmerkushov.vnc.client.rfb.messages.handshake.SecurityHandshake1_S2C;
 import ru.dmerkushov.vnc.client.rfb.messages.handshake.SecurityHandshake2_C2S;
@@ -39,7 +42,11 @@ public class HandshakeOperation extends Operation {
 
 		SocketAddress socketAddress = new InetSocketAddress (session.getServerHost (), session.getServerPort ());
 
-		socket.connect (socketAddress);
+		try {
+			socket.connect (socketAddress);
+		} catch (ConnectException ex) {
+			throw new RfbOperationException ("Could not connect to RFB server " + socketAddress.toString () + ": " + ex.getMessage (), ex);
+		}
 
 		InputStream in;
 		in = socket.getInputStream ();
@@ -49,9 +56,7 @@ public class HandshakeOperation extends Operation {
 		out = socket.getOutputStream ();
 		session.setOut (out);
 
-		System.out.println ("Connecting, setting RFB protocol version");
-
-		ProtocolVersionHandshake protocolVersionHandshake = new ProtocolVersionHandshake (session, RfbVersion.Rfb38);
+		ProtocolVersionHandshake protocolVersionHandshake = new ProtocolVersionHandshake (session, RfbVersion.RFB_VER_3_8);
 		protocolVersionHandshake.write (out);
 		protocolVersionHandshake.read (in);
 		try {
@@ -60,26 +65,32 @@ public class HandshakeOperation extends Operation {
 			throw new RfbOperationException (ex);
 		}
 
-		System.out.println ("Set RFB version: " + session.getRfbVersion ().name ());
+		VncCommon.getLogger ().log (Level.INFO, "Set RFB version: {0}", session.getRfbVersion ().name ());
 
 		SecurityHandshake1_S2C securityHandshake1_S2C = new SecurityHandshake1_S2C (session);
 		securityHandshake1_S2C.read (in);
+
 		Set<RfbSecurityType> securityTypes = securityHandshake1_S2C.getSecurityTypes ();
 
-		System.out.println ("Security types supported: ");
-		for (RfbSecurityType secType : securityTypes) {
-			System.out.println ("  " + secType.name ());
+		if (VncCommon.getLogger ().isLoggable (Level.INFO)) {
+			StringBuilder logMsgBuilder = new StringBuilder ();
+			logMsgBuilder.append ("Security types supported:");
+			securityTypes.forEach ((secType) -> {
+				logMsgBuilder.append (" ").append (secType.name ());
+			});
+			VncCommon.getLogger ().info (logMsgBuilder.toString ());
 		}
+
 		RfbSecurityType secType;
 		if (securityTypes.contains (RfbSecurityType.None)) {
 			secType = RfbSecurityType.None;
 		} else if (securityTypes.contains (RfbSecurityType.VNC)) {
 			secType = RfbSecurityType.VNC;
 		} else {
-			throw new RfbOperationException ("The server supports neither None nor VNC security types");
+			throw new RfbOperationException ("The server supports neither None nor VNC security types. Since this client only supports these security types, cannot continue");
 		}
 
-		System.out.println ("Sending request for security handshake, type " + secType);
+		VncCommon.getLogger ().log (Level.INFO, "Sending request for security handshake, type {0}", secType);
 
 		SecurityHandshake2_C2S securityHandshake2_C2S = new SecurityHandshake2_C2S (session, secType);
 		securityHandshake2_C2S.write (out);
