@@ -37,21 +37,46 @@ public class RfbRawPixelData extends RfbPixelData {
 
 	private byte[] bytes;
 
-	public RfbRawPixelData (RfbRectangle rectangle, int width, int height) {
+	public RfbRawPixelData (RfbRectangle rectangle) {
 		super (rectangle);
 
 		if (!ALLOWED_BITS_PER_PIXEL_SET.contains (rectangle.pixelFormat.getBitsPerPixel ())) {
 			throw new IllegalArgumentException ("Bits per pixel in the supplied rectangle's PixelFormat is not one of {8, 16, 32}: " + rectangle.pixelFormat.getBitsPerPixel ());
 		}
 
-		this.width = width;
-		this.height = height;
+		this.width = rectangle.getWidth ();
+		this.height = rectangle.getHeight ();
 		this.pixelFormat = rectangle.pixelFormat;
 		bytesPerPixel = pixelFormat.getBitsPerPixel () / 8;
 	}
 
 	@Override
 	public void read (InputStream in) throws IOException {
+		innerImage = readPixelsArray (width, height, pixelFormat, in);
+
+	}
+
+	@Override
+	public void write (OutputStream out) throws IOException {
+		out.write (bytes);
+	}
+
+	@Override
+	public void updateFramebuffer (RfbFramebuffer framebuffer) throws RfbPixelDataException {
+		Objects.requireNonNull (framebuffer, "framebuffer");
+
+		Objects.requireNonNull (innerImage, "innerImage");
+
+		Graphics fbg = framebuffer.getGraphics ();
+
+		fbg.drawImage (innerImage, rectangle.getX (), rectangle.getY (), null);
+	}
+
+	public static BufferedImage readPixelsArray (int width, int height, RfbPixelFormat pixelFormat, InputStream in) throws IOException {
+		BufferedImage innerImage;
+
+		int bytesPerPixel = pixelFormat.getBitsPerPixel () / 8;
+
 		int bytesCount = width * height * bytesPerPixel;
 
 		DataInputStream dis = new DataInputStream (in);
@@ -60,8 +85,6 @@ public class RfbRawPixelData extends RfbPixelData {
 
 		if (bytesPerPixel == 4 && pixelFormat.isTrueColor ()) {
 			innerImage = new BufferedImage (width, height, BufferedImage.TYPE_INT_ARGB);
-
-			int[] argbs = new int[width * height];
 
 			ByteBuffer bb = ByteBuffer.wrap (bytes);
 			bb.order (pixelFormat.isBigEndian () ? ByteOrder.BIG_ENDIAN : ByteOrder.LITTLE_ENDIAN);
@@ -89,44 +112,14 @@ public class RfbRawPixelData extends RfbPixelData {
 
 				innerPixel = (0xFF << 24) | (red << 16) | (green << 8) | blue;
 
-//				if (pixel != 0) {
-//					VncCommon.getLogger ().log (Level.INFO, "Image has a non-0 pixel at: {0} - {1} - {2}", new Object[]{innerPixelIndex, pixel, innerPixel});
-//				}
 				innerPixels[innerPixelIndex] = innerPixel;
 			}
 			innerImage.setRGB (0, 0, width, height, innerPixels, 0, width);
 		} else {
 			throw new IllegalStateException ("Unsupported pixel format");
 		}
-	}
 
-	@Override
-	public void write (OutputStream out) throws IOException {
-		out.write (bytes);
-	}
-
-	@Override
-	public void updateFramebuffer (RfbFramebuffer framebuffer) throws RfbPixelDataException {
-		Objects.requireNonNull (framebuffer, "framebuffer");
-
-		Objects.requireNonNull (innerImage, "innerImage");
-
-		Graphics fbg = framebuffer.getGraphics ();
-
-		fbg.drawImage (innerImage, rectangle.getxPosition (), rectangle.getyPosition (), null);
-
-//		if (VncCommon.getLogger ().isLoggable (Level.INFO)) {
-//			VncCommon.getLogger ().log (Level.INFO, "Drawn image: size {0}x{1} pos {2}x{3}", new Object[]{width, height, rectangle.getxPosition (), rectangle.getyPosition ()});
-//
-//			for (int y = 0; y < height; y++) {
-//				for (int x = 0; x < width; x++) {
-//					if (innerImage.getRGB (x, y) != 0) {
-//						VncCommon.getLogger ().log (Level.INFO, "Image has a non-0 pixel at: {0}x{1}: {2}", new Object[]{x, y, innerImage.getRGB (x, y)});
-//						break;
-//					}
-//				}
-//			}
-//		}
+		return innerImage;
 	}
 
 }

@@ -9,6 +9,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Objects;
+import ru.dmerkushov.vnc.client.rfb.data.pixeldata.RfbCopyRectPixelData;
+import ru.dmerkushov.vnc.client.rfb.data.pixeldata.RfbCursorPseudoPixelData;
 import ru.dmerkushov.vnc.client.rfb.data.pixeldata.RfbPixelData;
 import ru.dmerkushov.vnc.client.rfb.data.pixeldata.RfbRawPixelData;
 import ru.dmerkushov.vnc.client.rfb.messages.MessageException;
@@ -16,6 +18,7 @@ import static ru.dmerkushov.vnc.client.rfb.messages.util.RfbMessagesUtil.readS32
 import static ru.dmerkushov.vnc.client.rfb.messages.util.RfbMessagesUtil.readU16;
 import static ru.dmerkushov.vnc.client.rfb.messages.util.RfbMessagesUtil.writeS32;
 import static ru.dmerkushov.vnc.client.rfb.messages.util.RfbMessagesUtil.writeU16;
+import ru.dmerkushov.vnc.client.rfb.session.RfbClientSession;
 
 /**
  *
@@ -31,11 +34,14 @@ public class RfbRectangle {
 	private int height;
 	private int encodingType;
 	RfbPixelData pixelData;
+	private RfbClientSession session;
 
-	public RfbRectangle (RfbPixelFormat pixelFormat) {
+	public RfbRectangle (RfbPixelFormat pixelFormat, RfbClientSession session) {
 		Objects.requireNonNull (pixelFormat, "pixelFormat");
+		Objects.requireNonNull (session, "session");
 
 		this.pixelFormat = pixelFormat;
+		this.session = session;
 	}
 
 	public void read (InputStream in) throws MessageException, IOException {
@@ -48,11 +54,11 @@ public class RfbRectangle {
 
 		switch (encodingType) {
 			case RfbPixelData.ENCODINGTYPE_RAW:
-				pixelData = new RfbRawPixelData (this, width, height);
+				pixelData = new RfbRawPixelData (this);
 				break;
-//			case RfbPixelData.ENCODINGTYPE_COPYRECT:
-//				pixelData = new RfbCopyRectPixelData (this);
-//				break;
+			case RfbPixelData.ENCODINGTYPE_COPYRECT:
+				pixelData = new RfbCopyRectPixelData (this);
+				break;
 //			case RfbPixelData.ENCODINGTYPE_RRE:
 //				pixelData = new RfbRrePixelData (this, width, height);
 //				break;
@@ -65,9 +71,9 @@ public class RfbRectangle {
 //			case RfbPixelData.ENCODINGTYPE_ZRLE:
 //				pixelData = new RfbZrlePixelData (this, width, height);
 //				break;
-//			case RfbPixelData.ENCODINGTYPE_PSEUDO_CURSOR:
-//				pixelData = new RfbCursorPseudoPixelData (this);
-//				break;
+			case RfbPixelData.ENCODINGTYPE_PSEUDO_CURSOR:
+				pixelData = new RfbCursorPseudoPixelData (this, session);
+				break;
 //			case RfbPixelData.ENCODINGTYPE_PSEUDO_DESKTOPSIZE:
 //				pixelData = new RfbDesktopSizePseudoPixelData (this);
 //				break;
@@ -95,12 +101,20 @@ public class RfbRectangle {
 		return pixelData;
 	}
 
-	public int getxPosition () {
+	public int getX () {
 		return xPosition;
 	}
 
-	public int getyPosition () {
+	public int getY () {
 		return yPosition;
+	}
+
+	public int getWidth () {
+		return width;
+	}
+
+	public int getHeight () {
+		return height;
 	}
 
 }

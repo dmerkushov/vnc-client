@@ -5,10 +5,15 @@
  */
 package ru.dmerkushov.vnc.client.rfb.data.pixeldata;
 
+import java.awt.Rectangle;
+import java.awt.image.Raster;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Objects;
 import ru.dmerkushov.vnc.client.rfb.data.RfbRectangle;
+import static ru.dmerkushov.vnc.client.rfb.messages.util.RfbMessagesUtil.readU16;
+import static ru.dmerkushov.vnc.client.rfb.messages.util.RfbMessagesUtil.writeU16;
 import ru.dmerkushov.vnc.client.rfb.session.RfbFramebuffer;
 
 /**
@@ -17,26 +22,37 @@ import ru.dmerkushov.vnc.client.rfb.session.RfbFramebuffer;
  */
 public class RfbCopyRectPixelData extends RfbPixelData {
 
+	private int srcX;
+	private int srcY;
+
 	public RfbCopyRectPixelData (RfbRectangle rectangle) {
 		super (rectangle);
 	}
 
 	@Override
 	public void read (InputStream in) throws IOException {
-		//TODO Implement read()
-		throw new UnsupportedOperationException ("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		srcX = readU16 (in, true);
+		srcY = readU16 (in, true);
 	}
 
 	@Override
 	public void write (OutputStream out) throws IOException {
-		//TODO Implement write()
-		throw new UnsupportedOperationException ("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		writeU16 (out, srcX, true);
+		writeU16 (out, srcY, true);
 	}
 
 	@Override
 	public void updateFramebuffer (RfbFramebuffer framebuffer) throws RfbPixelDataException {
-		//TODO Implement updateFramebuffer() in RfbCopyRectPixelData
-		throw new UnsupportedOperationException ("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		Objects.requireNonNull (framebuffer, "framebuffer");
+
+		int dstX = rectangle.getX ();
+		int dstY = rectangle.getY ();
+		int width = rectangle.getWidth ();
+		int height = rectangle.getHeight ();
+
+		Raster src = framebuffer.getData (new Rectangle (srcX, srcY, width, height));
+		Raster dst = src.createTranslatedChild (dstX, dstY);
+		framebuffer.setData (dst);
 	}
 
 }

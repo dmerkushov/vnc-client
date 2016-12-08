@@ -31,7 +31,7 @@ public class Main {
 	public static void main (String[] args) throws Exception {
 		JFrame frame = new JFrame ();
 
-		RfbClientSession session = new RfbClientSession ("localhost", 5901);
+		RfbClientSession session = new RfbClientSession ("10.1.1.232", 5901);
 		VncView vncView = new VncView (session);
 
 //		frame.add (new ru.dmerkushov.vnc.client.ui.ThumbnailView (vncView));

@@ -39,7 +39,7 @@ public class FramebufferUpdateMessage extends S2CMessage {
 		rectangles = new RfbRectangle[rectangleCount];
 
 		for (int i = 0; i < rectangleCount; i++) {
-			RfbRectangle rectangle = new RfbRectangle (getSession ().getPixelFormat ());
+			RfbRectangle rectangle = new RfbRectangle (getSession ().getPixelFormat (), getSession ());
 
 			rectangle.read (in);
 

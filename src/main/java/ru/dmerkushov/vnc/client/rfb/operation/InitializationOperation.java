@@ -44,6 +44,7 @@ public class InitializationOperation extends Operation {
 		// SetPixelFormat and SetEncoding also go here not to drop the logic of NormalOperation
 		ArrayList<Integer> encodings = new ArrayList<> (1);
 		encodings.add (RfbPixelData.ENCODINGTYPE_RAW);
+		encodings.add (RfbPixelData.ENCODINGTYPE_PSEUDO_CURSOR);
 		SetEncodingsMessage setEncodingsMsg = new SetEncodingsMessage (session, encodings);
 		setEncodingsMsg.write (out);
 

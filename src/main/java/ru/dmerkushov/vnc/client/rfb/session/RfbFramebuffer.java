@@ -40,4 +40,8 @@ public final class RfbFramebuffer extends BufferedImage {
 		session.attachFramebuffer (this);
 	}
 
+	public RfbClientSession getSession () {
+		return session;
+	}
+
 }
