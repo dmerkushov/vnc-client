@@ -67,9 +67,10 @@ public class RfbRawPixelData extends RfbPixelData {
 
 		Objects.requireNonNull (innerImage, "innerImage");
 
-		Graphics fbg = framebuffer.getGraphics ();
-
-		fbg.drawImage (innerImage, rectangle.getX (), rectangle.getY (), null);
+		synchronized (framebuffer) {
+			Graphics fbg = framebuffer.createGraphics ();
+			fbg.drawImage (innerImage, rectangle.getX (), rectangle.getY (), null);
+		}
 	}
 
 	public static BufferedImage readPixelsArray (int width, int height, RfbPixelFormat pixelFormat, InputStream in) throws IOException {

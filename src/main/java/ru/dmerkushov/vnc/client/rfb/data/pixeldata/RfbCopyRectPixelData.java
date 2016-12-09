@@ -50,9 +50,11 @@ public class RfbCopyRectPixelData extends RfbPixelData {
 		int width = rectangle.getWidth ();
 		int height = rectangle.getHeight ();
 
-		Raster src = framebuffer.getData (new Rectangle (srcX, srcY, width, height));
-		Raster dst = src.createTranslatedChild (dstX, dstY);
-		framebuffer.setData (dst);
+		synchronized (framebuffer) {
+			Raster src = framebuffer.getData (new Rectangle (srcX, srcY, width, height));
+			Raster dst = src.createTranslatedChild (dstX, dstY);
+			framebuffer.setData (dst);
+		}
 	}
 
 }

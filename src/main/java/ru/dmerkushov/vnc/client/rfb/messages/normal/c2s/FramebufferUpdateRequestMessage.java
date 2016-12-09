@@ -8,6 +8,7 @@ package ru.dmerkushov.vnc.client.rfb.messages.normal.c2s;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Objects;
 import ru.dmerkushov.vnc.client.rfb.messages.MessageException;
 import ru.dmerkushov.vnc.client.rfb.messages.normal.NormalMessage;
 import static ru.dmerkushov.vnc.client.rfb.messages.util.RfbMessagesUtil.readBoolean;
@@ -34,10 +35,15 @@ public class FramebufferUpdateRequestMessage extends C2SMessage {
 
 		RfbFramebuffer framebuffer = session.getFramebuffer ();
 
+		Objects.requireNonNull (framebuffer, "framebuffer");
+
+		synchronized (framebuffer) {
+			width = framebuffer.getWidth ();
+			height = framebuffer.getHeight ();
+		}
+
 		xPosition = 0;
 		yPosition = 0;
-		width = framebuffer.getWidth ();
-		height = framebuffer.getHeight ();
 		this.incremental = incremental;
 	}
 

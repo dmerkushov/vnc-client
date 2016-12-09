@@ -50,22 +50,48 @@ public class VncView extends JComponent {
 
 	@Override
 	public void paint (Graphics g) {
-		if (session.isFramebufferAttached ()) {
-			g.drawImage (session.getFramebuffer (), 0, 0, VncView.this);
-		} else {
+		RfbFramebuffer framebuffer = session.getFramebuffer ();
+
+		if (framebuffer == null) {
 			VncCommon.getLogger ().warning ("No framebuffer attached to session");
+			return;
+		}
+
+		synchronized (framebuffer) {
+			g.drawImage (framebuffer, 0, 0, VncView.this);
 		}
 	}
 
 	@Override
 	public Dimension getPreferredSize () {
-		if (session.isFramebufferAttached ()) {
-			RfbFramebuffer frm = session.getFramebuffer ();
+		RfbFramebuffer framebuffer = session.getFramebuffer ();
 
-			return new Dimension (frm.getWidth (), frm.getHeight ());
-		} else {
+		if (framebuffer == null) {
 			return new Dimension (1000, 1000);
 		}
+
+		synchronized (framebuffer) {
+			return new Dimension (framebuffer.getWidth (), framebuffer.getHeight ());
+		}
+	}
+
+	public BufferedImage getScreenshot () {
+		RfbFramebuffer framebuffer = session.getFramebuffer ();
+
+		if (framebuffer == null) {
+			return null;
+		}
+
+		BufferedImage screenshot;
+		synchronized (framebuffer) {
+			int width = framebuffer.getWidth ();
+			int height = framebuffer.getHeight ();
+
+			screenshot = new BufferedImage (width, height, BufferedImage.TYPE_INT_ARGB);
+			Graphics screenshotG = screenshot.createGraphics ();
+			screenshotG.drawImage (framebuffer, width, height, null);
+		}
+		return screenshot;
 	}
 
 }

@@ -5,6 +5,7 @@
  */
 package ru.dmerkushov.vnc.client.rfb.operation;
 
+import java.awt.Dimension;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Objects;
@@ -23,6 +24,8 @@ import ru.dmerkushov.vnc.client.rfb.messages.normal.s2c.FramebufferUpdateMessage
 import ru.dmerkushov.vnc.client.rfb.messages.normal.s2c.S2CMessage;
 import ru.dmerkushov.vnc.client.rfb.messages.normal.s2c.S2CMessageFactory;
 import ru.dmerkushov.vnc.client.rfb.session.RfbClientSession;
+import ru.dmerkushov.vnc.client.rfb.session.RfbFramebuffer;
+import ru.dmerkushov.vnc.client.ui.VncView;
 
 /**
  *
@@ -121,17 +124,28 @@ public class NormalOperation extends Operation {
 					for (int i = 0; i < rectangles.length; i++) {
 						RfbRectangle rectangle = rectangles[i];
 						if (rectangle != null) {
+							RfbFramebuffer framebuffer = session.getFramebuffer ();
 
-							try {
-								rectangle.getPixelData ().updateFramebuffer (session.getFramebuffer ());
-							} catch (RfbPixelDataException ex) {
-								VncCommon.getLogger ().log (Level.SEVERE, null, ex);
+							if (framebuffer == null) {
+								VncCommon.getLogger ().warning ("Framebuffer not attached to session");
+							} else {
+								synchronized (framebuffer) {
+									try {
+										rectangle.getPixelData ().updateFramebuffer (framebuffer);
+									} catch (RfbPixelDataException ex) {
+										VncCommon.getLogger ().log (Level.SEVERE, null, ex);
+									}
+								}
 							}
 						} else {
 							VncCommon.getLogger ().log (Level.WARNING, "Rectangle #{0} of {1} is null", new Object[]{i, rectangles.length});
 						}
 					}
-					session.getView ().repaint ();
+					VncView view = session.getView ();
+					if (view != null) {
+						Dimension size = view.getPreferredSize ();
+						session.getView ().paintImmediately (0, 0, size.width, size.height);
+					}
 				}
 				if (incomingMessagesQueue.isEmpty ()) {
 					try {

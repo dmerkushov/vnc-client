@@ -94,6 +94,8 @@ public class RfbCursorPseudoPixelData extends RfbPixelData {
 
 	@Override
 	public void updateFramebuffer (RfbFramebuffer framebuffer) throws RfbPixelDataException {
+		Objects.requireNonNull (framebuffer, "framebuffer");
+
 		RfbClientSession session = framebuffer.getSession ();
 		VncView vncView = session.getView ();
 
