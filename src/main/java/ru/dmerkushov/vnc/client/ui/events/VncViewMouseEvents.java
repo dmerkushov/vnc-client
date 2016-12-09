@@ -40,6 +40,11 @@ public class VncViewMouseEvents implements MouseListener, MouseMotionListener, M
 		int y = e.getY ();
 
 		int buttonMask = PointerEventMessage.BUTTONMASK_LEFT;
+		if (e.getButton () == MouseEvent.BUTTON3) {
+			buttonMask = PointerEventMessage.BUTTONMASK_RIGHT;
+		} else if (e.getButton () == MouseEvent.BUTTON2) {
+			buttonMask = PointerEventMessage.BUTTONMASK_MIDDLE;
+		}
 
 		PointerEventMessage pointerEventMsg = new PointerEventMessage (session, buttonMask, x, y);
 		session.sendMessage (pointerEventMsg);

@@ -10,6 +10,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.LinkedHashSet;
 import java.util.Objects;
+import java.util.logging.Level;
+import ru.dmerkushov.vnc.client.VncCommon;
 import ru.dmerkushov.vnc.client.rfb.messages.MessageException;
 import ru.dmerkushov.vnc.client.rfb.messages.RfbMessage;
 import static ru.dmerkushov.vnc.client.rfb.messages.util.RfbMessagesUtil.readString;
@@ -78,9 +80,9 @@ public class SecurityHandshake1_S2C extends RfbMessage {
 					RfbSecurityType secType = RfbSecurityType.getSecTypeByValue (secTypesInt[i]);
 
 					if (secType == null) {
-						System.err.println ("Unknown security type: " + secTypesInt[i]);
+						VncCommon.getLogger ().log (Level.WARNING, "Unknown security type: {0}", secTypesInt[i]);
 					} else {
-						System.out.println ("Adding secType " + secTypesInt[i] + " - " + secType.name ());
+						VncCommon.getLogger ().log (Level.INFO, "Adding secType {0} - {1}", new Object[]{secTypesInt[i], secType.name ()});
 						secTypes.add (secType);
 					}
 				}

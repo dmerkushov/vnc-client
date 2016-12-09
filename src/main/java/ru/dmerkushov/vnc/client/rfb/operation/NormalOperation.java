@@ -12,7 +12,6 @@ import java.util.Objects;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import ru.dmerkushov.lib.threadhelper.AbstractTHRunnable;
 import ru.dmerkushov.lib.threadhelper.ThreadHelper;
 import ru.dmerkushov.lib.threadhelper.ThreadHelperException;
@@ -107,14 +106,14 @@ public class NormalOperation extends Operation {
 				try {
 					message = S2CMessageFactory.getInstance ().readMessage (session);
 				} catch (MessageFactoryException | IOException ex) {
-					Logger.getLogger (NormalOperation.class.getName ()).log (Level.SEVERE, null, ex);
+					VncCommon.getLogger ().log (Level.SEVERE, null, ex);
 				}
 				if (message == null) {	// Means the socket is closed by the server
 					try {
 						VncCommon.getLogger ().log (Level.WARNING, "Finishing threads for VNC session because incoming message is null (probably VNC server has closed TCP connection): session {0}, socket connected? - {1}", new Object[]{session.toString (), session.getSocket ().isConnected ()});
 						ThreadHelper.getInstance ().finish (session.getThreadGroupName (), 1000l);
 					} catch (ThreadHelperException ex) {
-						Logger.getLogger (NormalOperation.class.getName ()).log (Level.SEVERE, null, ex);
+						VncCommon.getLogger ().log (Level.SEVERE, null, ex);
 					}
 				} else {
 					incomingMessagesQueue.add (message);
@@ -143,7 +142,7 @@ public class NormalOperation extends Operation {
 					try {
 						message.write (out);
 					} catch (MessageException | IOException ex) {
-						Logger.getLogger (NormalOperation.class.getName ()).log (Level.SEVERE, null, ex);
+						VncCommon.getLogger ().log (Level.SEVERE, null, ex);
 					}
 				}
 

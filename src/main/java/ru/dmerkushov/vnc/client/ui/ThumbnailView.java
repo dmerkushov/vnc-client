@@ -13,10 +13,10 @@ import java.util.Objects;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
+import ru.dmerkushov.vnc.client.VncCommon;
 
 /**
  *
@@ -101,6 +101,7 @@ public class ThumbnailView extends JComponent {
 
 	////////////////////////////////////////////////////////////////////////////
 	public static void main (String[] args) {
+
 		JFrame frame = new JFrame ();
 
 		final JButton btn = new JButton ("Hi");
@@ -116,7 +117,7 @@ public class ThumbnailView extends JComponent {
 					try {
 						Thread.sleep (200L);
 					} catch (InterruptedException ex) {
-						Logger.getLogger (ThumbnailView.class.getName ()).log (Level.SEVERE, null, ex);
+						VncCommon.getLogger ().log (Level.SEVERE, null, ex);
 					}
 					btn.setText (String.valueOf (i));
 				}
