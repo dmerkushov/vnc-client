@@ -13,6 +13,9 @@ import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import ru.dmerkushov.lib.threadhelper.AbstractTHRunnable;
+import ru.dmerkushov.lib.threadhelper.ThreadHelper;
+import ru.dmerkushov.lib.threadhelper.ThreadHelperException;
 import ru.dmerkushov.vnc.client.VncCommon;
 import ru.dmerkushov.vnc.client.rfb.data.RfbRectangle;
 import ru.dmerkushov.vnc.client.rfb.data.pixeldata.RfbPixelDataException;
@@ -33,30 +36,58 @@ import ru.dmerkushov.vnc.client.ui.VncView;
  */
 public class NormalOperation extends Operation {
 
-	Thread getMessagesThread;
+	AbstractTHRunnable getMessagesThread;
 	final Queue<S2CMessage> incomingMessagesQueue;
-	Thread processMessagesThread;
-	Thread framebufferUpdateRequestThread;
+	AbstractTHRunnable processMessagesThread;
+	AbstractTHRunnable framebufferUpdateRequestThread;
 	final Queue<C2SMessage> outgoingMessagesQueue;
-	Thread sendMessagesThread;
+	AbstractTHRunnable sendMessagesThread;
 
 	public NormalOperation (RfbClientSession session) {
 		super (session);
 
-		getMessagesThread = new Thread (new GetMessagesRunnable ());
-		processMessagesThread = new Thread (new ProcessMessagesRunnable ());
-		framebufferUpdateRequestThread = new Thread (new FramebufferUpdateRequestRunnable ());
 		incomingMessagesQueue = new ConcurrentLinkedQueue<> ();
 		outgoingMessagesQueue = new ConcurrentLinkedQueue<> ();
-		sendMessagesThread = new Thread (new SendMessagesRunnable ());
+
+		String threadGroupName = session.getThreadGroupName ();
+
+		getMessagesThread = new GetMessagesRunnable ();
+		processMessagesThread = new ProcessMessagesRunnable ();
+		framebufferUpdateRequestThread = new FramebufferUpdateRequestRunnable ();
+		sendMessagesThread = new SendMessagesRunnable ();
+
+		ThreadHelper.getInstance ().addRunnable (threadGroupName, getMessagesThread);
+		ThreadHelper.getInstance ().addRunnable (threadGroupName, processMessagesThread);
+		ThreadHelper.getInstance ().addRunnable (threadGroupName, framebufferUpdateRequestThread);
+		ThreadHelper.getInstance ().addRunnable (threadGroupName, sendMessagesThread);
 	}
 
 	@Override
 	public void operate () {
-		getMessagesThread.start ();
-		processMessagesThread.start ();
-		framebufferUpdateRequestThread.start ();
-		sendMessagesThread.start ();
+		try {
+			getMessagesThread.start ();
+		} catch (ThreadHelperException ex) {
+			VncCommon.getLogger ().log (Level.SEVERE, null, ex);
+			return;
+		}
+		try {
+			processMessagesThread.start ();
+		} catch (ThreadHelperException ex) {
+			VncCommon.getLogger ().log (Level.SEVERE, null, ex);
+			return;
+		}
+		try {
+			framebufferUpdateRequestThread.start ();
+		} catch (ThreadHelperException ex) {
+			VncCommon.getLogger ().log (Level.SEVERE, null, ex);
+			return;
+		}
+		try {
+			sendMessagesThread.start ();
+		} catch (ThreadHelperException ex) {
+			VncCommon.getLogger ().log (Level.SEVERE, null, ex);
+			return;
+		}
 	}
 
 	public void sendMessage (C2SMessage message) {
@@ -65,60 +96,81 @@ public class NormalOperation extends Operation {
 		outgoingMessagesQueue.add (message);
 	}
 
-	class GetMessagesRunnable implements Runnable {
+	class GetMessagesRunnable extends AbstractTHRunnable {
+
+		private boolean goOn = true;
 
 		@Override
-		public void run () {
-			while (true) {
+		public void doSomething () {
+			while (goOn) {
 				S2CMessage message = null;
 				try {
 					message = S2CMessageFactory.getInstance ().readMessage (session);
 				} catch (MessageFactoryException | IOException ex) {
 					Logger.getLogger (NormalOperation.class.getName ()).log (Level.SEVERE, null, ex);
 				}
-				if (message == null) {
-					processMessagesThread.interrupt ();
-					break;
+				if (message == null) {	// Means the socket is closed by the server
+					try {
+						VncCommon.getLogger ().log (Level.WARNING, "Finishing threads for VNC session because incoming message is null (probably VNC server has closed TCP connection): session {0}, socket connected? - {1}", new Object[]{session.toString (), session.getSocket ().isConnected ()});
+						ThreadHelper.getInstance ().finish (session.getThreadGroupName (), 1000l);
+					} catch (ThreadHelperException ex) {
+						Logger.getLogger (NormalOperation.class.getName ()).log (Level.SEVERE, null, ex);
+					}
+				} else {
+					incomingMessagesQueue.add (message);
 				}
-				incomingMessagesQueue.add (message);
 			}
+		}
+
+		@Override
+		public void finish () throws ThreadHelperException {
+			goOn = false;
 		}
 	}
 
-	class SendMessagesRunnable implements Runnable {
+	class SendMessagesRunnable extends AbstractTHRunnable {
+
+		private boolean goOn = true;
 
 		@Override
-		public void run () {
+		public void doSomething () {
 			OutputStream out = session.getOut ();
 			C2SMessage message = null;
-			lbl:
-			while (true) {
+			while (goOn) {
 				message = outgoingMessagesQueue.poll ();
-				while (message == null) {
+
+				if (message != null) {
+					try {
+						message.write (out);
+					} catch (MessageException | IOException ex) {
+						Logger.getLogger (NormalOperation.class.getName ()).log (Level.SEVERE, null, ex);
+					}
+				}
+
+				if (outgoingMessagesQueue.isEmpty ()) {
 					try {
 						Thread.sleep (10l);
 					} catch (InterruptedException ex) {
-						break lbl;
 					}
-					message = outgoingMessagesQueue.poll ();
-				}
-
-				try {
-					message.write (out);
-				} catch (MessageException | IOException ex) {
-					Logger.getLogger (NormalOperation.class.getName ()).log (Level.SEVERE, null, ex);
 				}
 			}
 		}
-	}
-
-	class ProcessMessagesRunnable implements Runnable {
 
 		@Override
-		public void run () {
-			while (true) {
+		public void finish () throws ThreadHelperException {
+			goOn = false;
+		}
+	}
+
+	class ProcessMessagesRunnable extends AbstractTHRunnable {
+
+		private boolean goOn = true;
+
+		@Override
+		public void doSomething () {
+			while (goOn) {
 				S2CMessage message = incomingMessagesQueue.poll ();
-				if (message instanceof FramebufferUpdateMessage && session.isFramebufferAttached ()) {
+				if (message != null && message instanceof FramebufferUpdateMessage && session.isFramebufferAttached ()) {
 					FramebufferUpdateMessage fbuMessage = (FramebufferUpdateMessage) message;
 					RfbRectangle[] rectangles = fbuMessage.getRectangles ();
 					for (int i = 0; i < rectangles.length; i++) {
@@ -151,19 +203,25 @@ public class NormalOperation extends Operation {
 					try {
 						Thread.sleep (10l);
 					} catch (InterruptedException ex) {
-						break;
 					}
 				}
 			}
 		}
-	}
-
-	class FramebufferUpdateRequestRunnable implements Runnable {
 
 		@Override
-		public void run () {
+		public void finish () throws ThreadHelperException {
+			goOn = false;
+		}
+	}
+
+	class FramebufferUpdateRequestRunnable extends AbstractTHRunnable {
+
+		private boolean goOn = true;
+
+		@Override
+		public void doSomething () {
 			int counter = 1;
-			while (session.getSocket ().isConnected ()) {
+			while (goOn && session.getSocket ().isConnected ()) {
 				FramebufferUpdateRequestMessage furm = new FramebufferUpdateRequestMessage (session, (counter / 256.0 != 0));
 
 				session.sendMessage (furm);
@@ -180,6 +238,11 @@ public class NormalOperation extends Operation {
 					break;
 				}
 			}
+		}
+
+		@Override
+		public void finish () throws ThreadHelperException {
+			goOn = false;
 		}
 	}
 }

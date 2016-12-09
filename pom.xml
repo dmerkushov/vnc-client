@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>ru.dmerkushov</groupId>
     <artifactId>vnc-client</artifactId>
-    <version>0.4</version>
+    <version>0.5</version>
     <packaging>jar</packaging>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -68,4 +68,11 @@
 			</snapshots>
 		</pluginRepository>
 	</pluginRepositories>
+    <dependencies>
+        <dependency>
+            <groupId>ru.dmerkushov</groupId>
+            <artifactId>thread-helper</artifactId>
+            <version>0.4</version>
+        </dependency>
+    </dependencies>
 </project>

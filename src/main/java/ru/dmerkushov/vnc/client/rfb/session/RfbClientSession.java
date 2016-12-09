@@ -12,6 +12,10 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.Objects;
+import java.util.UUID;
+import ru.dmerkushov.lib.threadhelper.AbstractTHRunnable;
+import ru.dmerkushov.lib.threadhelper.ThreadHelper;
+import ru.dmerkushov.lib.threadhelper.ThreadHelperException;
 import ru.dmerkushov.vnc.client.rfb.data.RfbPixelFormat;
 import ru.dmerkushov.vnc.client.rfb.messages.normal.c2s.C2SMessage;
 import ru.dmerkushov.vnc.client.rfb.operation.HandshakeOperation;
@@ -72,6 +76,8 @@ public class RfbClientSession {
 
 	private NormalOperation normalOperation;
 
+	private UUID uuid;
+
 	public RfbClientSession (String serverHost, int serverPort) throws UnknownHostException, IOException {
 		this (new Socket (), InetAddress.getByName (serverHost), serverPort);
 	}
@@ -89,6 +95,20 @@ public class RfbClientSession {
 		this.serverPort = serverPort;
 
 		this.passwordSupplier = new UiPasswordSupplier ();
+
+		this.uuid = UUID.randomUUID ();
+
+		// Must do this to initialize a group for this session in thread-helper
+		ThreadHelper.getInstance ().addRunnable (getThreadGroupName (), new AbstractTHRunnable () {
+
+			@Override
+			public void doSomething () {
+			}
+
+			@Override
+			public void finish () throws ThreadHelperException {
+			}
+		});
 	}
 
 	public RfbVersion getRfbVersion () {
@@ -121,7 +141,7 @@ public class RfbClientSession {
 		}
 
 		if ((this.sessionState != Error && sessionState == Error) || (this.sessionState != Finished && sessionState == Finished)) {
-			finishSessionClientSide (sessionState);
+			finishSession (sessionState);
 		}
 
 		this.sessionState = sessionState;
@@ -136,6 +156,7 @@ public class RfbClientSession {
 	}
 
 	public void startSession () throws RfbSessionException, IOException {
+
 		operation = new HandshakeOperation (this);
 		operation.operate ();
 		operation = new InitializationOperation (this);
@@ -145,14 +166,19 @@ public class RfbClientSession {
 		operation.operate ();
 	}
 
-	private void finishSessionClientSide (RfbSessionState sessionState) throws RfbSessionException {
+	private void finishSession (RfbSessionState sessionState) throws RfbSessionException {
 		Objects.requireNonNull (sessionState);
 
-		if (sessionState != Error && sessionState != Finished) {
-			throw new RfbSessionException ("Cannot finish a session with a state other than " + Error + " or " + Finished + ". Ordered state: " + sessionState);
+		try {
+			ThreadHelper.getInstance ().finish (getThreadGroupName (), 1000l);
+		} catch (ThreadHelperException ex) {
+			throw new RfbSessionException (ex);
 		}
-
-		//TODO Implement finishSessionClientSide()
+		try {
+			getSocket ().close ();
+		} catch (IOException ex) {
+			throw new RfbSessionException (ex);
+		}
 	}
 
 	public RfbFramebuffer getFramebuffer () {
@@ -241,6 +267,31 @@ public class RfbClientSession {
 		if (normalOperation != null) {
 			normalOperation.sendMessage (message);
 		}
+	}
+
+	public final String getThreadGroupName () {
+		return getClass ().getName () + "_" + uuid.toString ();
+	}
+
+	@Override
+	public String toString () {
+		StringBuilder sb = new StringBuilder ();
+		sb.append (getClass ().getName ()).append (" {uuid=").append (uuid.toString ()).append ("; framebuffer: ");
+
+		RfbFramebuffer framebuffer = this.getFramebuffer ();
+		synchronized (framebuffer) {
+			if (framebuffer == null) {
+				sb.append ("(not attached); ");
+			} else {
+				sb.append (framebuffer.toString ()).append ("; ");
+			}
+		}
+		sb.append ("vncView: ");
+		sb.append (vncView.toString ());
+		sb.append ("; socket: ");
+		sb.append (getSocket ().toString ());
+		sb.append ("}");
+		return sb.toString ();
 	}
 
 }
