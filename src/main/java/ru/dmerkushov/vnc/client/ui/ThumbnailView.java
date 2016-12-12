@@ -85,9 +85,7 @@ public class ThumbnailView extends JComponent {
 	}
 
 	public final void restartUpdates () {
-		if (updateTimer != null) {
-			updateTimer.cancel ();
-		}
+		stopUpdates ();
 		updateTimer = new Timer (UPDATE_TIMER_NAME);
 		updateTimerTask = new TimerTask () {
 
@@ -97,6 +95,12 @@ public class ThumbnailView extends JComponent {
 			}
 		};
 		updateTimer.schedule (updateTimerTask, 0L /*updateStartDelayMs*/, updatePeriodMs);
+	}
+
+	public final void stopUpdates () {
+		if (updateTimer != null) {
+			updateTimer.cancel ();
+		}
 	}
 
 	////////////////////////////////////////////////////////////////////////////
