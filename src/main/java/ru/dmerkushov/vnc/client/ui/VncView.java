@@ -75,23 +75,4 @@ public class VncView extends JComponent {
 		}
 	}
 
-	public BufferedImage getScreenshot () {
-		RfbFramebuffer framebuffer = session.getFramebuffer ();
-
-		if (framebuffer == null) {
-			return null;
-		}
-
-		BufferedImage screenshot;
-		synchronized (framebuffer) {
-			int width = framebuffer.getWidth ();
-			int height = framebuffer.getHeight ();
-
-			screenshot = new BufferedImage (width, height, BufferedImage.TYPE_INT_ARGB);
-			Graphics screenshotG = screenshot.createGraphics ();
-			screenshotG.drawImage (framebuffer, width, height, null);
-		}
-		return screenshot;
-	}
-
 }
