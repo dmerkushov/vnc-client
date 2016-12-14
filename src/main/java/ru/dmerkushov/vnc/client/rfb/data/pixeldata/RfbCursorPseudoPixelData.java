@@ -49,7 +49,7 @@ public class RfbCursorPseudoPixelData extends RfbPixelData {
 		hotspotX = rectangle.getX ();
 		hotspotY = rectangle.getY ();
 
-		cursorImage = RfbRawPixelData.readPixelsArray (width, height, pixelFormat, in);
+		cursorImage = pixelFormat.readArgbImage (width, height, in);
 		int scanlineLength = (width + 7) / 8;
 		int bitmaskByteCount = scanlineLength * height;
 		byte[] bitmask = readBytes (in, bitmaskByteCount);

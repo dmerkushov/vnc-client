@@ -7,12 +7,9 @@ package ru.dmerkushov.vnc.client.rfb.data.pixeldata;
 
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
-import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Objects;
@@ -52,8 +49,7 @@ public class RfbRawPixelData extends RfbPixelData {
 
 	@Override
 	public void read (InputStream in) throws IOException {
-		innerImage = readPixelsArray (width, height, pixelFormat, in);
-
+		innerImage = pixelFormat.readArgbImage (width, height, in);
 	}
 
 	@Override
@@ -71,56 +67,6 @@ public class RfbRawPixelData extends RfbPixelData {
 			Graphics fbg = framebuffer.createGraphics ();
 			fbg.drawImage (innerImage, rectangle.getX (), rectangle.getY (), null);
 		}
-	}
-
-	public static BufferedImage readPixelsArray (int width, int height, RfbPixelFormat pixelFormat, InputStream in) throws IOException {
-		BufferedImage innerImage;
-
-		int bytesPerPixel = pixelFormat.getBitsPerPixel () / 8;
-
-		int bytesCount = width * height * bytesPerPixel;
-
-		DataInputStream dis = new DataInputStream (in);
-		byte[] bytes = new byte[bytesCount];
-		dis.readFully (bytes);
-
-		if (bytesPerPixel == 4 && pixelFormat.isTrueColor ()) {
-			innerImage = new BufferedImage (width, height, BufferedImage.TYPE_INT_ARGB);
-
-			ByteBuffer bb = ByteBuffer.wrap (bytes);
-			bb.order (pixelFormat.isBigEndian () ? ByteOrder.BIG_ENDIAN : ByteOrder.LITTLE_ENDIAN);
-
-			int redMax = pixelFormat.getRedMax ();
-			int redShift = pixelFormat.getRedShift ();
-			int greenMax = pixelFormat.getGreenMax ();
-			int greenShift = pixelFormat.getGreenShift ();
-			int blueMax = pixelFormat.getBlueMax ();
-			int blueShift = pixelFormat.getBlueShift ();
-
-			int pixel;
-			int red;
-			int green;
-			int blue;
-			int innerPixel;
-			int[] innerPixels = new int[width * height];
-
-			for (int innerPixelIndex = 0; innerPixelIndex < innerPixels.length; innerPixelIndex++) {
-				pixel = bb.getInt ();
-
-				red = (((pixel >> redShift) & redMax) * 0xFF / redMax) & 0xFF;
-				green = (((pixel >> greenShift) & greenMax) * 0xFF / greenMax) & 0xFF;
-				blue = (((pixel >> blueShift) & blueMax) * 0xFF / blueMax) & 0xFF;
-
-				innerPixel = (0xFF << 24) | (red << 16) | (green << 8) | blue;
-
-				innerPixels[innerPixelIndex] = innerPixel;
-			}
-			innerImage.setRGB (0, 0, width, height, innerPixels, 0, width);
-		} else {
-			throw new IllegalStateException ("Unsupported pixel format");
-		}
-
-		return innerImage;
 	}
 
 }

@@ -13,6 +13,8 @@ import ru.dmerkushov.vnc.client.rfb.data.pixeldata.RfbCopyRectPixelData;
 import ru.dmerkushov.vnc.client.rfb.data.pixeldata.RfbCursorPseudoPixelData;
 import ru.dmerkushov.vnc.client.rfb.data.pixeldata.RfbPixelData;
 import ru.dmerkushov.vnc.client.rfb.data.pixeldata.RfbRawPixelData;
+import ru.dmerkushov.vnc.client.rfb.data.pixeldata.RfbTrlePixelData;
+import ru.dmerkushov.vnc.client.rfb.data.pixeldata.RfbZlibPixelData;
 import ru.dmerkushov.vnc.client.rfb.messages.MessageException;
 import static ru.dmerkushov.vnc.client.rfb.messages.util.RfbMessagesUtil.readS32;
 import static ru.dmerkushov.vnc.client.rfb.messages.util.RfbMessagesUtil.readU16;
@@ -65,9 +67,12 @@ public class RfbRectangle {
 //			case RfbPixelData.ENCODINGTYPE_HEXTILE:
 //				pixelData = new RfbHextilePixelData (this, width, height);
 //				break;
-//			case RfbPixelData.ENCODINGTYPE_TRLE:
-//				pixelData = new RfbTrlePixelData (this, width, height);
-//				break;
+			case RfbPixelData.ENCODINGTYPE_TRLE:
+				pixelData = new RfbTrlePixelData (this);
+				break;
+			case RfbPixelData.ENCODINGTYPE_ZLIB:
+				pixelData = new RfbZlibPixelData (this);
+				break;
 //			case RfbPixelData.ENCODINGTYPE_ZRLE:
 //				pixelData = new RfbZrlePixelData (this, width, height);
 //				break;
@@ -115,6 +120,10 @@ public class RfbRectangle {
 
 	public int getHeight () {
 		return height;
+	}
+
+	public RfbClientSession getSession () {
+		return session;
 	}
 
 }

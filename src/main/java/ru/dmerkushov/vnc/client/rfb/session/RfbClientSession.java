@@ -11,6 +11,9 @@ import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import ru.dmerkushov.lib.threadhelper.AbstractTHRunnable;
@@ -78,6 +81,8 @@ public class RfbClientSession {
 
 	private UUID uuid;
 
+	public final Map<String, Object> sessionObjects;
+
 	public RfbClientSession (String serverHost, int serverPort) throws UnknownHostException, IOException {
 		this (new Socket (), InetAddress.getByName (serverHost), serverPort);
 	}
@@ -97,6 +102,8 @@ public class RfbClientSession {
 		this.passwordSupplier = new UiPasswordSupplier ();
 
 		this.uuid = UUID.randomUUID ();
+
+		this.sessionObjects = Collections.synchronizedMap (new LinkedHashMap<> ());
 
 		// Must do this to initialize a group for this session in thread-helper
 		ThreadHelper.getInstance ().addRunnable (getThreadGroupName (), new AbstractTHRunnable () {

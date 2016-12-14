@@ -19,14 +19,15 @@ import ru.dmerkushov.vnc.client.rfb.session.RfbFramebuffer;
  */
 public abstract class RfbPixelData {
 
+	public static final int ENCODINGTYPE_RAW = 0;
+	public static final int ENCODINGTYPE_COPYRECT = 1;
+	public static final int ENCODINGTYPE_RRE = 2;
+	public static final int ENCODINGTYPE_HEXTILE = 5;
+	public static final int ENCODINGTYPE_ZLIB = 6;
 	public static final int ENCODINGTYPE_TRLE = 15;
 	public static final int ENCODINGTYPE_ZRLE = 16;
-	public static final int ENCODINGTYPE_RRE = 2;
 	public static final int ENCODINGTYPE_PSEUDO_DESKTOPSIZE = -223;
-	public static final int ENCODINGTYPE_RAW = 0;
 	public static final int ENCODINGTYPE_PSEUDO_CURSOR = -239;
-	public static final int ENCODINGTYPE_COPYRECT = 1;
-	public static final int ENCODINGTYPE_HEXTILE = 5;
 
 	public final RfbRectangle rectangle;
 

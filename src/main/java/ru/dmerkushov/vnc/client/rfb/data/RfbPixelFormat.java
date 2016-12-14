@@ -5,13 +5,16 @@
  */
 package ru.dmerkushov.vnc.client.rfb.data;
 
+import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.Objects;
 import java.util.logging.Level;
 import ru.dmerkushov.vnc.client.VncCommon;
 import static ru.dmerkushov.vnc.client.rfb.messages.util.RfbMessagesUtil.readBoolean;
@@ -230,6 +233,134 @@ public class RfbPixelFormat {
 
 	public void setBlueShift (int blueShift) {
 		this.blueShift = blueShift;
+	}
+
+	public int[] readArgbPixels (InputStream in, int length) throws IOException {
+		Objects.requireNonNull (in, "in");
+
+		int[] innerPixels = new int[length];
+
+		int bytesPerPixel = getBitsPerPixel () / 8;
+
+		int bytesCount = length * bytesPerPixel;
+		DataInputStream dis = new DataInputStream (in);
+		byte[] bytes = new byte[bytesCount];
+		dis.readFully (bytes);
+
+		if ((bitsPerPixel != 32) || (!trueColor)) {
+			throw new IllegalStateException ("Unsupported pixel format");
+		}
+
+		ByteBuffer bb = ByteBuffer.wrap (bytes);
+		bb.order (bigEndian ? ByteOrder.BIG_ENDIAN : ByteOrder.LITTLE_ENDIAN);
+
+		int pixel;
+		int red;
+		int green;
+		int blue;
+		int innerPixel;
+
+		for (int innerPixelIndex = 0; innerPixelIndex < innerPixels.length; innerPixelIndex++) {
+			pixel = bb.getInt ();
+
+			red = (((pixel >> redShift) & redMax) * 0xFF / redMax) & 0xFF;
+			green = (((pixel >> greenShift) & greenMax) * 0xFF / greenMax) & 0xFF;
+			blue = (((pixel >> blueShift) & blueMax) * 0xFF / blueMax) & 0xFF;
+
+			innerPixel = (0xFF << 24) | (red << 16) | (green << 8) | blue;
+
+			innerPixels[innerPixelIndex] = innerPixel;
+		}
+
+		return innerPixels;
+	}
+
+	public BufferedImage readArgbImage (int width, int height, InputStream in) throws IOException {
+		BufferedImage innerImage = new BufferedImage (width, height, BufferedImage.TYPE_INT_ARGB);
+		int[] innerPixels = readArgbPixels (in, width * height);
+		innerImage.setRGB (0, 0, width, height, innerPixels, 0, width);
+		return innerImage;
+	}
+
+	public int[] readArgbCompressedPixels (InputStream in, int length) throws IOException {
+		Objects.requireNonNull (in, "in");
+
+		if (!mayApplyCompressedPixel ()) {
+			return readArgbPixels (in, length);
+		}
+
+		if ((bitsPerPixel != 32) || (!trueColor)) {
+			throw new IllegalStateException ("Unsupported pixel format");
+		}
+
+		int additionalShift = holdAllIn3FirstBytes () ? 8 : 0;
+
+		int bytesPerPixel = 3;
+		int bytesLength = bytesPerPixel * length;
+
+		DataInputStream dis = new DataInputStream (in);
+		byte[] bytes = new byte[bytesLength];
+		dis.readFully (bytes);
+
+		ByteArrayInputStream compressedBais = new ByteArrayInputStream (bytes);
+
+		int[] argbPixels = new int[length];
+		int red;
+		int green;
+		int blue;
+		int argbPixel;
+
+		for (int argbIndex = 0; argbIndex < length; argbIndex++) {
+			int pixel = compressedBais.read ();
+			pixel <<= 8;
+			pixel |= compressedBais.read ();
+			pixel <<= 8;
+			pixel |= compressedBais.read ();
+			pixel <<= additionalShift;
+
+			red = (((pixel >> redShift) & redMax) * 0xFF / redMax) & 0xFF;
+			green = (((pixel >> greenShift) & greenMax) * 0xFF / greenMax) & 0xFF;
+			blue = (((pixel >> blueShift) & blueMax) * 0xFF / blueMax) & 0xFF;
+
+			argbPixel = (0xFF << 24) | (red << 16) | (green << 8) | blue;
+
+			argbPixels[argbIndex] = argbPixel;
+		}
+
+		return argbPixels;
+	}
+
+	public BufferedImage readArgbCompressedImage (int width, int height, InputStream in) throws IOException {
+		BufferedImage innerImage = new BufferedImage (width, height, BufferedImage.TYPE_INT_ARGB);
+		int[] innerPixels = readArgbCompressedPixels (in, width * height);
+		innerImage.setRGB (0, 0, width, height, innerPixels, 0, width);
+		return innerImage;
+	}
+
+	public boolean mayApplyCompressedPixel () {
+		if (!trueColor) {
+			return false;
+		}
+		if (bitsPerPixel != 32) {
+			return false;
+		}
+		if (depth > 24) {
+			return false;
+		}
+
+		return holdAllIn3LatterBytes () || holdAllIn3FirstBytes ();
+	}
+
+	public int getMaxColor () {
+		return ((redMax << redShift) | (greenMax << greenShift) | (blueMax << blueShift));
+	}
+
+	public boolean holdAllIn3LatterBytes () {
+		return (getMaxColor () | 0x00FFFFFF) == 0x00FFFFFF;
+	}
+
+	public boolean holdAllIn3FirstBytes () {
+		return (getMaxColor () | 0xFFFFFF00) == 0xFFFFFF00;
 	}
 
 }
