@@ -9,9 +9,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Objects;
+import ru.dmerkushov.vnc.client.VncCommon;
 import ru.dmerkushov.vnc.client.rfb.messages.MessageException;
 import ru.dmerkushov.vnc.client.rfb.messages.RfbMessage;
-import ru.dmerkushov.vnc.client.rfb.session.RfbSession;
+import ru.dmerkushov.vnc.client.rfb.session.RfbClientSession;
 import ru.dmerkushov.vnc.client.rfb.session.RfbVersion;
 
 /**
@@ -28,13 +29,13 @@ public class ProtocolVersionHandshake extends RfbMessage {
 	public static final String PROTOSTR_VER37 = "RFB 003.007\n";
 	public static final String PROTOSTR_VER38 = "RFB 003.008\n";
 
-	public ProtocolVersionHandshake (RfbSession session) {
+	public ProtocolVersionHandshake (RfbClientSession session) {
 		super (session);
 
-		this.version = RfbVersion.Rfb33;
+		this.version = RfbVersion.RFB_VER_3_8;
 	}
 
-	public ProtocolVersionHandshake (RfbSession session, RfbVersion version) {
+	public ProtocolVersionHandshake (RfbClientSession session, RfbVersion version) {
 		super (session);
 
 		Objects.requireNonNull (version, "version");
@@ -48,18 +49,18 @@ public class ProtocolVersionHandshake extends RfbMessage {
 
 		String protoString = "";
 		switch (version) {
-			case Rfb33:
+			case RFB_VER_3_3:
 				protoString = PROTOSTR_VER33;
 				break;
-			case Rfb37:
+			case RFB_VER_3_7:
 				protoString = PROTOSTR_VER37;
 				break;
-			case Rfb38:
+			case RFB_VER_3_8:
 				protoString = PROTOSTR_VER38;
 				break;
 		}
 
-		out.write (protoString.getBytes ());
+		out.write (protoString.getBytes (VncCommon.STRINGENCODING));
 	}
 
 	@Override
@@ -75,19 +76,26 @@ public class ProtocolVersionHandshake extends RfbMessage {
 		}
 
 		String protoString = new String (bytes).toUpperCase ();
+
+		System.out.println ("ProtoString by the server: " + protoString);
+
 		switch (protoString) {
 			case PROTOSTR_VER33:
-				version = RfbVersion.Rfb33;
+				version = RfbVersion.RFB_VER_3_3;
 				break;
 			case PROTOSTR_VER37:
-				version = RfbVersion.Rfb37;
+				version = RfbVersion.RFB_VER_3_7;
 				break;
 			case PROTOSTR_VER38:
-				version = RfbVersion.Rfb38;
+				version = RfbVersion.RFB_VER_3_8;
 				break;
 			default:
-				version = RfbVersion.Rfb33;
+				version = RfbVersion.RFB_VER_3_3;
 		}
+	}
+
+	public RfbVersion getVersion () {
+		return version;
 	}
 
 }

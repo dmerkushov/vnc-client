@@ -6,7 +6,7 @@
 package ru.dmerkushov.vnc.client.rfb.messages;
 
 import java.util.Objects;
-import ru.dmerkushov.vnc.client.rfb.session.RfbSession;
+import ru.dmerkushov.vnc.client.rfb.session.RfbClientSession;
 
 /**
  *
@@ -14,15 +14,15 @@ import ru.dmerkushov.vnc.client.rfb.session.RfbSession;
  */
 public abstract class RfbMessage implements Message {
 
-	final RfbSession session;
+	final RfbClientSession session;
 
-	public RfbMessage (RfbSession session) {
+	public RfbMessage (RfbClientSession session) {
 		Objects.requireNonNull (session, "session");
 
 		this.session = session;
 	}
 
-	public final RfbSession getSession () {
+	public final RfbClientSession getSession () {
 		return session;
 	}
 

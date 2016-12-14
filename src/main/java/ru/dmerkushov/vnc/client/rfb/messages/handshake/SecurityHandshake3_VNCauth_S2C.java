@@ -11,7 +11,8 @@ import java.io.OutputStream;
 import java.util.Objects;
 import ru.dmerkushov.vnc.client.rfb.messages.MessageException;
 import ru.dmerkushov.vnc.client.rfb.messages.RfbMessage;
-import ru.dmerkushov.vnc.client.rfb.session.RfbSession;
+import static ru.dmerkushov.vnc.client.rfb.messages.util.RfbMessagesUtil.readBytes;
+import ru.dmerkushov.vnc.client.rfb.session.RfbClientSession;
 
 /**
  * This is the security handshake, phase 3, in case of VNC authentication. Sent
@@ -26,11 +27,11 @@ public class SecurityHandshake3_VNCauth_S2C extends RfbMessage {
 
 	public static final int CHALLENGE_STD_LENGTH = 16;
 
-	public SecurityHandshake3_VNCauth_S2C (RfbSession session) {
+	public SecurityHandshake3_VNCauth_S2C (RfbClientSession session) {
 		super (session);
 	}
 
-	public SecurityHandshake3_VNCauth_S2C (RfbSession session, byte[] challenge) {
+	public SecurityHandshake3_VNCauth_S2C (RfbClientSession session, byte[] challenge) {
 		this (session);
 
 		Objects.requireNonNull (challenge);
@@ -53,11 +54,11 @@ public class SecurityHandshake3_VNCauth_S2C extends RfbMessage {
 	public void read (InputStream in) throws IOException, MessageException {
 		Objects.requireNonNull (in);
 
-		int bytesRead = in.read (challenge);
+		challenge = readBytes (in, CHALLENGE_STD_LENGTH);
+	}
 
-		if (bytesRead != CHALLENGE_STD_LENGTH) {
-			throw new MessageException ("Read not " + CHALLENGE_STD_LENGTH + " bytes as expected: " + bytesRead);
-		}
+	public byte[] getChallenge () {
+		return challenge;
 	}
 
 }

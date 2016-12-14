@@ -5,11 +5,18 @@
  */
 package ru.dmerkushov.vnc.client.rfb.data;
 
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.Objects;
+import java.util.logging.Level;
+import ru.dmerkushov.vnc.client.VncCommon;
 import static ru.dmerkushov.vnc.client.rfb.messages.util.RfbMessagesUtil.readBoolean;
 import static ru.dmerkushov.vnc.client.rfb.messages.util.RfbMessagesUtil.readBytes;
 import static ru.dmerkushov.vnc.client.rfb.messages.util.RfbMessagesUtil.readU16;
@@ -51,34 +58,74 @@ public class RfbPixelFormat {
 		this.blueShift = blueShift;
 	}
 
+	private static RfbPixelFormat defaultPixelFormat;
+
+	public static RfbPixelFormat getDefaultPixelFormat () {
+		if (defaultPixelFormat == null) {
+//			defaultPixelFormat = new RfbPixelFormat (32, 24, true, true, 0xFF, 0xFF, 0xFF, 16, 8, 0);
+			defaultPixelFormat = new RfbPixelFormat (32, 24, true, true, 0xFF, 0xFF, 0xFF, 24, 16, 8);
+		}
+		return defaultPixelFormat;
+	}
+
 	public void read (InputStream in) throws IOException {
-		bitsPerPixel = readU8 (in);
-		depth = readU8 (in);
-		bigEndian = readBoolean (in);
-		trueColor = readBoolean (in);
-		redMax = readU16 (in);
-		greenMax = readU16 (in);
-		blueMax = readU16 (in);
-		redShift = readU8 (in);
-		greenShift = readU8 (in);
-		blueShift = readU8 (in);
-		readBytes (in, 3);		// Padding
+		byte[] bytes = readBytes (in, 16);
+
+		if (VncCommon.getLogger ().isLoggable (Level.INFO)) {
+			StringBuilder logMsgBuilder = new StringBuilder ();
+
+			logMsgBuilder.append ("Read PixelFormat:");
+			for (int i = 0; i < 16; i++) {
+				logMsgBuilder.append (String.format (" %x", bytes[i]));
+			}
+			VncCommon.getLogger ().info (logMsgBuilder.toString ());
+		}
+
+		ByteArrayInputStream bais = new ByteArrayInputStream (bytes);
+
+		bitsPerPixel = readU8 (bais);
+		depth = readU8 (bais);
+		bigEndian = readBoolean (bais);
+		trueColor = readBoolean (bais);
+		redMax = readU16 (bais, true);
+		greenMax = readU16 (bais, true);
+		blueMax = readU16 (bais, true);
+		redShift = readU8 (bais);
+		greenShift = readU8 (bais);
+		blueShift = readU8 (bais);
+		readBytes (bais, 3);		// Padding
 	}
 
 	public void write (OutputStream out) throws IOException {
-		writeU8 (out, bitsPerPixel);
-		writeU8 (out, depth);
-		writeBoolean (out, bigEndian);
-		writeBoolean (out, trueColor);
-		writeU16 (out, redMax);
-		writeU16 (out, greenMax);
-		writeU16 (out, blueMax);
-		writeU8 (out, redShift);
-		writeU8 (out, greenShift);
-		writeU8 (out, blueShift);
-		writeU8 (out, 0);	// Padding
-		writeU8 (out, 0);	//
-		writeU8 (out, 0);	//
+		ByteArrayOutputStream baos = new ByteArrayOutputStream (16);
+
+		writeU8 (baos, bitsPerPixel);
+		writeU8 (baos, depth);
+		writeBoolean (baos, bigEndian);
+		writeBoolean (baos, trueColor);
+		writeU16 (baos, redMax, true);
+		writeU16 (baos, greenMax, true);
+		writeU16 (baos, blueMax, true);
+		writeU8 (baos, redShift);
+		writeU8 (baos, greenShift);
+		writeU8 (baos, blueShift);
+		writeU8 (baos, 0);	// Padding
+		writeU8 (baos, 0);	//
+		writeU8 (baos, 0);	//
+
+		byte[] bytes = baos.toByteArray ();
+
+		out.write (bytes);
+
+		if (VncCommon.getLogger ().isLoggable (Level.INFO)) {
+			StringBuilder logMsgBuilder = new StringBuilder ();
+
+			logMsgBuilder.append ("Wrote PixelFormat:");
+			for (int i = 0; i < 16; i++) {
+				logMsgBuilder.append (String.format (" %x", bytes[i]));
+			}
+			VncCommon.getLogger ().info (logMsgBuilder.toString ());
+		}
 	}
 
 	private int normalizeOrder (int value) {
@@ -186,6 +233,134 @@ public class RfbPixelFormat {
 
 	public void setBlueShift (int blueShift) {
 		this.blueShift = blueShift;
+	}
+
+	public int[] readArgbPixels (InputStream in, int length) throws IOException {
+		Objects.requireNonNull (in, "in");
+
+		int[] innerPixels = new int[length];
+
+		int bytesPerPixel = getBitsPerPixel () / 8;
+
+		int bytesCount = length * bytesPerPixel;
+		DataInputStream dis = new DataInputStream (in);
+		byte[] bytes = new byte[bytesCount];
+		dis.readFully (bytes);
+
+		if ((bitsPerPixel != 32) || (!trueColor)) {
+			throw new IllegalStateException ("Unsupported pixel format");
+		}
+
+		ByteBuffer bb = ByteBuffer.wrap (bytes);
+		bb.order (bigEndian ? ByteOrder.BIG_ENDIAN : ByteOrder.LITTLE_ENDIAN);
+
+		int pixel;
+		int red;
+		int green;
+		int blue;
+		int innerPixel;
+
+		for (int innerPixelIndex = 0; innerPixelIndex < innerPixels.length; innerPixelIndex++) {
+			pixel = bb.getInt ();
+
+			red = (((pixel >> redShift) & redMax) * 0xFF / redMax) & 0xFF;
+			green = (((pixel >> greenShift) & greenMax) * 0xFF / greenMax) & 0xFF;
+			blue = (((pixel >> blueShift) & blueMax) * 0xFF / blueMax) & 0xFF;
+
+			innerPixel = (0xFF << 24) | (red << 16) | (green << 8) | blue;
+
+			innerPixels[innerPixelIndex] = innerPixel;
+		}
+
+		return innerPixels;
+	}
+
+	public BufferedImage readArgbImage (int width, int height, InputStream in) throws IOException {
+		BufferedImage innerImage = new BufferedImage (width, height, BufferedImage.TYPE_INT_ARGB);
+		int[] innerPixels = readArgbPixels (in, width * height);
+		innerImage.setRGB (0, 0, width, height, innerPixels, 0, width);
+		return innerImage;
+	}
+
+	public int[] readArgbCompressedPixels (InputStream in, int length) throws IOException {
+		Objects.requireNonNull (in, "in");
+
+		if (!mayApplyCompressedPixel ()) {
+			return readArgbPixels (in, length);
+		}
+
+		if ((bitsPerPixel != 32) || (!trueColor)) {
+			throw new IllegalStateException ("Unsupported pixel format");
+		}
+
+		int additionalShift = holdAllIn3FirstBytes () ? 8 : 0;
+
+		int bytesPerPixel = 3;
+		int bytesLength = bytesPerPixel * length;
+
+		DataInputStream dis = new DataInputStream (in);
+		byte[] bytes = new byte[bytesLength];
+		dis.readFully (bytes);
+
+		ByteArrayInputStream compressedBais = new ByteArrayInputStream (bytes);
+
+		int[] argbPixels = new int[length];
+		int red;
+		int green;
+		int blue;
+		int argbPixel;
+
+		for (int argbIndex = 0; argbIndex < length; argbIndex++) {
+			int pixel = compressedBais.read ();
+			pixel <<= 8;
+			pixel |= compressedBais.read ();
+			pixel <<= 8;
+			pixel |= compressedBais.read ();
+			pixel <<= additionalShift;
+
+			red = (((pixel >> redShift) & redMax) * 0xFF / redMax) & 0xFF;
+			green = (((pixel >> greenShift) & greenMax) * 0xFF / greenMax) & 0xFF;
+			blue = (((pixel >> blueShift) & blueMax) * 0xFF / blueMax) & 0xFF;
+
+			argbPixel = (0xFF << 24) | (red << 16) | (green << 8) | blue;
+
+			argbPixels[argbIndex] = argbPixel;
+		}
+
+		return argbPixels;
+	}
+
+	public BufferedImage readArgbCompressedImage (int width, int height, InputStream in) throws IOException {
+		BufferedImage innerImage = new BufferedImage (width, height, BufferedImage.TYPE_INT_ARGB);
+		int[] innerPixels = readArgbCompressedPixels (in, width * height);
+		innerImage.setRGB (0, 0, width, height, innerPixels, 0, width);
+		return innerImage;
+	}
+
+	public boolean mayApplyCompressedPixel () {
+		if (!trueColor) {
+			return false;
+		}
+		if (bitsPerPixel != 32) {
+			return false;
+		}
+		if (depth > 24) {
+			return false;
+		}
+
+		return holdAllIn3LatterBytes () || holdAllIn3FirstBytes ();
+	}
+
+	public int getMaxColor () {
+		return ((redMax << redShift) | (greenMax << greenShift) | (blueMax << blueShift));
+	}
+
+	public boolean holdAllIn3LatterBytes () {
+		return (getMaxColor () | 0x00FFFFFF) == 0x00FFFFFF;
+	}
+
+	public boolean holdAllIn3FirstBytes () {
+		return (getMaxColor () | 0xFFFFFF00) == 0xFFFFFF00;
 	}
 
 }

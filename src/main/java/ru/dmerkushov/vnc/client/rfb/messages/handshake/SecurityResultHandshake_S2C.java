@@ -13,12 +13,12 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 import ru.dmerkushov.vnc.client.rfb.messages.MessageException;
-import static ru.dmerkushov.vnc.client.rfb.messages.util.RfbMessagesUtil.readU32;
-import static ru.dmerkushov.vnc.client.rfb.messages.util.RfbMessagesUtil.readString;
-import static ru.dmerkushov.vnc.client.rfb.messages.util.RfbMessagesUtil.writeU32;
-import static ru.dmerkushov.vnc.client.rfb.messages.util.RfbMessagesUtil.writeString;
 import ru.dmerkushov.vnc.client.rfb.messages.RfbMessage;
-import ru.dmerkushov.vnc.client.rfb.session.RfbSession;
+import static ru.dmerkushov.vnc.client.rfb.messages.util.RfbMessagesUtil.readString;
+import static ru.dmerkushov.vnc.client.rfb.messages.util.RfbMessagesUtil.readU32;
+import static ru.dmerkushov.vnc.client.rfb.messages.util.RfbMessagesUtil.writeString;
+import static ru.dmerkushov.vnc.client.rfb.messages.util.RfbMessagesUtil.writeU32;
+import ru.dmerkushov.vnc.client.rfb.session.RfbClientSession;
 
 /**
  * This is the security result handshake, a message sent by the server to the
@@ -36,11 +36,11 @@ public class SecurityResultHandshake_S2C extends RfbMessage {
 	private long status;
 	private String reason = null;
 
-	public SecurityResultHandshake_S2C (RfbSession session) {
+	public SecurityResultHandshake_S2C (RfbClientSession session) {
 		super (session);
 	}
 
-	public SecurityResultHandshake_S2C (RfbSession session, long status, String reason) {
+	public SecurityResultHandshake_S2C (RfbClientSession session, long status, String reason) {
 		this (session);
 
 		setStatus (status);
@@ -60,9 +60,17 @@ public class SecurityResultHandshake_S2C extends RfbMessage {
 		this.status = status;
 	}
 
+	public long getStatus () {
+		return status;
+	}
+
+	public String getReason () {
+		return reason;
+	}
+
 	@Override
 	public void write (OutputStream out) throws MessageException, IOException {
-		writeU32 (out, (int) status);
+		writeU32 (out, (int) status, true);
 
 		if (status != SECRESULT_STATUS_OK) {
 			if (reason == null) {
@@ -76,7 +84,7 @@ public class SecurityResultHandshake_S2C extends RfbMessage {
 
 	@Override
 	public void read (InputStream in) throws MessageException, IOException {
-		setStatus (readU32 (in));
+		setStatus (readU32 (in, true));
 
 		if (status != SECRESULT_STATUS_OK) {
 			reason = readString (in);

@@ -5,7 +5,15 @@
  */
 package ru.dmerkushov.vnc.client.rfb.messages.normal.s2c;
 
-import ru.dmerkushov.vnc.client.rfb.session.RfbSession;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.Objects;
+import ru.dmerkushov.vnc.client.rfb.data.RfbColorMap;
+import ru.dmerkushov.vnc.client.rfb.messages.MessageException;
+import ru.dmerkushov.vnc.client.rfb.messages.normal.NormalMessage;
+import static ru.dmerkushov.vnc.client.rfb.messages.util.RfbMessagesUtil.readU8;
+import ru.dmerkushov.vnc.client.rfb.session.RfbClientSession;
 
 /**
  *
@@ -13,9 +21,27 @@ import ru.dmerkushov.vnc.client.rfb.session.RfbSession;
  */
 public class SetColorMapEntriesMessage extends S2CMessage {
 
-	public SetColorMapEntriesMessage (RfbSession session) {
-		super (session);
+	RfbColorMap colorMap;
+
+	public SetColorMapEntriesMessage (RfbClientSession session) {
+		super (session, NormalMessage.MESSAGETYPE_S2C_SETCOLORMAPENTRIES);
 	}
 
-	//TODO Implement SetColorMapEntriesMessage
+	@Override
+	public void read (InputStream in) throws MessageException, IOException {
+		readU8 (in);		// Padding
+
+		colorMap = new RfbColorMap (getSession ());
+		colorMap.read (in);
+	}
+
+	@Override
+	public void write (OutputStream out) throws MessageException, IOException {
+		Objects.requireNonNull (out, "out");
+		Objects.requireNonNull (colorMap, "colorMap");
+
+		super.write (out);
+
+		colorMap.write (out);
+	}
 }

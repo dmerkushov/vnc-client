@@ -5,13 +5,13 @@
  */
 package ru.dmerkushov.vnc.client.rfb.messages;
 
-import ru.dmerkushov.vnc.client.VncException;
+import ru.dmerkushov.vnc.client.rfb.operation.RfbOperationException;
 
 /**
  *
  * @author dmerkushov
  */
-public class MessageException extends VncException {
+public class MessageException extends RfbOperationException {
 
 	public MessageException () {
 	}

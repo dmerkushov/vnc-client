@@ -16,7 +16,7 @@ import static ru.dmerkushov.vnc.client.rfb.messages.util.RfbMessagesUtil.readStr
 import static ru.dmerkushov.vnc.client.rfb.messages.util.RfbMessagesUtil.readU16;
 import static ru.dmerkushov.vnc.client.rfb.messages.util.RfbMessagesUtil.writeString;
 import static ru.dmerkushov.vnc.client.rfb.messages.util.RfbMessagesUtil.writeU16;
-import ru.dmerkushov.vnc.client.rfb.session.RfbSession;
+import ru.dmerkushov.vnc.client.rfb.session.RfbClientSession;
 
 /**
  * This is the ServerInit message, a message sent by the server to the client
@@ -37,11 +37,11 @@ public class ServerInit_S2C extends RfbMessage {
 	private RfbPixelFormat pixelFormat;
 	private String name;
 
-	public ServerInit_S2C (RfbSession session) {
+	public ServerInit_S2C (RfbClientSession session) {
 		super (session);
 	}
 
-	public ServerInit_S2C (RfbSession session, int framebufferWidth, int framebufferHeight, RfbPixelFormat pixelFormat, String name) {
+	public ServerInit_S2C (RfbClientSession session, int framebufferWidth, int framebufferHeight, RfbPixelFormat pixelFormat, String name) {
 		super (session);
 
 		Objects.requireNonNull (pixelFormat, "pixelFormat");
@@ -59,21 +59,33 @@ public class ServerInit_S2C extends RfbMessage {
 		Objects.requireNonNull (pixelFormat, "pixelFormat");
 		Objects.requireNonNull (name, "name");
 
-		writeU16 (out, framebufferWidth);
-		writeU16 (out, framebufferHeight);
+		writeU16 (out, framebufferWidth, true);
+		writeU16 (out, framebufferHeight, true);
 		pixelFormat.write (out);
 		writeString (out, name);
 	}
 
 	@Override
 	public void read (InputStream in) throws MessageException, IOException {
-		framebufferWidth = readU16 (in);
-		framebufferHeight = readU16 (in);
+		framebufferWidth = readU16 (in, true);
+		framebufferHeight = readU16 (in, true);
 
 		pixelFormat = new RfbPixelFormat ();
 		pixelFormat.read (in);
 
 		name = readString (in);
+	}
+
+	public int getFramebufferWidth () {
+		return framebufferWidth;
+	}
+
+	public int getFramebufferHeight () {
+		return framebufferHeight;
+	}
+
+	public RfbPixelFormat getPixelFormat () {
+		return pixelFormat;
 	}
 
 }

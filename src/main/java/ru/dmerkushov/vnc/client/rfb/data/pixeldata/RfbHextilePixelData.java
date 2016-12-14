@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import ru.dmerkushov.vnc.client.rfb.data.RfbRectangle;
+import ru.dmerkushov.vnc.client.rfb.messages.MessageException;
 import ru.dmerkushov.vnc.client.rfb.session.RfbFramebuffer;
 
 /**
@@ -28,21 +29,21 @@ public class RfbHextilePixelData extends RfbPixelData {
 	}
 
 	@Override
-	public void read (InputStream in) throws IOException {
-		//TODO Implement read()
-		throw new UnsupportedOperationException ("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+	public void read (InputStream in) throws MessageException, IOException {
+		//TODO Implement generated read() in RfbHextilePixelData
+		throw new UnsupportedOperationException ("Not supported yet.");
 	}
 
 	@Override
 	public void write (OutputStream out) throws IOException {
-		//TODO Implement write()
-		throw new UnsupportedOperationException ("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		//TODO Implement generated write() in RfbHextilePixelData
+		throw new UnsupportedOperationException ("Not supported yet.");
 	}
 
 	@Override
 	public void updateFramebuffer (RfbFramebuffer framebuffer) throws RfbPixelDataException {
-		//TODO Implement updateFramebuffer() in RfbHextilePixelData
-		throw new UnsupportedOperationException ("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		//TODO Implement generated updateFramebuffer() in RfbHextilePixelData
+		throw new UnsupportedOperationException ("Not supported yet.");
 	}
 
 }
