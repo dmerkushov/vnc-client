@@ -1,0 +1,128 @@
+@startuml
+
+package ru.dmerkushov.vnc.client {
+	class VncException
+	package rfb {
+		package data {
+			class RfbColorMap
+			class RfbPixelFormat
+			class RfbRectangle
+			package pixeldata {
+				abstract class RfbPixelData
+				class "RfbPixelData realizations" as RfbPixelDataRealizations extends RfbPixelData {
+					RfbCopyRectPixelData
+					RfbCursorPseudoPixelData
+					RfbDesktopSizePseudoPixelData
+					RfbHextilePixelData
+					RfbPixelDataException
+					RfbRawPixelData
+					RfbRrePixelData
+					RfbTrlePixelData
+					RfbZlibPixelData
+					RfbZrlePixelData
+				}
+			}
+
+			RfbRectangle ..> RfbPixelData
+			RfbRectangle ..> RfbPixelFormat
+		}
+		package messages {
+			interface Message
+			abstract class RfbMessage implements Message
+			class MessageException extends VncException
+			package handshake {
+				class "Handshake message classes" as HandshakeClasses extends RfbMessage {
+					ProtocolVersionHandshake
+					SecurityHandshake1_S2C
+					SecurityHandshake2_C2S
+					SecurityHandshake3_VNCauth_S2C
+					SecurityHandshake4_VNCauth_C2S
+					SecurityResultHandshake_S2C
+				}
+			}
+			package initialization {
+				class "Initialization message classes" as InitializationClasses extends RfbMessage {
+					ClientInit_C2S
+					ServerInit_S2C
+				}
+			}
+			package normal {
+				class MessageFactoryException extends MessageException
+				abstract class NormalMessage extends RfbMessage
+				package c2s {
+					abstract class C2SMessage extends NormalMessage
+
+					class "C2SMessage realizations" as C2SMessageRealizations extends C2SMessage {
+						ClientCutTextMessage
+						FramebufferUpdateRequestMessage
+						KeyEventMessage
+						KeyEventMessageSequence
+						PointerEventMessage
+						PointerEventMessageSequence
+						SetEncodingsMessage
+						SetPixelFormatMessage
+					}
+				}
+				package s2c {
+					abstract class S2CMessage extends NormalMessage
+					class "S2CMessage realizations" as S2CMessageRealizations extends S2CMessage {
+						BellMessage
+						FramebufferUpdateMessage
+						ServerCutTextMessage
+						SetColorMapEntriesMessage
+					}
+					class S2CMessageFactory -> S2CMessage : produces
+				}
+			}
+			package util {
+				class RfbMessagesUtil
+			}
+
+			RfbMessage ..> RfbMessagesUtil : make use of
+		}
+		package operation {
+			class RfbOperationException extends VncException
+			abstract class Operation ..> RfbOperationException
+
+			class "Operation mode classes" as OperationModes extends Operation {
+				HandshakeOperation
+				InitializationOperation
+				NormalOperation
+			}
+		}
+		package session {
+			class RfbFramebuffer
+			class RfbSessionException extends VncException
+			enum RfbSecurityType
+			enum RfbSessionState
+			enum RfbVersion
+
+			RfbClientSession ..> RfbSecurityType
+			RfbClientSession ..> RfbSessionState
+			RfbClientSession ..> RfbVersion
+			RfbClientSession ..> RfbPixelFormat
+
+			package password {
+				interface PasswordSupplier
+				class UiPasswordSupplier implements PasswordSupplier
+			}
+
+			RfbClientSession ..> PasswordSupplier
+	}
+	package ui {
+		class "javax.swing.JComponent" as JComponent #CCCCCC
+
+		class ThumbnailView extends JComponent
+		class VncView extends JComponent
+		package events {
+			class " com.tigervnc.rfb.Keysyms" as TigervncKeysyms #CCCCCC
+			class Keysyms ..> TigervncKeysyms : based on
+			class UnicodeToKeysym ..> TigervncKeysyms : based on
+			class VncViewKeyboardEvents
+			class VncViewMouseEvents
+		}
+
+		VncView ..> RfbFramebuffer
+	}
+}
+@enduml
