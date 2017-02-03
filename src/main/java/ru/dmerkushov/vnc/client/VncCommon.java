@@ -9,6 +9,7 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import ru.dmerkushov.vnc.client.rfb.session.RfbClientSession;
 
 /**
@@ -40,5 +41,7 @@ public class VncCommon {
 		}
 		return clientSessions;
 	}
+
+	public static final Preferences vncPrefs = Preferences.systemNodeForPackage (VncCommon.class);
 
 }

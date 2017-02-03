@@ -16,6 +16,7 @@ import ru.dmerkushov.lib.threadhelper.AbstractTHRunnable;
 import ru.dmerkushov.lib.threadhelper.ThreadHelper;
 import ru.dmerkushov.lib.threadhelper.ThreadHelperException;
 import ru.dmerkushov.vnc.client.VncCommon;
+import static ru.dmerkushov.vnc.client.VncCommon.vncPrefs;
 import ru.dmerkushov.vnc.client.rfb.data.RfbRectangle;
 import ru.dmerkushov.vnc.client.rfb.data.pixeldata.RfbPixelDataException;
 import ru.dmerkushov.vnc.client.rfb.messages.MessageException;
@@ -220,19 +221,26 @@ public class NormalOperation extends Operation {
 		@Override
 		public void doSomething () {
 			int counter = 1;
+
+			long framebufferUpdateDelay = vncPrefs.getLong ("FRAMEBUFFER_UPDATE_DELAY", 50l);
+			long fullUpdateCounter = vncPrefs.getLong ("FULL_UPDATE_COUNTER", 256l);
+
+			System.err.println ("Framebuffer update delay: " + framebufferUpdateDelay);
+			System.err.println ("Full update counter: " + fullUpdateCounter);
+
 			while (goOn && session.getSocket ().isConnected ()) {
-				FramebufferUpdateRequestMessage furm = new FramebufferUpdateRequestMessage (session, (counter / 256.0 != 0));
+				FramebufferUpdateRequestMessage furm = new FramebufferUpdateRequestMessage (session, (counter % fullUpdateCounter != 0));
 
 				session.sendMessage (furm);
 
-				if (counter == 256) {
+				if (counter == fullUpdateCounter) {
 					counter = 1;
 				} else {
 					counter++;
 				}
 
 				try {
-					Thread.sleep (50l);
+					Thread.sleep (framebufferUpdateDelay);
 				} catch (InterruptedException ex) {
 					break;
 				}
