@@ -12,9 +12,12 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 import ru.dmerkushov.lib.threadhelper.AbstractTHRunnable;
 import ru.dmerkushov.lib.threadhelper.ThreadHelper;
@@ -67,7 +70,7 @@ public class RfbClientSession {
 	 */
 	private RfbFramebuffer framebuffer;
 
-	private VncView vncView;
+	private Set<VncView> vncViews;
 
 	private InputStream in;
 
@@ -104,6 +107,8 @@ public class RfbClientSession {
 		this.uuid = UUID.randomUUID ();
 
 		this.sessionObjects = Collections.synchronizedMap (new LinkedHashMap<> ());
+
+		this.vncViews = Collections.synchronizedSet (new HashSet<> ());
 
 		// Must do this to initialize a group for this session in thread-helper
 		ThreadHelper.getInstance ().addRunnable (getThreadGroupName (), new AbstractTHRunnable () {
@@ -206,22 +211,30 @@ public class RfbClientSession {
 		return framebuffer != null;
 	}
 
-	public VncView getView () {
-		return vncView;
+	public Set<VncView> getViews () {
+		return vncViews;
 	}
 
 	public void attachView (VncView vncView) {
 		Objects.requireNonNull (vncView, "vncView");
 
-		this.vncView = vncView;
+		this.vncViews.add (vncView);
 	}
 
-	public void detachView () {
-		this.vncView = null;
+	public void detachView (VncView vncView) {
+		Objects.requireNonNull (vncView, "vncView");
+
+		this.vncViews.remove (vncView);
 	}
 
 	public boolean isViewAttached () {
-		return vncView != null;
+		return vncViews.size () > 0;
+	}
+
+	public boolean isViewAttached (VncView vncView) {
+		Objects.requireNonNull (vncView, "vncView");
+
+		return vncViews.contains (vncView);
 	}
 
 	public InetAddress getServerHost () {
@@ -293,9 +306,17 @@ public class RfbClientSession {
 				sb.append (framebuffer.toString ()).append ("; ");
 			}
 		}
-		sb.append ("vncView: ");
-		sb.append (vncView.toString ());
-		sb.append ("; socket: ");
+		sb.append ("vncViews: [");
+
+		Iterator<VncView> vncViewIter = vncViews.iterator ();
+		while (vncViewIter.hasNext ()) {
+			VncView vncView = vncViewIter.next ();
+			sb.append (vncView.toString ());
+			if (vncViewIter.hasNext ()) {
+				sb.append (", ");
+			}
+		}
+		sb.append ("]; socket: ");
 		sb.append (getSocket ().toString ());
 		sb.append ("}");
 		return sb.toString ();

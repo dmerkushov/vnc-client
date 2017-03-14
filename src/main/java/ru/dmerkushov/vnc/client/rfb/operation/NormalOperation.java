@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Objects;
 import java.util.Queue;
+import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Level;
 import ru.dmerkushov.lib.threadhelper.AbstractTHRunnable;
@@ -193,10 +194,10 @@ public class NormalOperation extends Operation {
 							VncCommon.getLogger ().log (Level.WARNING, "Rectangle #{0} of {1} is null", new Object[]{i, rectangles.length});
 						}
 					}
-					VncView view = session.getView ();
-					if (view != null) {
-						Dimension size = view.getPreferredSize ();
-						session.getView ().paintNow (0, 0, size.width, size.height);
+					Set<VncView> vncViews = session.getViews ();
+					for (VncView vncView : vncViews) {
+						Dimension size = vncView.getPreferredSize ();
+						vncView.paintNow (0, 0, size.width, size.height);
 					}
 				}
 				if (incomingMessagesQueue.isEmpty ()) {

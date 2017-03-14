@@ -18,8 +18,8 @@
 package ru.dmerkushov.vnc.client.ui;
 
 import java.awt.Component;
-import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.image.BufferedImage;
 import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 import java.util.logging.Level;
@@ -132,13 +132,11 @@ public class ThumbnailJavafxVncView extends Canvas implements VncView {
 	}
 
 	@Override
-	public void setCursor (Cursor cursor) {
-//		throw new UnsupportedOperationException ("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+	public void repaint () {
 	}
 
 	@Override
-	public void repaint () {
-//		throw new UnsupportedOperationException ("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+	public void setCursorImage (BufferedImage cursor, int hotspotX, int hotspotY) {
 	}
 
 }

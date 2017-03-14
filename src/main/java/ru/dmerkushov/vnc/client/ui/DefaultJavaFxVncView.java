@@ -18,8 +18,8 @@
 package ru.dmerkushov.vnc.client.ui;
 
 import java.awt.Component;
-import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.image.BufferedImage;
 import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 import java.util.logging.Level;
@@ -28,6 +28,7 @@ import javafx.application.Platform;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.event.EventHandler;
 import javafx.event.EventType;
+import javafx.scene.ImageCursor;
 import javafx.scene.Node;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
@@ -216,13 +217,13 @@ public class DefaultJavaFxVncView extends Canvas implements VncView {
 	}
 
 	@Override
-	public void setCursor (Cursor cursor) {
-//		throw new UnsupportedOperationException ("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+	public void setCursorImage (BufferedImage cursor, int hotspotX, int hotspotY) {
+		Image fxImg = SwingFXUtils.toFXImage (cursor, null);
+		this.setCursor (new ImageCursor (fxImg, hotspotX, hotspotY));
 	}
 
 	@Override
 	public void repaint () {
-//		throw new UnsupportedOperationException ("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 	}
 
 }

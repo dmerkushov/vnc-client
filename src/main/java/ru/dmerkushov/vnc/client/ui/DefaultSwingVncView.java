@@ -30,7 +30,6 @@ public final class DefaultSwingVncView extends JComponent implements VncView {
 	RfbClientSession session;
 
 	public DefaultSwingVncView () {
-
 		BufferedImage cursorImg = new BufferedImage (16, 16, BufferedImage.TYPE_INT_ARGB);
 		Cursor blankCursor = Toolkit.getDefaultToolkit ().createCustomCursor (cursorImg, new Point (0, 0), "blank cursor");
 		this.setCursor (blankCursor);
@@ -104,6 +103,12 @@ public final class DefaultSwingVncView extends JComponent implements VncView {
 	@Override
 	public void paintNow (int x, int y, int width, int height) {
 		paintImmediately (x, y, width, height);
+	}
+
+	@Override
+	public void setCursorImage (BufferedImage cursorImage, int hotspotX, int hotspotY) {
+		Cursor cursor = Toolkit.getDefaultToolkit ().createCustomCursor (cursorImage, new Point (hotspotX, hotspotY), "VNC cursor");
+		this.setCursor (cursor);
 	}
 
 }

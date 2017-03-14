@@ -57,7 +57,7 @@ public interface VncView {
 
 	void paintNow (int x, int y, int width, int height);
 
-	void setCursor (java.awt.Cursor cursor);
+	void setCursorImage (java.awt.image.BufferedImage cursor, int hotspotX, int hotspotY);
 
 	void repaint ();
 
