@@ -1,78 +1,64 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Copyright (C) 2017 dmerkushov
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 package ru.dmerkushov.vnc.client.ui;
 
-import java.awt.Cursor;
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.Point;
-import java.awt.Toolkit;
-import java.awt.image.BufferedImage;
-import java.util.Objects;
-import javax.swing.JComponent;
-import ru.dmerkushov.vnc.client.VncCommon;
 import ru.dmerkushov.vnc.client.rfb.session.RfbClientSession;
-import ru.dmerkushov.vnc.client.rfb.session.RfbFramebuffer;
-import ru.dmerkushov.vnc.client.ui.events.VncViewKeyboardEvents;
-import ru.dmerkushov.vnc.client.ui.events.VncViewMouseEvents;
 
 /**
  *
  * @author dmerkushov
  */
-public class VncView extends JComponent {
+public interface VncView {
 
-	RfbClientSession session;
+	void setSession (RfbClientSession session);
 
-	public VncView (RfbClientSession session) {
-		Objects.requireNonNull (session, "session");
+	RfbClientSession getSession ();
 
-		this.session = session;
-		session.attachView (this);
+	/**
+	 * Returns an AWT component representing this view, if this is a AWT-based
+	 * view, null otherwise
+	 *
+	 * @return
+	 */
+	java.awt.Component getAwtComponent ();
 
-		VncViewMouseEvents mouseEvents = new VncViewMouseEvents (session);
-		VncViewKeyboardEvents keyboardEvents = new VncViewKeyboardEvents (session);
+	/**
+	 * Returns a Swing component representing this view, if this is a
+	 * Swing-based view, null otherwise
+	 *
+	 * @return
+	 */
+	javax.swing.JComponent getSwingComponent ();
 
-		this.setFocusable (true);
+	/**
+	 * Returns a JavaFX node representing this view, if this is a JavaFX-based
+	 * view, null otherwise
+	 *
+	 * @return
+	 */
+	javafx.scene.Node getJavafxNode ();
 
-		this.addMouseMotionListener (mouseEvents);
-		this.addMouseListener (mouseEvents);
-		this.addMouseWheelListener (mouseEvents);
-		this.addKeyListener (keyboardEvents);
+	java.awt.Dimension getPreferredSize ();
 
-		BufferedImage cursorImg = new BufferedImage (16, 16, BufferedImage.TYPE_INT_ARGB);
-		Cursor blankCursor = Toolkit.getDefaultToolkit ().createCustomCursor (cursorImg, new Point (0, 0), "blank cursor");
-		this.setCursor (blankCursor);
-	}
+	void paintNow (int x, int y, int width, int height);
 
-	@Override
-	public void paint (Graphics g) {
-		RfbFramebuffer framebuffer = session.getFramebuffer ();
+	void setCursor (java.awt.Cursor cursor);
 
-		if (framebuffer == null) {
-			VncCommon.getLogger ().warning ("No framebuffer attached to session");
-			return;
-		}
-
-		synchronized (framebuffer) {
-			g.drawImage (framebuffer, 0, 0, VncView.this);
-		}
-	}
-
-	@Override
-	public Dimension getPreferredSize () {
-		RfbFramebuffer framebuffer = session.getFramebuffer ();
-
-		if (framebuffer == null) {
-			return new Dimension (1000, 1000);
-		}
-
-		synchronized (framebuffer) {
-			return new Dimension (framebuffer.getWidth (), framebuffer.getHeight ());
-		}
-	}
+	void repaint ();
 
 }

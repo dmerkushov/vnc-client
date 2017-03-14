@@ -276,9 +276,15 @@ public class RfbPixelFormat {
 	}
 
 	public BufferedImage readArgbImage (int width, int height, InputStream in) throws IOException {
-		BufferedImage innerImage = new BufferedImage (width, height, BufferedImage.TYPE_INT_ARGB);
-		int[] innerPixels = readArgbPixels (in, width * height);
-		innerImage.setRGB (0, 0, width, height, innerPixels, 0, width);
+		BufferedImage innerImage;
+		if (width > 0 && height > 0) {
+			innerImage = new BufferedImage (width, height, BufferedImage.TYPE_INT_ARGB);
+			int[] innerPixels = readArgbPixels (in, width * height);
+			innerImage.setRGB (0, 0, width, height, innerPixels, 0, width);
+		} else {
+			innerImage = new BufferedImage (1, 1, BufferedImage.TYPE_INT_ARGB);
+			innerImage.setRGB (0, 0, 0);
+		}
 		return innerImage;
 	}
 

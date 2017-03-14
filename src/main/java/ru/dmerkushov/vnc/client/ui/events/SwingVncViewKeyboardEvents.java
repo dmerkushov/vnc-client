@@ -10,11 +10,11 @@ import ru.dmerkushov.vnc.client.rfb.session.RfbClientSession;
  *
  * @author dmerkushov
  */
-public class VncViewKeyboardEvents implements KeyListener {
+public class SwingVncViewKeyboardEvents implements KeyListener {
 
 	private final RfbClientSession session;
 
-	public VncViewKeyboardEvents (RfbClientSession session) {
+	public SwingVncViewKeyboardEvents (RfbClientSession session) {
 		Objects.requireNonNull (session, "session");
 
 		this.session = session;

@@ -196,7 +196,7 @@ public class NormalOperation extends Operation {
 					VncView view = session.getView ();
 					if (view != null) {
 						Dimension size = view.getPreferredSize ();
-						session.getView ().paintImmediately (0, 0, size.width, size.height);
+						session.getView ().paintNow (0, 0, size.width, size.height);
 					}
 				}
 				if (incomingMessagesQueue.isEmpty ()) {

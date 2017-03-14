@@ -22,7 +22,7 @@ import ru.dmerkushov.vnc.client.VncCommon;
  *
  * @author dmerkushov
  */
-public class ThumbnailView extends JComponent {
+public class ThumbnailSwingView extends JComponent {
 
 	public final static String UPDATE_TIMER_NAME = "updateTimer";
 
@@ -33,7 +33,7 @@ public class ThumbnailView extends JComponent {
 	private Timer updateTimer;
 	private TimerTask updateTimerTask;
 
-	public ThumbnailView (JComponent innerComponent) {
+	public ThumbnailSwingView (JComponent innerComponent) {
 		Objects.requireNonNull (innerComponent, "innerComponent");
 
 		this.innerComponent = innerComponent;
@@ -91,7 +91,7 @@ public class ThumbnailView extends JComponent {
 
 			@Override
 			public void run () {
-				ThumbnailView.this.repaint ();
+				ThumbnailSwingView.this.repaint ();
 			}
 		};
 		updateTimer.schedule (updateTimerTask, 0L /*updateStartDelayMs*/, updatePeriodMs);
@@ -111,7 +111,7 @@ public class ThumbnailView extends JComponent {
 		final JButton btn = new JButton ("Hi");
 		btn.setSize (100, 100);
 
-		final ThumbnailView thm = new ThumbnailView (btn);
+		final ThumbnailSwingView thm = new ThumbnailSwingView (btn);
 
 		Thread btnUpdateThread = new Thread (new Runnable () {
 
