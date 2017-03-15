@@ -199,12 +199,12 @@ public class NormalOperation extends Operation {
 					}
 				}
 
-				if (outgoingMessagesQueue.isEmpty ()) {
-					try {
-						Thread.sleep (10l);
-					} catch (InterruptedException ex) {
-					}
+//				if (outgoingMessagesQueue.isEmpty ()) {
+				try {
+					Thread.sleep (10l);
+				} catch (InterruptedException ex) {
 				}
+//				}
 			}
 		}
 
