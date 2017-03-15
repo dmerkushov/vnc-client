@@ -107,12 +107,18 @@ public class NormalOperation extends Operation {
 		public void doSomething () {
 			while (goOn) {
 				S2CMessage message = null;
+
 				try {
 					message = S2CMessageFactory.getInstance ().readMessage (session);
-				} catch (MessageFactoryException | IOException ex) {
+				} catch (IOException ex) {
+					if (session.getSessionState () == RfbSessionState.Finished) {
+						return;
+					}
+					VncCommon.getLogger ().log (Level.SEVERE, null, ex);
+				} catch (MessageFactoryException ex) {
 					VncCommon.getLogger ().log (Level.SEVERE, null, ex);
 				}
-				if (message == null) {	// Means the socket is closed by the server
+				if (message == null && session.getSessionState () != RfbSessionState.Finished) {	// Means the socket is closed by the server
 					VncCommon.getLogger ().log (Level.WARNING, "Setting session state to Error because incoming message is null (probably VNC server has closed TCP connection): session {0}, socket connected? - {1}", new Object[]{session.toString (), session.getSocket ().isConnected ()});
 					try {
 						session.setSessionState (RfbSessionState.Error);
@@ -147,16 +153,49 @@ public class NormalOperation extends Operation {
 
 		@Override
 		public void doSomething () {
-			OutputStream out = session.getOut ();
+			OutputStream out;
 			C2SMessage message = null;
 			while (goOn) {
 				message = outgoingMessagesQueue.poll ();
 
 				if (message != null && !session.isSuspended ()) {
 					try {
+						out = session.getOut ();
+					} catch (RfbSessionException ex) {
+						VncCommon.getLogger ().log (Level.WARNING, null, ex);
+						if (session.getSessionState () == RfbSessionState.Finished) {
+							return;
+						} else {
+							try {
+								session.setSessionState (RfbSessionState.Error);
+							} catch (RfbSessionException ex1) {
+								VncCommon.getLogger ().log (Level.SEVERE, null, ex1);
+							}
+							try {
+								Thread.sleep (1000L);
+							} catch (InterruptedException ex1) {
+							}
+							try {
+								out = session.getOut ();
+							} catch (RfbSessionException ex1) {
+								VncCommon.getLogger ().log (Level.SEVERE, null, ex1);
+								return;
+							}
+						}
+					}
+					try {
 						message.write (out);
-					} catch (MessageException | IOException ex) {
+					} catch (MessageException ex) {
 						VncCommon.getLogger ().log (Level.SEVERE, null, ex);
+					} catch (IOException ex) {
+						VncCommon.getLogger ().log (Level.SEVERE, null, ex);
+						if (session.getSessionState () != RfbSessionState.Finished) {
+							try {
+								session.setSessionState (RfbSessionState.Error);
+							} catch (RfbSessionException ex1) {
+								VncCommon.getLogger ().log (Level.SEVERE, null, ex1);
+							}
+						}
 					}
 				}
 

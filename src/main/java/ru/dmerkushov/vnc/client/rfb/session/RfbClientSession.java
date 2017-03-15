@@ -50,7 +50,7 @@ public class RfbClientSession {
 	/**
 	 * Current session state
 	 */
-	private RfbSessionState sessionState = Initial;
+	private volatile RfbSessionState sessionState = Initial;
 
 	/**
 	 * Socket to use in this session
@@ -90,18 +90,14 @@ public class RfbClientSession {
 	public final Map<String, Object> sessionObjects;
 
 	public RfbClientSession (String serverHost, int serverPort) throws UnknownHostException, IOException {
-		this (new Socket (), InetAddress.getByName (serverHost), serverPort);
+		this (InetAddress.getByName (serverHost), serverPort);
 	}
 
-	public RfbClientSession (InetAddress serverHost, int serverPort) throws UnknownHostException, IOException {
-		this (new Socket (), serverHost, serverPort);
-	}
-
-	public RfbClientSession (Socket socket, InetAddress serverHost, int serverPort) {
-		Objects.requireNonNull (socket);
+	public RfbClientSession (InetAddress serverHost, int serverPort) {
 		Objects.requireNonNull (serverHost, "serverHost");
 
-		this.socket = socket;
+		// new Socket is created in startSession()
+//		this.socket = new Socket ();
 		this.serverHost = serverHost;
 		this.serverPort = serverPort;
 
@@ -155,11 +151,15 @@ public class RfbClientSession {
 			throw new RfbSessionException ("Cannot transfer session from state " + this.sessionState + " to " + sessionState);
 		}
 
-		if ((this.sessionState != Error && sessionState == Error) || (this.sessionState != Finished && sessionState == Finished)) {
+		RfbSessionState prevState = this.sessionState;
+		this.sessionState = sessionState;
+
+		if ((prevState != Error && sessionState == Error) || (prevState != Finished && sessionState == Finished)) {
+
 			finishSession (sessionState);
 		}
 
-		if (this.sessionState != Error && sessionState == Error) {
+		if (prevState != Error && sessionState == Error) {
 			try {
 				restartSession (sessionState);
 			} catch (IOException ex) {
@@ -177,6 +177,7 @@ public class RfbClientSession {
 	}
 
 	public void startSession () throws RfbSessionException, IOException {
+		refreshSocket ();
 
 		operation = new HandshakeOperation (this);
 		operation.operate ();
@@ -191,7 +192,7 @@ public class RfbClientSession {
 		Objects.requireNonNull (sessionState);
 
 		try {
-			ThreadHelper.getInstance ().finish (getThreadGroupName (), 1000l);
+			ThreadHelper.getInstance ().finish (getThreadGroupName (), 1000L);
 		} catch (ThreadHelperException ex) {
 			throw new RfbSessionException (ex);
 		}
@@ -205,8 +206,11 @@ public class RfbClientSession {
 	private void restartSession (RfbSessionState sessionState) throws RfbSessionException, IOException {
 		VncCommon.getLogger ().entering (getClass ().getCanonicalName (), "restartSession");
 		finishSession (sessionState);
-		socket = new Socket ();
 		startSession ();
+	}
+
+	public void refreshSocket () {
+		socket = new Socket ();
 	}
 
 	public RfbFramebuffer getFramebuffer () {
@@ -265,20 +269,30 @@ public class RfbClientSession {
 		return operation;
 	}
 
-	public InputStream getIn () {
+	public InputStream getIn () throws RfbSessionException {
+		Objects.requireNonNull (socket, "socket");
+
+		InputStream in;
+		try {
+			in = socket.getInputStream ();
+		} catch (IOException ex) {
+			throw new RfbSessionException (ex);
+		}
+
 		return in;
 	}
 
-	public void setIn (InputStream in) {
-		this.in = in;
-	}
+	public OutputStream getOut () throws RfbSessionException {
+		Objects.requireNonNull (socket, "socket");
 
-	public OutputStream getOut () {
+		OutputStream out;
+		try {
+			out = socket.getOutputStream ();
+		} catch (IOException ex) {
+			throw new RfbSessionException (ex);
+		}
+
 		return out;
-	}
-
-	public void setOut (OutputStream out) {
-		this.out = out;
 	}
 
 	public PasswordSupplier getPasswordSupplier () {

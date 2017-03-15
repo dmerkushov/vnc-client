@@ -40,6 +40,13 @@ public class HandshakeOperation extends Operation {
 	public void operate () throws IOException, RfbOperationException {
 		Socket socket = session.getSocket ();
 
+		if (socket.isConnected ()) {
+			throw new RfbOperationException ("The session's socket has already been connected");
+		}
+		if (socket.isClosed ()) {
+			throw new RfbOperationException ("The session's socket has already been closed");
+		}
+
 		SocketAddress socketAddress = new InetSocketAddress (session.getServerHost (), session.getServerPort ());
 
 		try {
@@ -50,11 +57,9 @@ public class HandshakeOperation extends Operation {
 
 		InputStream in;
 		in = socket.getInputStream ();
-		session.setIn (in);
 
 		OutputStream out;
 		out = socket.getOutputStream ();
-		session.setOut (out);
 
 		ProtocolVersionHandshake protocolVersionHandshake = new ProtocolVersionHandshake (session, RfbVersion.RFB_VER_3_8);
 		protocolVersionHandshake.write (out);

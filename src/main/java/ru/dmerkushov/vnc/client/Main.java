@@ -175,25 +175,25 @@ public class Main extends Application {
 			}
 		});
 
-		Thread suspendThread = new Thread (() -> {
-			System.out.println ("SuspendThread started");
-			try {
-				Thread.sleep (10000L);
-			} catch (InterruptedException ex) {
-				Logger.getLogger (Main.class.getName ()).log (Level.SEVERE, null, ex);
-			}
-			System.out.println ("Suspending session");
-			session.suspend ();
-			try {
-				Thread.sleep (5000L);
-			} catch (InterruptedException ex) {
-				Logger.getLogger (Main.class.getName ()).log (Level.SEVERE, null, ex);
-			}
-			System.out.println ("Resuming session");
-			session.resume ();
-		});
-		suspendThread.start ();
-
+//		Thread suspendThread = new Thread (() -> {
+//			System.out.println ("SuspendThread started");
+//			try {
+//				Thread.sleep (10000L);
+//			} catch (InterruptedException ex) {
+//				Logger.getLogger (Main.class.getName ()).log (Level.SEVERE, null, ex);
+//			}
+//			long suspendFor = 360000L;
+//			System.out.println ("Suspending session for " + suspendFor + " millis");
+//			session.suspend ();
+//			try {
+//				Thread.sleep (suspendFor);
+//			} catch (InterruptedException ex) {
+//				Logger.getLogger (Main.class.getName ()).log (Level.SEVERE, null, ex);
+//			}
+//			System.out.println ("Resuming session");
+//			session.resume ();
+//		});
+//		suspendThread.start ();
 		primaryStage.show ();
 	}
 

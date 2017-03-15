@@ -17,6 +17,7 @@ import ru.dmerkushov.vnc.client.rfb.messages.normal.c2s.SetEncodingsMessage;
 import ru.dmerkushov.vnc.client.rfb.messages.normal.c2s.SetPixelFormatMessage;
 import ru.dmerkushov.vnc.client.rfb.session.RfbClientSession;
 import ru.dmerkushov.vnc.client.rfb.session.RfbFramebuffer;
+import ru.dmerkushov.vnc.client.rfb.session.RfbSessionException;
 
 /**
  *
@@ -30,8 +31,18 @@ public class InitializationOperation extends Operation {
 
 	@Override
 	public void operate () throws RfbOperationException, IOException {
-		InputStream in = session.getIn ();
-		OutputStream out = session.getOut ();
+		InputStream in;
+		try {
+			in = session.getIn ();
+		} catch (RfbSessionException ex) {
+			throw new RfbOperationException (ex);
+		}
+		OutputStream out;
+		try {
+			out = session.getOut ();
+		} catch (RfbSessionException ex) {
+			throw new RfbOperationException (ex);
+		}
 
 		ClientInit_C2S clientInit_C2S = new ClientInit_C2S (session, true);
 		clientInit_C2S.write (out);
