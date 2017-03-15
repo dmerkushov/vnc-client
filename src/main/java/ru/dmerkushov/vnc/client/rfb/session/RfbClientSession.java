@@ -83,6 +83,8 @@ public class RfbClientSession {
 
 	private NormalOperation normalOperation;
 
+	private volatile boolean suspended;
+
 	private UUID uuid;
 
 	public final Map<String, Object> sessionObjects;
@@ -334,6 +336,18 @@ public class RfbClientSession {
 		sb.append (getSocket ().toString ());
 		sb.append ("}");
 		return sb.toString ();
+	}
+
+	public void suspend () {
+		this.suspended = true;
+	}
+
+	public void resume () {
+		this.suspended = false;
+	}
+
+	public boolean isSuspended () {
+		return suspended;
 	}
 
 }

@@ -137,7 +137,7 @@ public class Main extends Application {
 	public void start (Stage primaryStage) {
 		primaryStage.setTitle ("Hello World!");
 
-		RfbClientSession session;
+		final RfbClientSession session;
 		try {
 			session = new RfbClientSession ("10.1.4.133", 5901);
 		} catch (IOException ex) {
@@ -174,6 +174,25 @@ public class Main extends Application {
 				});
 			}
 		});
+
+		Thread suspendThread = new Thread (() -> {
+			System.out.println ("SuspendThread started");
+			try {
+				Thread.sleep (10000L);
+			} catch (InterruptedException ex) {
+				Logger.getLogger (Main.class.getName ()).log (Level.SEVERE, null, ex);
+			}
+			System.out.println ("Suspending session");
+			session.suspend ();
+			try {
+				Thread.sleep (5000L);
+			} catch (InterruptedException ex) {
+				Logger.getLogger (Main.class.getName ()).log (Level.SEVERE, null, ex);
+			}
+			System.out.println ("Resuming session");
+			session.resume ();
+		});
+		suspendThread.start ();
 
 		primaryStage.show ();
 	}
