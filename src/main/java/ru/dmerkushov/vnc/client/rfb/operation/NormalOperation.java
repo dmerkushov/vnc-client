@@ -29,6 +29,8 @@ import ru.dmerkushov.vnc.client.rfb.messages.normal.s2c.S2CMessage;
 import ru.dmerkushov.vnc.client.rfb.messages.normal.s2c.S2CMessageFactory;
 import ru.dmerkushov.vnc.client.rfb.session.RfbClientSession;
 import ru.dmerkushov.vnc.client.rfb.session.RfbFramebuffer;
+import ru.dmerkushov.vnc.client.rfb.session.RfbSessionException;
+import ru.dmerkushov.vnc.client.rfb.session.RfbSessionState;
 import ru.dmerkushov.vnc.client.ui.VncView;
 
 /**
@@ -111,12 +113,18 @@ public class NormalOperation extends Operation {
 					VncCommon.getLogger ().log (Level.SEVERE, null, ex);
 				}
 				if (message == null) {	// Means the socket is closed by the server
+					VncCommon.getLogger ().log (Level.WARNING, "Setting session state to Error because incoming message is null (probably VNC server has closed TCP connection): session {0}, socket connected? - {1}", new Object[]{session.toString (), session.getSocket ().isConnected ()});
 					try {
-						VncCommon.getLogger ().log (Level.WARNING, "Finishing threads for VNC session because incoming message is null (probably VNC server has closed TCP connection): session {0}, socket connected? - {1}", new Object[]{session.toString (), session.getSocket ().isConnected ()});
-						ThreadHelper.getInstance ().finish (session.getThreadGroupName (), 1000l);
-					} catch (ThreadHelperException ex) {
+						session.setSessionState (RfbSessionState.Error);
+					} catch (RfbSessionException ex) {
 						VncCommon.getLogger ().log (Level.SEVERE, null, ex);
 					}
+//					VncCommon.getLogger ().log (Level.WARNING, "Finishing threads for VNC session because incoming message is null (probably VNC server has closed TCP connection): session {0}, socket connected? - {1}", new Object[]{session.toString (), session.getSocket ().isConnected ()});
+//					try {
+//						ThreadHelper.getInstance ().finish (session.getThreadGroupName (), 1000l);
+//					} catch (ThreadHelperException ex) {
+//						VncCommon.getLogger ().log (Level.SEVERE, null, ex);
+//					}
 				} else {
 					incomingMessagesQueue.add (message);
 				}

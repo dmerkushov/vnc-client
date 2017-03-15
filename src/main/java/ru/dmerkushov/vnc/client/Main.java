@@ -43,41 +43,78 @@ public class Main extends Application {
 		launch (args);
 	}
 
+// JAVAFX-STYLE
 //	@Override
 //	public void start (Stage primaryStage) {
 //		primaryStage.setTitle ("Hello World!");
 //
-//		RfbClientSession session;
+//		RfbClientSession session1;
 //		try {
-//			session = new RfbClientSession ("10.1.4.133", 5901);
+//			session1 = new RfbClientSession ("10.1.4.133", 5901);
 //		} catch (IOException ex) {
 //			Logger.getLogger (Main.class.getName ()).log (Level.SEVERE, null, ex);
 //			return;
 //		}
+//		session1.setPasswordSupplier (() -> "12345678");
 //
-//		VncView vncView = new ThumbnailJavafxVncView ();
-//		vncView.setSession (session);
+//		VncView vncView1 = new ThumbnailJavafxVncView ();
+//		vncView1.setSession (session1);
 //
 //		try {
-//			session.startSession ();
+//			session1.startSession ();
 //		} catch (RfbSessionException | IOException ex) {
 //			Logger.getLogger (Main.class.getName ()).log (Level.SEVERE, null, ex);
 //		}
 //
-//		Pane root = new Pane ();
-//		root.getChildren ().add (vncView.getJavafxNode ());
-//		root.setPadding (new Insets (0, 0, 0, 0));
-//		primaryStage.setScene (new Scene (root, 300, 250));
+//		RfbClientSession session2;
+//		try {
+//			session2 = new RfbClientSession ("10.1.4.133", 5901);
+//		} catch (IOException ex) {
+//			Logger.getLogger (Main.class.getName ()).log (Level.SEVERE, null, ex);
+//			return;
+//		}
+//		session2.setPasswordSupplier (() -> "12345678");
 //
-//		vncView.getJavafxNode ().prefHeight (root.getWidth ());
-//		vncView.getJavafxNode ().prefHeight (root.getHeight ());
+//		VncView vncView2 = new ThumbnailJavafxVncView ();
+//		vncView2.setSession (session2);
+//
+//		try {
+//			session2.startSession ();
+//		} catch (RfbSessionException | IOException ex) {
+//			Logger.getLogger (Main.class.getName ()).log (Level.SEVERE, null, ex);
+//		}
+//
+//		RfbClientSession session3;
+//		try {
+//			session3 = new RfbClientSession ("10.1.4.133", 5901);
+//		} catch (IOException ex) {
+//			Logger.getLogger (Main.class.getName ()).log (Level.SEVERE, null, ex);
+//			return;
+//		}
+//		session3.setPasswordSupplier (() -> "12345678");
+//
+//		VncView vncView3 = new ThumbnailJavafxVncView ();
+//		vncView3.setSession (session3);
+//
+//		try {
+//			session3.startSession ();
+//		} catch (RfbSessionException | IOException ex) {
+//			Logger.getLogger (Main.class.getName ()).log (Level.SEVERE, null, ex);
+//		}
+//
+//		HBox root = new HBox ();
+//		root.getChildren ().addAll (vncView1.getJavafxNode (), vncView2.getJavafxNode (), vncView3.getJavafxNode ());
+//		root.setPadding (new Insets (0, 0, 0, 0));
+//		primaryStage.setScene (new Scene (root, 900, 250));
 //
 //		System.out.println ("Root: " + root.getWidth () + "x" + root.getHeight ());
 //
-////		vncView.getJavafxNode ().getProperties ().put (root, root)
-////
-////		((Canvas) vncView.getJavafxNode ()).setWidth (400);
-////		((Canvas) vncView.getJavafxNode ()).setHeight (400);
+//		((Canvas) vncView1.getJavafxNode ()).setWidth (350);
+//		((Canvas) vncView1.getJavafxNode ()).setHeight (220);
+//		((Canvas) vncView2.getJavafxNode ()).setWidth (350);
+//		((Canvas) vncView2.getJavafxNode ()).setHeight (220);
+//		((Canvas) vncView3.getJavafxNode ()).setWidth (350);
+//		((Canvas) vncView3.getJavafxNode ()).setHeight (220);
 //		primaryStage.setOnHiding (new EventHandler<WindowEvent> () {
 //			@Override
 //			public void handle (WindowEvent event) {
@@ -85,7 +122,7 @@ public class Main extends Application {
 //					@Override
 //					public void run () {
 //						try {
-//							session.setSessionState (RfbSessionState.Finished);
+//							session3.setSessionState (RfbSessionState.Finished);
 //						} catch (RfbSessionException ex) {
 //							Logger.getLogger (Main.class.getName ()).log (Level.SEVERE, null, ex);
 //						}
@@ -96,7 +133,6 @@ public class Main extends Application {
 //
 //		primaryStage.show ();
 //	}
-// JAVAFX-STYLE
 	@Override
 	public void start (Stage primaryStage) {
 		primaryStage.setTitle ("Hello World!");
@@ -108,6 +144,7 @@ public class Main extends Application {
 			Logger.getLogger (Main.class.getName ()).log (Level.SEVERE, null, ex);
 			return;
 		}
+		session.setPasswordSupplier (() -> "12345678");
 
 		VncView vncView = new DefaultJavaFxVncView ();
 		vncView.setSession (session);
@@ -140,6 +177,7 @@ public class Main extends Application {
 
 		primaryStage.show ();
 	}
+
 }
 
 // SWING-STYLE

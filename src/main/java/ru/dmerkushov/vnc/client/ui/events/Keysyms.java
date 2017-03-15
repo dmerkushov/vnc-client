@@ -417,44 +417,48 @@ public class Keysyms {
 			return controlDown ? Sys_Req : Print;
 		} else if (keyCode == KeyEvent.VK_ESCAPE) {
 			return Escape;
+		} else if (keyCode == KeyEvent.VK_TAB) {
+			return Tab;
+		} else if (keyCode == KeyEvent.VK_CAPS_LOCK) {
+			return Caps_Lock;
+		} else if (keyCode == KeyEvent.VK_SHIFT && location == KeyEvent.KEY_LOCATION_RIGHT) {
+			return Shift_R;
+		} else if (keyCode == KeyEvent.VK_SHIFT) {
+			return Shift_L;
+		} else if (keyCode == KeyEvent.VK_CONTROL && location == KeyEvent.KEY_LOCATION_RIGHT) {
+			return Control_R;
+		} else if (keyCode == KeyEvent.VK_CONTROL) {
+			return Control_L;
+		} else if (keyCode == KeyEvent.VK_ALT) {
+			return Alt_L;
+		} else if (keyCode == KeyEvent.VK_ALT_GRAPH) {
+			return Alt_R;
 		} else if (keyCode == KeyEvent.VK_ENTER) {
 			return Return;
 		} else if (keyCode == KeyEvent.VK_BACK_SPACE) {
 			return BackSpace;
-		} else if (keyCode == KeyEvent.VK_TAB) {
-			return Tab;
 		} else if (keyCode == KeyEvent.VK_INSERT) {
 			return Insert;
+		} else if (keyCode == KeyEvent.VK_DELETE) {
+			return Delete;
+		} else if (keyCode == KeyEvent.VK_HOME) {
+			return Home;
+		} else if (keyCode == KeyEvent.VK_END) {
+			return End;
+		} else if (keyCode == KeyEvent.VK_PAGE_UP) {
+			return Page_Up;
+		} else if (keyCode == KeyEvent.VK_PAGE_DOWN) {
+			return Page_Down;
+		} else if (keyCode == KeyEvent.VK_UP) {
+			return Up;
+		} else if (keyCode == KeyEvent.VK_DOWN) {
+			return Down;
+		} else if (keyCode == KeyEvent.VK_LEFT) {
+			return Left;
+		} else if (keyCode == KeyEvent.VK_RIGHT) {
+			return Right;
 		} else if (keyCode == KeyEvent.VK_NUM_LOCK) {
 			return Num_Lock;
-
-			/*
-
-			 public static final int BackSpace = 0xFF08;
-			 public static final int Tab = 0xFF09;
-			 public static final int Linefeed = 0xFF0A;
-			 public static final int Clear = 0xFF0B;
-			 public static final int Return = 0xFF0D;
-			 public static final int Pause = 0xFF13;
-			 public static final int Scroll_Lock = 0xFF14;
-			 public static final int Sys_Req = 0xFF15;
-			 public static final int Escape = 0xFF1B;
-			 public static final int Delete = 0xFFFF;
-			 public static final int Select = 0xFF60;
-			 public static final int Print = 0xFF61;
-			 public static final int Execute = 0xFF62;
-			 public static final int Insert = 0xFF63;
-			 public static final int Undo = 0xFF65;
-			 public static final int Redo = 0xFF66;
-			 public static final int Menu = 0xFF67;
-			 public static final int Find = 0xFF68;
-			 public static final int Cancel = 0xFF69;
-			 public static final int Help = 0xFF6A;
-			 public static final int Break = 0xFF6B;
-			 public static final int Mode_switch = 0xFF7E;
-			 public static final int script_switch = 0xFF7E;
-			 public static final int Num_Lock = 0xFF7F;
-			 */
 		} else {
 			for (int i = 0; i < keySymbols.length; i++) {
 				if (keySymbols[i].keycode == keyCode) {

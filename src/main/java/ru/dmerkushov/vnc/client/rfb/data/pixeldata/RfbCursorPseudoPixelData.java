@@ -5,9 +5,6 @@
  */
 package ru.dmerkushov.vnc.client.rfb.data.pixeldata;
 
-import java.awt.Cursor;
-import java.awt.Point;
-import java.awt.Toolkit;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -56,12 +53,6 @@ public class RfbCursorPseudoPixelData extends RfbPixelData {
 
 		ByteArrayOutputStream baos = new ByteArrayOutputStream (scanlineLength * 8 * height);
 
-//		for (int scanlineIndex = 0; scanlineIndex < bitmask.length / scanlineLength; scanlineIndex ++) {
-//			for (int x = 0; x < width; x++) {
-//				byte bitmaskByte = bitmask[scanlineIndex * scanlineLength + x];
-//				System.out.println ()
-//			}
-//		}
 		for (int i = 0; i < bitmask.length; i++) {
 			byte bitmaskByte = bitmask[i];
 
@@ -98,7 +89,6 @@ public class RfbCursorPseudoPixelData extends RfbPixelData {
 
 		RfbClientSession session = framebuffer.getSession ();
 
-		Cursor cursor = Toolkit.getDefaultToolkit ().createCustomCursor (cursorImage, new Point (hotspotX, hotspotY), "VNC cursor");
 		for (VncView vncView : session.getViews ()) {
 			vncView.setCursorImage (cursorImage, hotspotX, hotspotY);
 		}

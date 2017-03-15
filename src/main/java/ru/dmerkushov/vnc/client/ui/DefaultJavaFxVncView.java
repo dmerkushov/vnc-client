@@ -102,10 +102,10 @@ public class DefaultJavaFxVncView extends Canvas implements VncView {
 				int wheelRotation = (int) (e.getDeltaY () / e.getMultiplierY ());
 				if (wheelRotation < 0) {		// wheel rotated up
 					eventType = PointerEventMessageSequence.EVENTTYPE_WHEEL_UP;
-					times = -wheelRotation;
+					times = wheelRotation;
 				} else {						// wheel rotated down
 					eventType = PointerEventMessageSequence.EVENTTYPE_WHEEL_DOWN;
-					times = wheelRotation;
+					times = -wheelRotation;
 				}
 
 				PointerEventMessageSequence pointerEventMsg = new PointerEventMessageSequence (session, eventType, x, y);
@@ -116,27 +116,28 @@ public class DefaultJavaFxVncView extends Canvas implements VncView {
 			}
 
 		});
-		this.addEventHandler (KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent> () {
-			@Override
-			public void handle (KeyEvent e) {
-				int keySym = Keysyms.translateFxKeyEvent (e);
+		this.addEventFilter (KeyEvent.KEY_PRESSED, (KeyEvent e) -> {
+			int keySym = Keysyms.translateFxKeyEvent (e);
 
-				System.out.println ("KeyEvent " + e + " : keysym " + keySym + " " + Integer.toHexString (keySym));
+			System.out.println ("KeyEvent " + e + " : keysym " + keySym + " " + Integer.toHexString (keySym));
 
-				KeyEventMessageSequence seq = new KeyEventMessageSequence (session, KeyEventMessageSequence.EVENTTYPE_PRESSED, keySym);
-				session.sendMessage (seq);
-			}
+			KeyEventMessageSequence seq = new KeyEventMessageSequence (session, KeyEventMessageSequence.EVENTTYPE_PRESSED, keySym);
+			session.sendMessage (seq);
+
+			e.consume ();
 		});
-		this.addEventHandler (KeyEvent.KEY_RELEASED, new EventHandler<KeyEvent> () {
-			@Override
-			public void handle (KeyEvent e) {
-				int keySym = Keysyms.translateFxKeyEvent (e);
+		this.addEventFilter (KeyEvent.KEY_RELEASED, (KeyEvent e) -> {
+			int keySym = Keysyms.translateFxKeyEvent (e);
 
-				System.out.println ("KeyEvent " + e + " : keysym " + keySym + " " + Integer.toHexString (keySym));
+			System.out.println ("KeyEvent " + e + " : keysym " + keySym + " " + Integer.toHexString (keySym));
 
-				KeyEventMessageSequence seq = new KeyEventMessageSequence (session, KeyEventMessageSequence.EVENTTYPE_RELEASED, keySym);
-				session.sendMessage (seq);
-			}
+			KeyEventMessageSequence seq = new KeyEventMessageSequence (session, KeyEventMessageSequence.EVENTTYPE_RELEASED, keySym);
+			session.sendMessage (seq);
+
+			e.consume ();
+		});
+		this.addEventFilter (KeyEvent.ANY, (KeyEvent e) -> {
+			e.consume ();
 		});
 	}
 

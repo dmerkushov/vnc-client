@@ -9,11 +9,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.Socket;
 import java.util.Objects;
+import ru.dmerkushov.vnc.client.VncCommon;
 import ru.dmerkushov.vnc.client.rfb.messages.MessageException;
 import ru.dmerkushov.vnc.client.rfb.messages.normal.MessageFactoryException;
 import ru.dmerkushov.vnc.client.rfb.messages.normal.NormalMessage;
 import static ru.dmerkushov.vnc.client.rfb.messages.util.RfbMessagesUtil.readU8;
 import ru.dmerkushov.vnc.client.rfb.session.RfbClientSession;
+import ru.dmerkushov.vnc.client.rfb.session.RfbSessionException;
+import ru.dmerkushov.vnc.client.rfb.session.RfbSessionState;
 
 /**
  *
@@ -67,7 +70,12 @@ public class S2CMessageFactory {
 		try {
 			message.read (in);
 		} catch (MessageException ex) {
-			throw new MessageFactoryException (ex);
+			VncCommon.getLogger ().warning ("MessageException: " + ex.getMessage ());
+			try {
+				session.setSessionState (RfbSessionState.Error);
+			} catch (RfbSessionException ex1) {
+				throw new MessageFactoryException (ex1);
+			}
 		}
 
 		return message;

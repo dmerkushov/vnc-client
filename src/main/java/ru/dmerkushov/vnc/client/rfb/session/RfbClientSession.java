@@ -22,6 +22,7 @@ import java.util.UUID;
 import ru.dmerkushov.lib.threadhelper.AbstractTHRunnable;
 import ru.dmerkushov.lib.threadhelper.ThreadHelper;
 import ru.dmerkushov.lib.threadhelper.ThreadHelperException;
+import ru.dmerkushov.vnc.client.VncCommon;
 import ru.dmerkushov.vnc.client.rfb.data.RfbPixelFormat;
 import ru.dmerkushov.vnc.client.rfb.messages.normal.c2s.C2SMessage;
 import ru.dmerkushov.vnc.client.rfb.operation.HandshakeOperation;
@@ -54,7 +55,7 @@ public class RfbClientSession {
 	/**
 	 * Socket to use in this session
 	 */
-	private final Socket socket;
+	private Socket socket;
 
 	private final InetAddress serverHost;
 
@@ -156,7 +157,13 @@ public class RfbClientSession {
 			finishSession (sessionState);
 		}
 
-		this.sessionState = sessionState;
+		if (this.sessionState != Error && sessionState == Error) {
+			try {
+				restartSession (sessionState);
+			} catch (IOException ex) {
+				throw new RfbSessionException (ex);
+			}
+		}
 	}
 
 	public RfbSessionState getSessionState () {
@@ -191,6 +198,13 @@ public class RfbClientSession {
 		} catch (IOException ex) {
 			throw new RfbSessionException (ex);
 		}
+	}
+
+	private void restartSession (RfbSessionState sessionState) throws RfbSessionException, IOException {
+		VncCommon.getLogger ().entering (getClass ().getCanonicalName (), "restartSession");
+		finishSession (sessionState);
+		socket = new Socket ();
+		startSession ();
 	}
 
 	public RfbFramebuffer getFramebuffer () {
