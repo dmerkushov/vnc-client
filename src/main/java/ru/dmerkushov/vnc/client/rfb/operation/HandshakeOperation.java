@@ -10,6 +10,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.ConnectException;
 import java.net.InetSocketAddress;
+import java.net.NoRouteToHostException;
 import java.net.Socket;
 import java.net.SocketAddress;
 import java.util.Set;
@@ -51,7 +52,7 @@ public class HandshakeOperation extends Operation {
 
 		try {
 			socket.connect (socketAddress);
-		} catch (ConnectException ex) {
+		} catch (ConnectException | NoRouteToHostException ex) {
 			throw new RfbOperationException ("Could not connect to RFB server " + socketAddress.toString () + ": " + ex.getMessage (), ex);
 		}
 

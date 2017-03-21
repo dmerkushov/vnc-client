@@ -53,12 +53,38 @@ public interface VncView {
 	 */
 	javafx.scene.Node getJavafxNode ();
 
+	/**
+	 * Returns the preferred size of this view based on the framebuffer size
+	 *
+	 * @return
+	 */
 	java.awt.Dimension getPreferredSize ();
 
+	/**
+	 * Paint this view now to the graphical output device
+	 *
+	 * @param x
+	 * @param y
+	 * @param width
+	 * @param height
+	 * @see VncView#repaint()
+	 */
 	void paintNow (int x, int y, int width, int height);
 
+	/**
+	 * Set the cursor image for this view
+	 *
+	 * @param cursor
+	 * @param hotspotX
+	 * @param hotspotY
+	 */
 	void setCursorImage (java.awt.image.BufferedImage cursor, int hotspotX, int hotspotY);
 
+	/**
+	 * Repaint this view in deferred manner
+	 *
+	 * @see VncView#paintNow(int, int, int, int)
+	 */
 	void repaint ();
 
 }

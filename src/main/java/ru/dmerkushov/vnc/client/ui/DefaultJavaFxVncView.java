@@ -30,7 +30,6 @@ import javafx.event.EventHandler;
 import javafx.event.EventType;
 import javafx.scene.ImageCursor;
 import javafx.scene.Node;
-import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
 import javafx.scene.input.KeyEvent;
@@ -50,7 +49,7 @@ import ru.dmerkushov.vnc.client.ui.events.Keysyms;
  *
  * @author dmerkushov
  */
-public class DefaultJavaFxVncView extends Canvas implements VncView {
+public class DefaultJavaFxVncView extends VncCanvas implements VncView {
 
 	private RfbClientSession session;
 
@@ -186,7 +185,7 @@ public class DefaultJavaFxVncView extends Canvas implements VncView {
 		Image fxImg;
 
 		synchronized (framebuffer) {
-			fxImg = SwingFXUtils.toFXImage (framebuffer, null);
+			fxImg = this.toFxImage (framebuffer);
 		}
 
 		final CountDownLatch doneLatch = new CountDownLatch (1);

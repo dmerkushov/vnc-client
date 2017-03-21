@@ -19,8 +19,6 @@ public final class RfbFramebuffer extends BufferedImage {
 	public RfbFramebuffer (RfbClientSession session, int width, int height) {
 		super (width, height, BufferedImage.TYPE_INT_RGB);
 
-		Objects.requireNonNull (session, "session");
-
 		attachSession (session);
 	}
 
@@ -30,8 +28,13 @@ public final class RfbFramebuffer extends BufferedImage {
 	 * session, so they go to the active framebuffer of that session.
 	 *
 	 * @param session
+	 * @see
+	 * RfbClientSession#attachFramebuffer(ru.dmerkushov.vnc.client.rfb.session.RfbFramebuffer)
+	 * @see RfbClientSession#detachFramebuffer()
 	 */
-	public void attachSession (RfbClientSession session) {
+	private void attachSession (RfbClientSession session) {
+		Objects.requireNonNull (session, "session");
+
 		if (this.session != null) {
 			this.session.detachFramebuffer ();
 		}

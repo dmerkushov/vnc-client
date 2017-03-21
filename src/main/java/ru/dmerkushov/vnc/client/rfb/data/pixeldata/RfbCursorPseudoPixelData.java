@@ -89,8 +89,10 @@ public class RfbCursorPseudoPixelData extends RfbPixelData {
 
 		RfbClientSession session = framebuffer.getSession ();
 
-		for (VncView vncView : session.getViews ()) {
-			vncView.setCursorImage (cursorImage, hotspotX, hotspotY);
+		if (session != null) {
+			for (VncView vncView : session.getViews ()) {
+				vncView.setCursorImage (cursorImage, hotspotX, hotspotY);
+			}
 		}
 	}
 

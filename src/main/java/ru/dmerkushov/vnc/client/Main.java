@@ -24,7 +24,7 @@ import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
-import javafx.scene.layout.StackPane;
+import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import ru.dmerkushov.vnc.client.rfb.session.RfbClientSession;
@@ -43,6 +43,10 @@ public class Main extends Application {
 		launch (args);
 	}
 
+	String host = "10.1.4.74";
+	int port = 5901;
+	String password = "12345678";
+
 // JAVAFX-STYLE
 //	@Override
 //	public void start (Stage primaryStage) {
@@ -50,12 +54,12 @@ public class Main extends Application {
 //
 //		RfbClientSession session1;
 //		try {
-//			session1 = new RfbClientSession ("10.1.4.133", 5901);
+//			session1 = new RfbClientSession (host, port);
 //		} catch (IOException ex) {
 //			Logger.getLogger (Main.class.getName ()).log (Level.SEVERE, null, ex);
 //			return;
 //		}
-//		session1.setPasswordSupplier (() -> "12345678");
+//		session1.setPasswordSupplier (() -> password);
 //
 //		VncView vncView1 = new ThumbnailJavafxVncView ();
 //		vncView1.setSession (session1);
@@ -68,12 +72,12 @@ public class Main extends Application {
 //
 //		RfbClientSession session2;
 //		try {
-//			session2 = new RfbClientSession ("10.1.4.133", 5901);
+//			session2 = new RfbClientSession (host, port);
 //		} catch (IOException ex) {
 //			Logger.getLogger (Main.class.getName ()).log (Level.SEVERE, null, ex);
 //			return;
 //		}
-//		session2.setPasswordSupplier (() -> "12345678");
+//		session2.setPasswordSupplier (() -> password);
 //
 //		VncView vncView2 = new ThumbnailJavafxVncView ();
 //		vncView2.setSession (session2);
@@ -86,12 +90,12 @@ public class Main extends Application {
 //
 //		RfbClientSession session3;
 //		try {
-//			session3 = new RfbClientSession ("10.1.4.133", 5901);
+//			session3 = new RfbClientSession (host, port);
 //		} catch (IOException ex) {
 //			Logger.getLogger (Main.class.getName ()).log (Level.SEVERE, null, ex);
 //			return;
 //		}
-//		session3.setPasswordSupplier (() -> "12345678");
+//		session3.setPasswordSupplier (() -> password);
 //
 //		VncView vncView3 = new ThumbnailJavafxVncView ();
 //		vncView3.setSession (session3);
@@ -139,12 +143,12 @@ public class Main extends Application {
 
 		final RfbClientSession session;
 		try {
-			session = new RfbClientSession ("10.1.4.133", 5901);
+			session = new RfbClientSession (host, port);
 		} catch (IOException ex) {
 			Logger.getLogger (Main.class.getName ()).log (Level.SEVERE, null, ex);
 			return;
 		}
-		session.setPasswordSupplier (() -> "12345678");
+		session.setPasswordSupplier (() -> password);
 
 		VncView vncView = new DefaultJavaFxVncView ();
 		vncView.setSession (session);
@@ -155,7 +159,7 @@ public class Main extends Application {
 			Logger.getLogger (Main.class.getName ()).log (Level.SEVERE, null, ex);
 		}
 
-		StackPane root = new StackPane ();
+		HBox root = new HBox ();
 		root.getChildren ().add (vncView.getJavafxNode ());
 		primaryStage.setScene (new Scene (root, 300, 250));
 
@@ -175,28 +179,27 @@ public class Main extends Application {
 			}
 		});
 
-//		Thread suspendThread = new Thread (() -> {
-//			System.out.println ("SuspendThread started");
-//			try {
-//				Thread.sleep (10000L);
-//			} catch (InterruptedException ex) {
-//				Logger.getLogger (Main.class.getName ()).log (Level.SEVERE, null, ex);
-//			}
-//			long suspendFor = 360000L;
-//			System.out.println ("Suspending session for " + suspendFor + " millis");
-//			session.suspend ();
-//			try {
-//				Thread.sleep (suspendFor);
-//			} catch (InterruptedException ex) {
-//				Logger.getLogger (Main.class.getName ()).log (Level.SEVERE, null, ex);
-//			}
-//			System.out.println ("Resuming session");
-//			session.resume ();
-//		});
-//		suspendThread.start ();
+		Thread suspendThread = new Thread (() -> {
+			System.out.println ("SuspendThread started");
+			try {
+				Thread.sleep (10000L);
+			} catch (InterruptedException ex) {
+				Logger.getLogger (Main.class.getName ()).log (Level.SEVERE, null, ex);
+			}
+			long suspendFor = 360000L;
+			System.out.println ("Suspending session for " + suspendFor + " millis");
+			session.suspend ();
+			try {
+				Thread.sleep (suspendFor);
+			} catch (InterruptedException ex) {
+				Logger.getLogger (Main.class.getName ()).log (Level.SEVERE, null, ex);
+			}
+			System.out.println ("Resuming session");
+			session.resume ();
+		});
+		suspendThread.start ();
 		primaryStage.show ();
 	}
-
 }
 
 // SWING-STYLE
@@ -204,9 +207,10 @@ public class Main extends Application {
 //
 //		JFrame frame = new JFrame ();
 //
-//		RfbClientSession session = new RfbClientSession ("192.168.2.6", 5901);
+//		RfbClientSession session = new RfbClientSession (host, port);
+//		session.setPasswordSupplier (() -> password);
 //
-//		VncView vncView = new DefaultJavaFxVncView ();
+//		VncView vncView = new DefaultSwingVncView ();
 //		vncView.setSession (session);
 //
 ////		frame.add (new ru.dmerkushov.vnc.client.ui.ThumbnailView (vncView));

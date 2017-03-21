@@ -25,9 +25,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.application.Platform;
-import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.Node;
-import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
 import javax.swing.JComponent;
@@ -39,7 +37,7 @@ import ru.dmerkushov.vnc.client.rfb.session.RfbFramebuffer;
  *
  * @author dmerkushov
  */
-public class ThumbnailJavafxVncView extends Canvas implements VncView {
+public class ThumbnailJavafxVncView extends VncCanvas implements VncView {
 
 	private RfbClientSession session;
 
@@ -99,7 +97,7 @@ public class ThumbnailJavafxVncView extends Canvas implements VncView {
 		Image fxImg;
 
 		synchronized (framebuffer) {
-			fxImg = SwingFXUtils.toFXImage (framebuffer, null);
+			fxImg = this.toFxImage (framebuffer);
 		}
 
 		final CountDownLatch doneLatch = new CountDownLatch (1);
