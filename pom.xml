@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>ru.dmerkushov</groupId>
 	<artifactId>vnc-client</artifactId>
-	<version>2.7.3.${build.number}</version>
+	<version>2.7.4.${build.number}</version>
 	<packaging>jar</packaging>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

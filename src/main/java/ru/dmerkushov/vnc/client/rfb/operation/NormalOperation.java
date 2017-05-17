@@ -106,7 +106,7 @@ public class NormalOperation extends Operation {
 
 		@Override
 		public void doSomething () {
-			while (goOn) {
+			while (goOn && session.getSocket ().isConnected ()) {
 				S2CMessage message = null;
 
 				try {
@@ -130,12 +130,6 @@ public class NormalOperation extends Operation {
 						Thread.sleep (1000L);
 					} catch (InterruptedException ex) {
 					}
-//					VncCommon.getLogger ().log (Level.WARNING, "Finishing threads for VNC session because incoming message is null (probably VNC server has closed TCP connection): session {0}, socket connected? - {1}", new Object[]{session.toString (), session.getSocket ().isConnected ()});
-//					try {
-//						ThreadHelper.getInstance ().finish (session.getThreadGroupName (), 1000l);
-//					} catch (ThreadHelperException ex) {
-//						VncCommon.getLogger ().log (Level.SEVERE, null, ex);
-//					}
 				} else if (!session.isSuspended ()) {
 					incomingMessagesQueue.add (message);
 				}
@@ -156,7 +150,7 @@ public class NormalOperation extends Operation {
 		public void doSomething () {
 			OutputStream out;
 			C2SMessage message = null;
-			while (goOn) {
+			while (goOn && session.getSocket ().isConnected ()) {
 				message = outgoingMessagesQueue.poll ();
 
 				if (message != null && !session.isSuspended ()) {
@@ -208,12 +202,10 @@ public class NormalOperation extends Operation {
 					}
 				}
 
-//				if (outgoingMessagesQueue.isEmpty ()) {
 				try {
 					Thread.sleep (10l);
 				} catch (InterruptedException ex) {
 				}
-//				}
 			}
 		}
 
@@ -229,7 +221,7 @@ public class NormalOperation extends Operation {
 
 		@Override
 		public void doSomething () {
-			while (goOn) {
+			while (goOn && session.getSocket ().isConnected ()) {
 				S2CMessage message = incomingMessagesQueue.poll ();
 				if (message != null && message instanceof FramebufferUpdateMessage && session.isFramebufferAttached () && !session.isSuspended ()) {
 					FramebufferUpdateMessage fbuMessage = (FramebufferUpdateMessage) message;

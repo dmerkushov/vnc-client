@@ -206,6 +206,7 @@ public class RfbClientSession {
 	public void restartSession (RfbSessionState sessionState) throws RfbSessionException, IOException {
 		VncCommon.getLogger ().entering (getClass ().getCanonicalName (), "restartSession");
 		finishSession (sessionState);
+		this.sessionState = Initial;
 		startSession ();
 		VncCommon.getLogger ().exiting (getClass ().getCanonicalName (), "restartSession");
 	}
