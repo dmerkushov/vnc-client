@@ -207,6 +207,7 @@ public class RfbClientSession {
 		VncCommon.getLogger ().entering (getClass ().getCanonicalName (), "restartSession");
 		finishSession (sessionState);
 		startSession ();
+		VncCommon.getLogger ().exiting (getClass ().getCanonicalName (), "restartSession");
 	}
 
 	public void refreshSocket () {

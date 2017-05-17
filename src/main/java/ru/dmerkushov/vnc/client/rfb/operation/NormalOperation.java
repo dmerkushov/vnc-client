@@ -8,6 +8,7 @@ package ru.dmerkushov.vnc.client.rfb.operation;
 import java.awt.Dimension;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.SocketException;
 import java.util.Objects;
 import java.util.Queue;
 import java.util.Set;
@@ -188,6 +189,14 @@ public class NormalOperation extends Operation {
 					} catch (MessageException ex) {
 						VncCommon.getLogger ().log (Level.SEVERE, null, ex);
 					} catch (IOException ex) {
+						if (ex instanceof SocketException) {
+							VncCommon.getLogger ().log (Level.WARNING, "Socket broken (probably 'broken pipe' exception caught). Setting the session state to Error (this will restart the session)", ex);
+							try {
+								session.setSessionState (RfbSessionState.Error);
+							} catch (RfbSessionException ex1) {
+								VncCommon.getLogger ().log (Level.SEVERE, null, ex1);
+							}
+						}
 						VncCommon.getLogger ().log (Level.SEVERE, null, ex);
 						if (session.getSessionState () != RfbSessionState.Finished) {
 							try {
