@@ -203,7 +203,7 @@ public class RfbClientSession {
 		}
 	}
 
-	private void restartSession (RfbSessionState sessionState) throws RfbSessionException, IOException {
+	public void restartSession (RfbSessionState sessionState) throws RfbSessionException, IOException {
 		VncCommon.getLogger ().entering (getClass ().getCanonicalName (), "restartSession");
 		finishSession (sessionState);
 		startSession ();

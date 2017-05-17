@@ -190,10 +190,10 @@ public class NormalOperation extends Operation {
 						VncCommon.getLogger ().log (Level.SEVERE, null, ex);
 					} catch (IOException ex) {
 						if (ex instanceof SocketException) {
-							VncCommon.getLogger ().log (Level.WARNING, "Socket broken (probably 'broken pipe' exception caught). Setting the session state to Error (this will restart the session)", ex);
+							VncCommon.getLogger ().log (Level.WARNING, "Socket broken (probably 'broken pipe' exception caught). Trying to restart the session", ex);
 							try {
-								session.setSessionState (RfbSessionState.Error);
-							} catch (RfbSessionException ex1) {
+								session.restartSession (RfbSessionState.Error);
+							} catch (RfbSessionException | IOException ex1) {
 								VncCommon.getLogger ().log (Level.SEVERE, null, ex1);
 							}
 						}
