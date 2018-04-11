@@ -9,7 +9,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ *<
  * You should have received a copy of the GNU General Public License
  * along with this software; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
@@ -27,6 +27,7 @@ import javafx.scene.Scene;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
+import javax.swing.JOptionPane;
 import ru.dmerkushov.vnc.client.rfb.session.RfbClientSession;
 import ru.dmerkushov.vnc.client.rfb.session.RfbSessionException;
 import ru.dmerkushov.vnc.client.rfb.session.RfbSessionState;
@@ -40,12 +41,16 @@ import ru.dmerkushov.vnc.client.ui.VncView;
 public class Main extends Application {
 
 	public static void main (String[] args) {
+		host = JOptionPane.showInputDialog ("Host", "localhost");
+		port = Integer.parseInt (JOptionPane.showInputDialog ("Port", "5901"));
+		password = JOptionPane.showInputDialog ("Password");
+
 		launch (args);
 	}
 
-	String host = "194.85.135.166";
-	int port = 5901;
-	String password = "12345678";
+	static String host;
+	static int port;
+	static String password;
 
 // JAVAFX-STYLE
 //	@Override
