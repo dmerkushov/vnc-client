@@ -69,7 +69,7 @@ public class RfbCursorPseudoPixelData extends RfbPixelData {
 				boolean keepPoint = (bytemask[y * scanlineLength * 8 + x] != 0);
 				int argb;
 				if (keepPoint) {
-					argb = cursorImage.getRGB (x, y) | 0xFF000000;
+					argb = (~ cursorImage.getRGB (x, y)) | 0xFF000000;
 				} else {
 					argb = 0;
 				}
