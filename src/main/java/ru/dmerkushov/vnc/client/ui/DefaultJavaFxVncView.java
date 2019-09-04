@@ -20,18 +20,22 @@ package ru.dmerkushov.vnc.client.ui;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.image.BufferedImage;
+import java.nio.IntBuffer;
 import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.application.Platform;
-import javafx.embed.swing.SwingFXUtils;
 import javafx.event.EventHandler;
 import javafx.event.EventType;
+import javafx.geometry.Dimension2D;
 import javafx.scene.ImageCursor;
 import javafx.scene.Node;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
+import javafx.scene.image.PixelFormat;
+import javafx.scene.image.PixelWriter;
+import javafx.scene.image.WritableImage;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
@@ -44,6 +48,7 @@ import ru.dmerkushov.vnc.client.rfb.messages.normal.c2s.PointerEventMessageSeque
 import ru.dmerkushov.vnc.client.rfb.session.RfbClientSession;
 import ru.dmerkushov.vnc.client.rfb.session.RfbFramebuffer;
 import ru.dmerkushov.vnc.client.ui.events.Keysyms;
+import sun.awt.image.IntegerComponentRaster;
 
 /**
  *
@@ -213,13 +218,34 @@ public class DefaultJavaFxVncView extends VncCanvas implements VncView {
 			Logger.getLogger (DefaultJavaFxVncView.class.getName ()).log (Level.SEVERE, null, ex);
 		}
 
+		// DEBUG
 		System.out.println ("WxH: " + getWidth () + "x" + getHeight ());
 	}
 
 	@Override
 	public void setCursorImage (BufferedImage cursor, int hotspotX, int hotspotY) {
-		Image fxImg = SwingFXUtils.toFXImage (cursor, null);
-		this.setCursor (new ImageCursor (fxImg, hotspotX, hotspotY));
+		Platform.runLater (() -> {
+			Dimension2D bestSize = ImageCursor.getBestSize (cursor.getWidth (), cursor.getHeight ());
+			int bestWidth = (int) bestSize.getWidth ();
+			int bestHeight = (int) bestSize.getHeight ();
+
+			WritableImage wimg = new WritableImage (bestWidth, bestHeight);
+			PixelWriter pw = wimg.getPixelWriter ();
+			IntegerComponentRaster icr = (IntegerComponentRaster) cursor.getRaster ();
+			int data[] = icr.getDataStorage ();
+			int offset = icr.getDataOffset (0);
+			int scan = icr.getScanlineStride ();
+			PixelFormat<IntBuffer> pf = PixelFormat.getIntArgbInstance ();
+			pw.setPixels (0, 0, cursor.getWidth (), cursor.getHeight (), pf, data, offset, scan);
+
+			// DEBUG
+			System.out.println ("New cursor buf: w=" + cursor.getWidth () + " h=" + cursor.getHeight ());
+			System.out.println ("New cursor fx: w=" + wimg.widthProperty ().get () + " h=" + wimg.heightProperty ().get ());
+
+			ImageCursor fxImgCursor = new ImageCursor (wimg, hotspotX, hotspotY);
+
+			this.setCursor (fxImgCursor);
+		});
 	}
 
 	@Override

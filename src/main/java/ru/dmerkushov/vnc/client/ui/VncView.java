@@ -74,7 +74,7 @@ public interface VncView {
 	/**
 	 * Set the cursor image for this view
 	 *
-	 * @param cursor
+	 * @param cursor TYPE_INT_ARGB image of the cursor
 	 * @param hotspotX
 	 * @param hotspotY
 	 */
