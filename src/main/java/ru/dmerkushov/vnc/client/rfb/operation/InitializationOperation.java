@@ -54,8 +54,21 @@ public class InitializationOperation extends Operation {
 
 		// SetPixelFormat and SetEncoding also go here not to drop the logic of NormalOperation
 		ArrayList<Integer> encodings = new ArrayList<> (1);
-		encodings.add (RfbPixelData.ENCODINGTYPE_RAW);
-//		encodings.add (RfbPixelData.ENCODINGTYPE_ZLIB);
+
+		/*
+		RFC 6143, p.7.7.1 says:
+
+		"All RFB clients must be able to handle pixel data in this raw encoding,
+		and RFB servers should only produce raw encoding unless the client
+		specifically asks for some other encoding type."
+
+		We support RAW, but RAW is inefficient. So we don't want the server to
+		use RAW, and we don't ask for it. Instead, we specifically ask for ZLIB,
+		that provides data compression at a rate of about 50 (compared to RAW
+		on regular office applications).
+		 */
+//		encodings.add (RfbPixelData.ENCODINGTYPE_RAW);
+		encodings.add (RfbPixelData.ENCODINGTYPE_ZLIB);
 //		encodings.add (RfbPixelData.ENCODINGTYPE_COPYRECT);
 //		encodings.add (RfbPixelData.ENCODINGTYPE_TRLE);
 		encodings.add (RfbPixelData.ENCODINGTYPE_PSEUDO_CURSOR);

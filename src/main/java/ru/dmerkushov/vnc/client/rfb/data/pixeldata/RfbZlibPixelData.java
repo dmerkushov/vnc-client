@@ -23,6 +23,7 @@ import ru.dmerkushov.vnc.client.rfb.session.RfbClientSession;
 import ru.dmerkushov.vnc.client.rfb.session.RfbFramebuffer;
 
 /**
+ * Support for ZLIB pixel data, as described in the rfbproto document, p.7.6.6
  *
  * @author dmerkushov
  */
