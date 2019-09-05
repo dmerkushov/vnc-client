@@ -166,7 +166,7 @@ public class Main extends Application {
 
 		HBox root = new HBox ();
 		root.getChildren ().add (vncView.getJavafxNode ());
-		primaryStage.setScene (new Scene (root, 300, 250));
+		primaryStage.setScene (new Scene (root, 1200, 800));
 
 		primaryStage.setOnHiding (new EventHandler<WindowEvent> () {
 			@Override
