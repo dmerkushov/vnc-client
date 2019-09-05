@@ -225,6 +225,7 @@ public class NormalOperation extends Operation {
 				S2CMessage message = incomingMessagesQueue.poll ();
 				if (message != null && message instanceof FramebufferUpdateMessage && session.isFramebufferAttached () && !session.isSuspended ()) {
 					FramebufferUpdateMessage fbuMessage = (FramebufferUpdateMessage) message;
+
 					RfbRectangle[] rectangles = fbuMessage.getRectangles ();
 					for (int i = 0; i < rectangles.length; i++) {
 						RfbRectangle rectangle = rectangles[i];
@@ -275,7 +276,7 @@ public class NormalOperation extends Operation {
 		public void doSomething () {
 			int counter = 1;
 
-			long framebufferUpdateDelay = vncPrefs.getLong ("FRAMEBUFFER_UPDATE_DELAY", 50l);
+			long framebufferUpdateDelay = vncPrefs.getLong ("FRAMEBUFFER_UPDATE_DELAY", 100l);
 			long fullUpdateCounter = vncPrefs.getLong ("FULL_UPDATE_COUNTER", 256l);
 
 			System.err.println ("Framebuffer update delay: " + framebufferUpdateDelay);

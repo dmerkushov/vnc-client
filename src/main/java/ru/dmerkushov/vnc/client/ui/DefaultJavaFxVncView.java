@@ -42,6 +42,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
 import javax.swing.JComponent;
 import ru.dmerkushov.vnc.client.VncCommon;
+import static ru.dmerkushov.vnc.client.VncCommon.vncPrefs;
 import ru.dmerkushov.vnc.client.rfb.messages.normal.c2s.KeyEventMessageSequence;
 import ru.dmerkushov.vnc.client.rfb.messages.normal.c2s.PointerEventMessage;
 import ru.dmerkushov.vnc.client.rfb.messages.normal.c2s.PointerEventMessageSequence;
@@ -69,6 +70,10 @@ public class DefaultJavaFxVncView extends VncCanvas implements VncView {
 		this.setMouseTransparent (false);
 
 		this.addEventFilter (MouseEvent.ANY, new EventHandler<MouseEvent> () {
+
+			long lastMoveTimestamp = 0;
+			long mouseMoveSendDelayMs = vncPrefs.getLong ("MOUSEMOVE_SEND_DELAY", 100l);
+
 			@Override
 			public void handle (MouseEvent e) {
 				EventType eventType = e.getEventType ();
@@ -89,8 +94,15 @@ public class DefaultJavaFxVncView extends VncCanvas implements VncView {
 					PointerEventMessage pointerEventMsg = new PointerEventMessage (session, 0, x, y);
 					session.sendMessage (pointerEventMsg);
 				} else if (eventType == MouseEvent.MOUSE_ENTERED || eventType == MouseEvent.MOUSE_MOVED) {
-					PointerEventMessageSequence pointerEventMsg = new PointerEventMessageSequence (session, PointerEventMessageSequence.EVENTTYPE_CAMEHERE, x, y);
-					session.sendMessage (pointerEventMsg);
+
+					// Don't spam the server with mouse position updates
+					long motionTimestamp = System.currentTimeMillis ();
+					if (motionTimestamp - lastMoveTimestamp > mouseMoveSendDelayMs) {
+						PointerEventMessageSequence pointerEventMsg = new PointerEventMessageSequence (session, PointerEventMessageSequence.EVENTTYPE_CAMEHERE, x, y);
+						session.sendMessage (pointerEventMsg);
+
+						lastMoveTimestamp = motionTimestamp;
+					}
 				}
 			}
 		});
@@ -198,6 +210,15 @@ public class DefaultJavaFxVncView extends VncCanvas implements VncView {
 		Platform.runLater (new Runnable () {
 			@Override
 			public void run () {
+				// Skip this framebuffer update if it's old
+//				if (framebuffer.fbuIndex.get () != FramebufferUpdateMessage.currentFbuIndex.get ()) {
+//
+//					// DEBUG
+//					System.out.println ("Skipping");
+//
+//					doneLatch.countDown ();
+//					return;
+//				}
 
 				try {
 					DefaultJavaFxVncView.this.setWidth (fxImg.getWidth ());
