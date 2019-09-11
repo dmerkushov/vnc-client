@@ -19,6 +19,7 @@ import static ru.dmerkushov.vnc.client.rfb.messages.util.RfbMessagesUtil.readU32
 import static ru.dmerkushov.vnc.client.rfb.messages.util.RfbMessagesUtil.writeString;
 import static ru.dmerkushov.vnc.client.rfb.messages.util.RfbMessagesUtil.writeU32;
 import ru.dmerkushov.vnc.client.rfb.session.RfbClientSession;
+import ru.dmerkushov.vnc.client.rfb.session.RfbVersion;
 
 /**
  * This is the security result handshake, a message sent by the server to the
@@ -31,7 +32,8 @@ public class SecurityResultHandshake_S2C extends RfbMessage {
 
 	public static final long SECRESULT_STATUS_OK = 0;
 	public static final long SECRESULT_STATUS_FAILED = 1;
-	public static final Set<Long> SECRESULT_POSSIBLE = new HashSet<> (Arrays.asList (SECRESULT_STATUS_OK, SECRESULT_STATUS_FAILED));
+	public static final long SECRESULT_STATUS_FAILED_TIGHT_TOOMANYATTEMPTS = 2;
+	public static final Set<Long> SECRESULT_POSSIBLE = new HashSet<> (Arrays.asList (SECRESULT_STATUS_OK, SECRESULT_STATUS_FAILED, SECRESULT_STATUS_FAILED_TIGHT_TOOMANYATTEMPTS));
 
 	private long status;
 	private String reason = null;
@@ -45,7 +47,9 @@ public class SecurityResultHandshake_S2C extends RfbMessage {
 
 		setStatus (status);
 
-		if (status == SECRESULT_STATUS_FAILED) {
+		if (getSession ().getRfbVersion ().compareTo (RfbVersion.RFB_VER_3_8) < 0) {
+			this.reason = "Reason cannot set, because this is supported starting from RFB 3.8. Current RFB version is " + getSession ().getRfbVersion ();
+		} else if (status == SECRESULT_STATUS_FAILED) {
 			Objects.requireNonNull (reason, "Reason may not be null if result is FAILED");
 
 			this.reason = reason;
@@ -86,7 +90,7 @@ public class SecurityResultHandshake_S2C extends RfbMessage {
 	public void read (InputStream in) throws MessageException, IOException {
 		setStatus (readU32 (in, true));
 
-		if (status != SECRESULT_STATUS_OK) {
+		if (status != SECRESULT_STATUS_OK && getSession ().getRfbVersion ().compareTo (RfbVersion.RFB_VER_3_8) >= 0) {
 			reason = readString (in);
 		}
 	}
