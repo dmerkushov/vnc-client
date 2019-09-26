@@ -5,21 +5,22 @@
  */
 package ru.dmerkushov.vnc.client.rfb.messages.normal.s2c;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.Socket;
-import java.util.Objects;
-import ru.dmerkushov.vnc.client.VncCommon;
 import ru.dmerkushov.vnc.client.rfb.messages.MessageException;
 import ru.dmerkushov.vnc.client.rfb.messages.normal.MessageFactoryException;
 import ru.dmerkushov.vnc.client.rfb.messages.normal.NormalMessage;
-import static ru.dmerkushov.vnc.client.rfb.messages.util.RfbMessagesUtil.readU8;
 import ru.dmerkushov.vnc.client.rfb.session.RfbClientSession;
 import ru.dmerkushov.vnc.client.rfb.session.RfbSessionException;
 import ru.dmerkushov.vnc.client.rfb.session.RfbSessionState;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.Socket;
+import java.util.Objects;
+
+import static ru.dmerkushov.vnc.client.VncCommon.logger;
+import static ru.dmerkushov.vnc.client.rfb.messages.util.RfbMessagesUtil.readU8;
+
 /**
- *
  * @author dmerkushov
  */
 public class S2CMessageFactory {
@@ -30,10 +31,10 @@ public class S2CMessageFactory {
 	}
 
 	public static S2CMessageFactory getInstance () {
-		if (instance == null) {
-			instance = new S2CMessageFactory ();
+		if (S2CMessageFactory.instance == null) {
+			S2CMessageFactory.instance = new S2CMessageFactory ();
 		}
-		return instance;
+		return S2CMessageFactory.instance;
 	}
 
 	private final int maxErrorCounter = 5;
@@ -73,13 +74,12 @@ public class S2CMessageFactory {
 		try {
 			message.read (in);
 		} catch (MessageException ex) {
-			VncCommon.getLogger ().warning ("MessageException: " + ex.getMessage ());
+			logger.warning ("MessageException: " + ex.getMessage ());
 			ex.printStackTrace ();
 
 //			errorCounter++;
 //			if (errorCounter > maxErrorCounter) {
-			// DEBUG
-			System.exit (1);
+//			System.exit (1);
 
 			try {
 				session.setSessionState (RfbSessionState.Error);

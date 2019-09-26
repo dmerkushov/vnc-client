@@ -5,6 +5,13 @@
  */
 package ru.dmerkushov.vnc.client.ui;
 
+import javafx.scene.Node;
+import ru.dmerkushov.vnc.client.rfb.session.RfbClientSession;
+import ru.dmerkushov.vnc.client.rfb.session.RfbFramebuffer;
+import ru.dmerkushov.vnc.client.ui.events.SwingVncViewKeyboardEvents;
+import ru.dmerkushov.vnc.client.ui.events.SwingVncViewMouseEvents;
+
+import javax.swing.JComponent;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
@@ -13,16 +20,10 @@ import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.image.BufferedImage;
 import java.util.Objects;
-import javafx.scene.Node;
-import javax.swing.JComponent;
-import ru.dmerkushov.vnc.client.VncCommon;
-import ru.dmerkushov.vnc.client.rfb.session.RfbClientSession;
-import ru.dmerkushov.vnc.client.rfb.session.RfbFramebuffer;
-import ru.dmerkushov.vnc.client.ui.events.SwingVncViewKeyboardEvents;
-import ru.dmerkushov.vnc.client.ui.events.SwingVncViewMouseEvents;
+
+import static ru.dmerkushov.vnc.client.VncCommon.logger;
 
 /**
- *
  * @author dmerkushov
  */
 public final class DefaultSwingVncView extends JComponent implements VncView {
@@ -37,10 +38,10 @@ public final class DefaultSwingVncView extends JComponent implements VncView {
 
 	@Override
 	public void paint (Graphics g) {
-		RfbFramebuffer framebuffer = session.getFramebuffer ();
+		RfbFramebuffer framebuffer = this.session.getFramebuffer ();
 
 		if (framebuffer == null) {
-			VncCommon.getLogger ().warning ("No framebuffer attached to session");
+			logger.warning ("No framebuffer attached to session");
 			return;
 		}
 
@@ -51,7 +52,7 @@ public final class DefaultSwingVncView extends JComponent implements VncView {
 
 	@Override
 	public Dimension getPreferredSize () {
-		RfbFramebuffer framebuffer = session.getFramebuffer ();
+		RfbFramebuffer framebuffer = this.session.getFramebuffer ();
 
 		if (framebuffer == null) {
 			return new Dimension (1000, 1000);
@@ -102,7 +103,7 @@ public final class DefaultSwingVncView extends JComponent implements VncView {
 
 	@Override
 	public void paintNow (int x, int y, int width, int height) {
-		paintImmediately (x, y, width, height);
+		this.paintImmediately (x, y, width, height);
 	}
 
 	@Override

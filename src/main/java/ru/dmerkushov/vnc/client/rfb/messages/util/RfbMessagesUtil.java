@@ -5,6 +5,8 @@
  */
 package ru.dmerkushov.vnc.client.rfb.messages.util;
 
+import ru.dmerkushov.vnc.client.VncCommon;
+
 import java.io.DataInput;
 import java.io.DataInputStream;
 import java.io.EOFException;
@@ -15,10 +17,8 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Arrays;
 import java.util.Objects;
-import ru.dmerkushov.vnc.client.VncCommon;
 
 /**
- *
  * @author dmerkushov
  */
 public class RfbMessagesUtil {
@@ -33,6 +33,7 @@ public class RfbMessagesUtil {
 	 * Read an unsigned 1-byte (8-bit) value to an int
 	 *
 	 * @param in
+	 *
 	 * @return
 	 * @throws IOException
 	 */
@@ -53,6 +54,7 @@ public class RfbMessagesUtil {
 	 *
 	 * @param in
 	 * @param bigEndian
+	 *
 	 * @return
 	 * @throws IOException
 	 */
@@ -69,7 +71,7 @@ public class RfbMessagesUtil {
 
 		byte[] padding = new byte[]{0, 0};
 
-		ByteBuffer bb4 = allocateBB (4);
+		ByteBuffer bb4 = RfbMessagesUtil.allocateBB (4);
 
 		if (bigEndian) {
 			bb4.order (ByteOrder.BIG_ENDIAN);
@@ -89,6 +91,7 @@ public class RfbMessagesUtil {
 	 *
 	 * @param in
 	 * @param bigEndian
+	 *
 	 * @return
 	 * @throws IOException
 	 */
@@ -106,7 +109,7 @@ public class RfbMessagesUtil {
 
 		byte[] padding = new byte[]{0, 0, 0, 0};
 
-		ByteBuffer bb8 = allocateBB (8);
+		ByteBuffer bb8 = RfbMessagesUtil.allocateBB (8);
 
 		if (bigEndian) {
 			bb8.order (ByteOrder.BIG_ENDIAN);
@@ -125,6 +128,7 @@ public class RfbMessagesUtil {
 	 * Read a signed 4-byte (32-bit) value to an int
 	 *
 	 * @param in
+	 *
 	 * @return
 	 * @throws IOException
 	 */
@@ -139,7 +143,7 @@ public class RfbMessagesUtil {
 			throw new IOException ("End of input stream", ex);
 		}
 
-		ByteBuffer bb4 = allocateBB (4);
+		ByteBuffer bb4 = RfbMessagesUtil.allocateBB (4);
 		bb4.order (bigEndian ? ByteOrder.BIG_ENDIAN : ByteOrder.LITTLE_ENDIAN);
 		bb4.put (bytes);
 
@@ -170,10 +174,10 @@ public class RfbMessagesUtil {
 	public static String readString (InputStream in) throws IOException {
 		Objects.requireNonNull (in);
 
-		int strLen = (int) readU32 (in, true);
-		byte[] strBytes = readBytes (in, strLen);
+		int strLen = (int) RfbMessagesUtil.readU32 (in, true);
+		byte[] strBytes = RfbMessagesUtil.readBytes (in, strLen);
 
-		String str = new String (strBytes, VncCommon.STRINGENCODING);
+		String str = new String (strBytes, VncCommon.STRING_ENCODING);
 
 		return str;
 	}
@@ -183,12 +187,13 @@ public class RfbMessagesUtil {
 	 *
 	 * @param out
 	 * @param value
+	 *
 	 * @throws IOException
 	 */
 	public static void writeU8 (OutputStream out, int value) throws IOException {
 		Objects.requireNonNull (out, "out");
 
-		ByteBuffer bb4 = allocateBB (4);
+		ByteBuffer bb4 = RfbMessagesUtil.allocateBB (4);
 		bb4.putInt (value);
 		bb4.flip ();
 		out.write (bb4.array (), 3, 1);
@@ -200,12 +205,13 @@ public class RfbMessagesUtil {
 	 * @param out
 	 * @param value
 	 * @param bigEndian
+	 *
 	 * @throws IOException
 	 */
 	public static void writeU16 (OutputStream out, int value, boolean bigEndian) throws IOException {
 		Objects.requireNonNull (out, "out");
 
-		ByteBuffer bb4 = allocateBB (4);
+		ByteBuffer bb4 = RfbMessagesUtil.allocateBB (4);
 		if (bigEndian) {
 			bb4.order (ByteOrder.BIG_ENDIAN);
 			bb4.putInt (value);
@@ -223,12 +229,13 @@ public class RfbMessagesUtil {
 	 * @param out
 	 * @param value
 	 * @param bigEndian
+	 *
 	 * @throws IOException
 	 */
 	public static void writeU32 (OutputStream out, long value, boolean bigEndian) throws IOException {
 		Objects.requireNonNull (out, "out");
 
-		ByteBuffer bb8 = allocateBB (8);
+		ByteBuffer bb8 = RfbMessagesUtil.allocateBB (8);
 		if (bigEndian) {
 			bb8.order (ByteOrder.BIG_ENDIAN);
 			bb8.putLong (value);
@@ -243,7 +250,7 @@ public class RfbMessagesUtil {
 	public static void writeS32 (OutputStream out, int value, boolean bigEndian) throws IOException {
 		Objects.requireNonNull (out, "out");
 
-		ByteBuffer bb4 = allocateBB (4);
+		ByteBuffer bb4 = RfbMessagesUtil.allocateBB (4);
 		bb4.order (bigEndian ? ByteOrder.BIG_ENDIAN : ByteOrder.LITTLE_ENDIAN);
 		bb4.putInt (value);
 		out.write (bb4.array ());
@@ -261,9 +268,9 @@ public class RfbMessagesUtil {
 
 		int valueLen = value.length ();
 
-		writeU32 (out, valueLen, true);
+		RfbMessagesUtil.writeU32 (out, valueLen, true);
 
-		byte[] valueBytes = value.getBytes (VncCommon.STRINGENCODING);
+		byte[] valueBytes = value.getBytes (VncCommon.STRING_ENCODING);
 		out.write (valueBytes);
 	}
 

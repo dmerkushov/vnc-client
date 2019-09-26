@@ -21,17 +21,19 @@ import javafx.application.Platform;
 import javafx.scene.Node;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
-import ru.dmerkushov.vnc.client.VncCommon;
 import ru.dmerkushov.vnc.client.rfb.session.RfbClientSession;
 import ru.dmerkushov.vnc.client.rfb.session.RfbFramebuffer;
 
-import javax.swing.*;
-import java.awt.*;
+import javax.swing.JComponent;
+import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.image.BufferedImage;
 import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import static ru.dmerkushov.vnc.client.VncCommon.logger;
 
 /**
  * @author dmerkushov
@@ -89,7 +91,7 @@ public class ThumbnailJavafxVncView extends VncCanvas implements VncView {
 		RfbFramebuffer framebuffer = this.session.getFramebuffer ();
 
 		if (framebuffer == null) {
-			VncCommon.getLogger ().warning ("No framebuffer attached to session");
+			logger.warning ("No framebuffer attached to session");
 			return;
 		}
 
@@ -121,7 +123,7 @@ public class ThumbnailJavafxVncView extends VncCanvas implements VncView {
 			Logger.getLogger (DefaultJavaFxVncView.class.getName ()).log (Level.SEVERE, null, ex);
 		}
 
-		System.out.println ("thumb paintNow WxH: " + this.getWidth () + "x" + this.getHeight ());
+		logger.finest ("thumb paintNow WxH: " + this.getWidth () + "x" + this.getHeight ());
 	}
 
 	@Override

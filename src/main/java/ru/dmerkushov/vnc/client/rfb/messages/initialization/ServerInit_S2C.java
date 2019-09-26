@@ -5,27 +5,27 @@
  */
 package ru.dmerkushov.vnc.client.rfb.messages.initialization;
 
+import ru.dmerkushov.vnc.client.rfb.data.RfbPixelFormat;
+import ru.dmerkushov.vnc.client.rfb.messages.MessageException;
+import ru.dmerkushov.vnc.client.rfb.messages.RfbMessage;
+import ru.dmerkushov.vnc.client.rfb.session.RfbClientSession;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Objects;
-import ru.dmerkushov.vnc.client.rfb.data.RfbPixelFormat;
-import ru.dmerkushov.vnc.client.rfb.messages.MessageException;
-import ru.dmerkushov.vnc.client.rfb.messages.RfbMessage;
+
 import static ru.dmerkushov.vnc.client.rfb.messages.util.RfbMessagesUtil.readString;
 import static ru.dmerkushov.vnc.client.rfb.messages.util.RfbMessagesUtil.readU16;
 import static ru.dmerkushov.vnc.client.rfb.messages.util.RfbMessagesUtil.writeString;
 import static ru.dmerkushov.vnc.client.rfb.messages.util.RfbMessagesUtil.writeU16;
-import ru.dmerkushov.vnc.client.rfb.session.RfbClientSession;
 
 /**
- * This is the ServerInit message, a message sent by the server to the client
- * (S2C) after the client sends the ClientInit message. Described in RFC 6143,
- * paragraph 7.3.2.
- *
- * Before this one is:
- * {@link ru.dmerkushov.vnc.client.rfb.messages.initialization.ClientInit_S2C}.
- *
+ * This is the ServerInit message, a message sent by the server to the client (S2C) after the client sends the
+ * ClientInit message. Described in RFC 6143, paragraph 7.3.2.
+ * <p>
+ * Before this one is: {@link ru.dmerkushov.vnc.client.rfb.messages.initialization.ClientInit_C2S}.
+ * <p>
  * After this one is the normal mode of RFB.
  *
  * @author dmerkushov
@@ -56,36 +56,36 @@ public class ServerInit_S2C extends RfbMessage {
 	@Override
 	public void write (OutputStream out) throws MessageException, IOException {
 		Objects.requireNonNull (out, "out");
-		Objects.requireNonNull (pixelFormat, "pixelFormat");
-		Objects.requireNonNull (name, "name");
+		Objects.requireNonNull (this.pixelFormat, "pixelFormat");
+		Objects.requireNonNull (this.name, "name");
 
-		writeU16 (out, framebufferWidth, true);
-		writeU16 (out, framebufferHeight, true);
-		pixelFormat.write (out);
-		writeString (out, name);
+		writeU16 (out, this.framebufferWidth, true);
+		writeU16 (out, this.framebufferHeight, true);
+		this.pixelFormat.write (out);
+		writeString (out, this.name);
 	}
 
 	@Override
 	public void read (InputStream in) throws MessageException, IOException {
-		framebufferWidth = readU16 (in, true);
-		framebufferHeight = readU16 (in, true);
+		this.framebufferWidth = readU16 (in, true);
+		this.framebufferHeight = readU16 (in, true);
 
-		pixelFormat = new RfbPixelFormat ();
-		pixelFormat.read (in);
+		this.pixelFormat = new RfbPixelFormat ();
+		this.pixelFormat.read (in);
 
-		name = readString (in);
+		this.name = readString (in);
 	}
 
 	public int getFramebufferWidth () {
-		return framebufferWidth;
+		return this.framebufferWidth;
 	}
 
 	public int getFramebufferHeight () {
-		return framebufferHeight;
+		return this.framebufferHeight;
 	}
 
 	public RfbPixelFormat getPixelFormat () {
-		return pixelFormat;
+		return this.pixelFormat;
 	}
 
 }

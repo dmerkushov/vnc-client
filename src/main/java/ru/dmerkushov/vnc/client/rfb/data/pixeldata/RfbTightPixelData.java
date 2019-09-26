@@ -14,11 +14,23 @@ import ru.dmerkushov.vnc.client.rfb.session.RfbFramebuffer;
 import ru.dmerkushov.vnc.client.util.RepeatingInputStream;
 import ru.dmerkushov.vnc.client.util.WrappingInputStream;
 
-import java.io.*;
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.EOFException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Objects;
+import java.util.function.Supplier;
+import java.util.logging.Level;
 
+import static ru.dmerkushov.vnc.client.VncCommon.logger;
 import static ru.dmerkushov.vnc.client.rfb.messages.util.RfbMessagesUtil.readU8;
 
 /**
@@ -82,8 +94,12 @@ public class RfbTightPixelData extends RfbPixelData {
 	public void read (InputStream in) throws MessageException, IOException {
 		int compressionControl = readU8 (in);
 
-		// DEBUG
-		System.out.println ("Compression control byte: " + String.format ("%8s", Integer.toBinaryString (compressionControl)).replaceAll (" ", "0"));
+		logger.finest (new Supplier<String> () {
+			@Override
+			public String get () {
+				return null;
+			}
+		});//.finest ("Compression control byte: " + String.format ("%8s", Integer.toBinaryString (compressionControl)).replaceAll (" ", "0"));
 
 		if ((compressionControl & 0x80) == 0x00) {
 			this.readBasicCompression (in, compressionControl);
@@ -98,33 +114,25 @@ public class RfbTightPixelData extends RfbPixelData {
 
 	private void readBasicCompression (InputStream in, int compressionControl) throws MessageException, IOException {
 		if ((compressionControl & 0x01) == 0x01) {
-
-			// DEBUG
-			System.out.println ("Reset infIs 0");
+			logger.finest ("Reset infIs 0");
 
 			this.packedInputStreams[0] = new WrappingInputStream ();
 			this.infIss[0] = new InflaterInputStream (this.packedInputStreams[0], false);
 		}
 		if ((compressionControl & 0x02) == 0x02) {
-
-			// DEBUG
-			System.out.println ("Reset infIs 1");
+			logger.finest ("Reset infIs 1");
 
 			this.packedInputStreams[1] = new WrappingInputStream ();
 			this.infIss[1] = new InflaterInputStream (this.packedInputStreams[1], false);
 		}
 		if ((compressionControl & 0x04) == 0x04) {
-
-			// DEBUG
-			System.out.println ("Reset infIs 2");
+			logger.finest ("Reset infIs 2");
 
 			this.packedInputStreams[2] = new WrappingInputStream ();
 			this.infIss[2] = new InflaterInputStream (this.packedInputStreams[2], false);
 		}
 		if ((compressionControl & 0x08) == 0x08) {
-
-			// DEBUG
-			System.out.println ("Reset infIs 3");
+			logger.finest ("Reset infIs 3");
 
 			this.packedInputStreams[3] = new WrappingInputStream ();
 			this.infIss[3] = new InflaterInputStream (this.packedInputStreams[3], false);
@@ -132,8 +140,7 @@ public class RfbTightPixelData extends RfbPixelData {
 
 		int usedInflaterIndex = (compressionControl >> 4) & 0x03;
 
-		// DEBUG
-		System.out.println ("Use ZLIB infIs (stream) #" + usedInflaterIndex);
+		logger.finest ("Use ZLIB infIs (stream) #" + usedInflaterIndex);
 
 		InflaterInputStream infIs = this.infIss[usedInflaterIndex];
 		WrappingInputStream packedIs = this.packedInputStreams[usedInflaterIndex];
@@ -143,8 +150,7 @@ public class RfbTightPixelData extends RfbPixelData {
 			filterId = readU8 (in);
 		}
 
-		// DEBUG
-		System.out.println ("filter-id byte: " + String.format ("%8s", Integer.toBinaryString (filterId)).replaceAll (" ", "0"));
+		logger.finest ("filter-id byte: " + String.format ("%8s", Integer.toBinaryString (filterId)).replaceAll (" ", "0"));
 
 		if (filterId == 0) {
 			this.readBasicCompressionCopyFilter (in, infIs, packedIs);
@@ -159,13 +165,11 @@ public class RfbTightPixelData extends RfbPixelData {
 
 	private void readBasicCompressionCopyFilter (InputStream in, InflaterInputStream infIs, WrappingInputStream packedIs) throws MessageException, IOException {
 
-		//DEBUG
-		System.out.println ("+readBasicCompressionCopyFilter");
+		logger.finest ("+readBasicCompressionCopyFilter");
 
 		boolean useTightPixel = this.session.getPixelFormat ().mayApplyTightPixel ();
 
-		//DEBUG
-		System.out.println ("Using tight pixel: " + useTightPixel);
+		logger.finest ("Using tight pixel: " + useTightPixel);
 
 		int pixelBytes = this.session.getPixelFormat ().getBitsPerPixel () / 8;
 		if (useTightPixel) {
@@ -199,20 +203,16 @@ public class RfbTightPixelData extends RfbPixelData {
 		this.innerPixelData = new RfbRawPixelData (this.rectangle);
 		this.innerPixelData.read (uncompressedBais);
 
-		//DEBUG
-		System.out.println ("-readBasicCompressionCopyFilter");
-
+		logger.finest ("-readBasicCompressionCopyFilter");
 	}
 
 	private void readBasicCompressionPaletteFilter (InputStream in, InflaterInputStream currentInflaterIs, WrappingInputStream currentPackedIs) throws MessageException, IOException {
 
-		//DEBUG
-		System.out.println ("+readBasicCompressionPaletteFilter");
+		logger.finest ("+readBasicCompressionPaletteFilter");
 
 		int paletteColorCount = readU8 (in) + 1;
 
-		//DEBUG
-		System.out.println ("Palette color count: " + paletteColorCount);
+		logger.finest ("Palette color count: " + paletteColorCount);
 
 		int[] argbPalette = this.session.getPixelFormat ().readArgbTightPixels (in, paletteColorCount);
 
@@ -226,9 +226,7 @@ public class RfbTightPixelData extends RfbPixelData {
 			expectedLen = (width + 7) / 8 * height;
 		}
 
-		//DEBUG
-		System.out.println ("WxH: " + width + "x" + height);
-		System.out.println ("Expected data len: " + expectedLen);
+		logger.finest ("PaletteFilter: Rectangle WxH: " + width + "x" + height + ", expected data len: " + expectedLen);
 
 		byte[] data = this.readBasicCompressionData (in, expectedLen, currentInflaterIs, currentPackedIs);
 
@@ -258,15 +256,11 @@ public class RfbTightPixelData extends RfbPixelData {
 		this.innerPixelData = new RfbRawPixelData (this.rectangle);
 		this.innerPixelData.read (uncompressedBais);
 
-		//DEBUG
-		System.out.println ("-readBasicCompressionPaletteFilter");
-
+		logger.finest ("-readBasicCompressionPaletteFilter");
 	}
 
 	private void readBasicCompressionGradientFilter (InputStream in, InflaterInputStream infIs, WrappingInputStream packedIs) throws MessageException, IOException {
-
-		//DEBUG
-		System.out.println ("+readBasicCompressionGradientFilter");
+		logger.finest ("+readBasicCompressionGradientFilter");
 
 		int width = this.rectangle.getWidth ();
 		int height = this.rectangle.getHeight ();
@@ -280,10 +274,6 @@ public class RfbTightPixelData extends RfbPixelData {
 		RfbPixelFormat pixelFormat = this.session.getPixelFormat ();
 		int[] diffs = pixelFormat.readArgbTightPixels (tightBais, pixelCount);
 
-		int predicted;
-		int left;
-		int top;
-		int leftTop;
 		int[] pixels = new int[pixelCount];
 
 		ByteArrayOutputStream argbBaos = new ByteArrayOutputStream (pixelCount * Integer.BYTES);
@@ -347,41 +337,32 @@ public class RfbTightPixelData extends RfbPixelData {
 		this.innerPixelData = new RfbRawPixelData (this.rectangle);
 		this.innerPixelData.read (argbBais);
 
-		//DEBUG
-		System.out.println ("-readBasicCompressionGradientFilter");
-
+		logger.finest ("-readBasicCompressionGradientFilter");
 	}
 
 	private byte[] readBasicCompressionData (InputStream in, int expectedLen, InflaterInputStream infIs, WrappingInputStream packedIs) throws IOException {
-
-		// DEBUG
-		System.out.println ("+readBasicCompressionData expectedLen: " + expectedLen);
+		logger.finest ("+readBasicCompressionData expectedLen: " + expectedLen);
 
 		byte[] unpackedData = new byte[expectedLen];
 		if (expectedLen > 12) {
-
-			// DEBUG
-			System.out.println ("Reading packed data length...");
-
 			int packedLength = this.readTightLength (in);
-
-			//DEBUG
-			System.out.println ("Received packed data length: " + packedLength + "=0x" + Integer.toHexString (packedLength));
+			logger.finest ("Received packed data length: " + packedLength + "=0x" + Integer.toHexString (packedLength));
 
 			byte[] packedData = new byte[packedLength];
 			DataInputStream packedDataDis = new DataInputStream (in);
 			packedDataDis.readFully (packedData);
 
-			//DEBUG
-			File p = File.createTempFile ("packedData", ".zlib");
-			FileOutputStream pfos = new FileOutputStream (p);
-			DataOutputStream pdos = new DataOutputStream (pfos);
-			pdos.write (packedData);
-			pdos.close ();
-			pfos.close ();
-			System.out.println ("Packed data array size (receivedLen + 1): " + packedData.length + "=0x" + Integer.toHexString (packedData.length));
-			System.out.println ("Packed data written to " + p.getAbsolutePath ());
-//			System.out.println ("Packed data (maximum first 4096 bytes):\n" + VncCommon.hexdump (packedData.length > 4096 ? Arrays.copyOf (packedData, 4096) : packedData));
+			if (logger.isLoggable (Level.FINEST)) {
+//				File p = File.createTempFile ("packedData", ".zlib");
+//				FileOutputStream pfos = new FileOutputStream (p);
+//				DataOutputStream pdos = new DataOutputStream (pfos);
+//				pdos.write (packedData);
+//				pdos.close ();
+//				pfos.close ();
+				logger.finest ("Packed data array size (receivedLen + 1): " + packedData.length + "=0x" + Integer.toHexString (packedData.length));
+//				logger.finest ("Packed data written to " + p.getAbsolutePath ());
+//				VncCommon.getLogger().finest ("Packed data (maximum first 4096 bytes):\n" + VncCommon.hexdump (packedData.length > 4096 ? Arrays.copyOf (packedData, 4096) : packedData));
+			}
 
 			ByteArrayInputStream packedBais = new ByteArrayInputStream (packedData);
 			packedIs.appendInputStreams (packedBais);
@@ -390,27 +371,42 @@ public class RfbTightPixelData extends RfbPixelData {
 			unpackedDataDis.readFully (unpackedData);
 
 		} else {
-			// DEBUG
-			System.out.println ("Reading non-compressed data of len " + unpackedData.length);
+			logger.finest ("Reading non-compressed data of len " + unpackedData.length);
 
 			DataInputStream dis = new DataInputStream (in);
 			dis.readFully (unpackedData);
 		}
 
-		// DEBUG
-//		System.out.println ("Unpacked data:\n" + VncCommon.hexdump (data));
-		// DEBUG
-		System.out.println ("-readBasicCompressionData expectedLen: " + expectedLen);
+//		logger.finest ("Unpacked data:\n" + VncCommon.hexdump (data));
+		logger.finest ("-readBasicCompressionData expectedLen: " + expectedLen);
 
 		return Arrays.copyOfRange (unpackedData, 0, expectedLen);
 	}
 
 	private void readJpegCompression (InputStream in) throws MessageException, IOException {
+		logger.finest ("+readJpegCompression()");
+
+		int jpegLen = this.readTightLength (in);
+
+		byte[] jpegData = new byte[jpegLen];
+
+		DataInputStream jpegDis = new java.io.DataInputStream (in);
+		jpegDis.readFully (jpegData);
+
+		ByteArrayInputStream jpegBais = new java.io.ByteArrayInputStream (jpegData);
+
+		ImageIO.setUseCache (false);
+		BufferedImage jpegImage = ImageIO.read (jpegBais);
+		jpegImage.setAccelerationPriority (1);
+
+		this.innerPixelData = new RfbRawPixelData (this.rectangle);
+		this.innerPixelData.innerImage = jpegImage;
+
+		logger.finest ("-readJpegCompression()");
 	}
 
 	private void readFillCompression (InputStream in) throws MessageException, IOException {
-		// DEBUG
-		System.out.println ("+readFillCompression()");
+		logger.finest ("+readFillCompression()");
 
 		int len = this.rectangle.getSession ().getPixelFormat ().mayApplyTightPixel () ? 3 : this.rectangle.getSession ().getPixelFormat ().getBitsPerPixel () / 8;
 
@@ -425,61 +421,42 @@ public class RfbTightPixelData extends RfbPixelData {
 		this.innerPixelData = new RfbRawPixelData (this.rectangle);
 		this.innerPixelData.read (ris);
 
-		// DEBUG
-		System.out.println ("-readFillCompression()");
+		logger.finest ("-readFillCompression()");
 	}
 
 	private int readTightLength (InputStream in) throws IOException {
-		// DEBUG
-		System.out.println ("+readTightLength()");
+		logger.finest ("+readTightLength()");
 
 		int b1 = in.read ();
-
-		// DEBUG
-//		System.out.println ("b1=" + b1 + " = " + Integer.toBinaryString (b1));
-
+//		logger.finest ("b1=" + b1 + " = " + Integer.toBinaryString (b1));
 		if (b1 < 0) {
 			throw new EOFException ("b1");
 		}
 		if (b1 <= 127) {
 			int result = b1;
-
-			// DEBUG
-			System.out.println ("-readTightLength() result=" + result + " = " + Integer.toBinaryString (result));
-
+			logger.finest ("-readTightLength() result=" + result + " = " + Integer.toBinaryString (result));
 			return result;
 		}
 
 		int b2 = in.read ();
-
-		// DEBUG
-//		System.out.println ("b2=" + b2 + " = " + Integer.toBinaryString (b2));
-
+//		logger.finest ("b2=" + b2 + " = " + Integer.toBinaryString (b2));
 		if (b2 < 0) {
 			throw new EOFException ("b2");
 		}
 		if (b2 <= 127) {
 			int result = (b2 << 7) | (b1 & 0x7F);
-
-			// DEBUG
-			System.out.println ("-readTightLength() result=" + result + " = " + Integer.toBinaryString (result));
-
+			logger.finest ("-readTightLength() result=" + result + " = " + Integer.toBinaryString (result));
 			return result;
 		}
 
 		int b3 = in.read ();
-
-		// DEBUG
-//		System.out.println ("b3=" + b3 + " = " + Integer.toBinaryString (b3));
-
+//		logger.finest ("b3=" + b3 + " = " + Integer.toBinaryString (b3));
 		if (b3 < 0) {
 			throw new EOFException ("b3");
 		}
 
 		int result = (b3 << 14) | ((b2 & 0x7F) << 7) | (b1 & 0x7F);
-
-		// DEBUG
-		System.out.println ("-readTightLength() result=" + result + " = " + Integer.toBinaryString (result));
+		logger.finest ("-readTightLength() result=" + result + " = " + Integer.toBinaryString (result));
 
 		return result;
 	}

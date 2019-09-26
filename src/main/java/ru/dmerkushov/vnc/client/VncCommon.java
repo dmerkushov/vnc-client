@@ -24,16 +24,22 @@ public class VncCommon {
 	 * The only supported encoding for RFB is ISO-8859-1 (Latin-1). Other encodings are not supported (see RFC 6143,
 	 * sections 7.5.6, 7.6.4).
 	 */
-	public static final String STRINGENCODING = "ISO-8859-1";
+	public static final String STRING_ENCODING = "ISO-8859-1";
 
-	private static Logger logger;
+	public static final Preferences vncPrefs = Preferences.systemNodeForPackage (VncCommon.class);
 
-	public static synchronized Logger getLogger () {
-		if (ru.dmerkushov.vnc.client.VncCommon.logger == null) {
-			ru.dmerkushov.vnc.client.VncCommon.logger = Logger.getLogger (VncCommon.class.getName ());
-			ru.dmerkushov.vnc.client.VncCommon.logger.setLevel (Level.ALL);
+	public final static Logger logger = Logger.getLogger (VncCommon.class.getName ());
+
+	static {
+		String levelStr = VncCommon.vncPrefs.get ("LOGGING_LEVEL", "ALL");
+		Level level;
+		try {
+			level = Level.parse (levelStr);
+		} catch (IllegalArgumentException ex) {
+			level = Level.ALL;
 		}
-		return ru.dmerkushov.vnc.client.VncCommon.logger;
+
+		VncCommon.logger.setLevel (level);
 	}
 
 	private static Set<RfbClientSession> clientSessions;
@@ -44,8 +50,6 @@ public class VncCommon {
 		}
 		return ru.dmerkushov.vnc.client.VncCommon.clientSessions;
 	}
-
-	public static final Preferences vncPrefs = Preferences.systemNodeForPackage (VncCommon.class);
 
 	////////////////////////////////////////////////////////////////////////////
 	//

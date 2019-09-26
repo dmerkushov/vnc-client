@@ -5,6 +5,9 @@
  */
 package ru.dmerkushov.vnc.client.ui;
 
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JFrame;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -13,20 +16,17 @@ import java.util.Objects;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.logging.Level;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JFrame;
-import ru.dmerkushov.vnc.client.VncCommon;
+
+import static ru.dmerkushov.vnc.client.VncCommon.logger;
 
 /**
- *
  * @author dmerkushov
  */
 public class ThumbnailSwingView extends JComponent {
 
 	public final static String UPDATE_TIMER_NAME = "updateTimer";
 
-//	private long updateStartDelayMs = 2000L;
+	//	private long updateStartDelayMs = 2000L;
 	private long updatePeriodMs = 1000L;
 	private final JComponent innerComponent;
 
@@ -38,27 +38,27 @@ public class ThumbnailSwingView extends JComponent {
 
 		this.innerComponent = innerComponent;
 
-		restartUpdates ();
+		this.restartUpdates ();
 	}
 
 	@Override
 	public void paint (Graphics g) {
-		Dimension innerSize = innerComponent.getPreferredSize ();
+		Dimension innerSize = this.innerComponent.getPreferredSize ();
 		int innerW = innerSize.width <= 0 ? 100 : innerSize.width;
 		int innerH = innerSize.height <= 0 ? 100 : innerSize.height;
-		int w = getWidth ();
-		int h = getHeight ();
+		int w = this.getWidth ();
+		int h = this.getHeight ();
 
 		BufferedImage img = new BufferedImage (innerW, innerH, BufferedImage.TYPE_INT_ARGB);
 
-		innerComponent.paint (img.getGraphics ());
+		this.innerComponent.paint (img.getGraphics ());
 
 		Graphics2D g2 = (Graphics2D) g;
 
 		g2.drawImage (img, 0, 0, w - 1, h - 1, 0, 0, innerW - 1, innerH - 1, null);
 	}
 
-//	public long getUpdateStartDelayMs () {
+	//	public long getUpdateStartDelayMs () {
 //		return updateStartDelayMs;
 //	}
 //
@@ -66,40 +66,40 @@ public class ThumbnailSwingView extends JComponent {
 //		setUpdateParameters (updateStartDelayMs, this.updatePeriodMs);
 //	}
 	public final long getUpdatePeriodMs () {
-		return updatePeriodMs;
+		return this.updatePeriodMs;
 	}
 
 	public final void setUpdatePeriodMs (long updatePeriodMs) {
-		setUpdateParameters (0L,/*this.updateStartDelayMs,*/ updatePeriodMs);
+		this.setUpdateParameters (0L,/*this.updateStartDelayMs,*/ updatePeriodMs);
 	}
 
 	public final void setUpdateParameters (long updateStartDelayMs, long updatePeriodMs) {
 		if (/*this.updateStartDelayMs == updateStartDelayMs &&*/this.updatePeriodMs == updatePeriodMs) {
-			restartUpdates ();
+			this.restartUpdates ();
 			return;
 		}
 
 //		this.updateStartDelayMs = updateStartDelayMs;
 		this.updatePeriodMs = updatePeriodMs;
-		restartUpdates ();
+		this.restartUpdates ();
 	}
 
 	public final void restartUpdates () {
-		stopUpdates ();
-		updateTimer = new Timer (UPDATE_TIMER_NAME);
-		updateTimerTask = new TimerTask () {
+		this.stopUpdates ();
+		this.updateTimer = new Timer (ThumbnailSwingView.UPDATE_TIMER_NAME);
+		this.updateTimerTask = new TimerTask () {
 
 			@Override
 			public void run () {
 				ThumbnailSwingView.this.repaint ();
 			}
 		};
-		updateTimer.schedule (updateTimerTask, 0L /*updateStartDelayMs*/, updatePeriodMs);
+		this.updateTimer.schedule (this.updateTimerTask, 0L /*updateStartDelayMs*/, this.updatePeriodMs);
 	}
 
 	public final void stopUpdates () {
-		if (updateTimer != null) {
-			updateTimer.cancel ();
+		if (this.updateTimer != null) {
+			this.updateTimer.cancel ();
 		}
 	}
 
@@ -121,7 +121,7 @@ public class ThumbnailSwingView extends JComponent {
 					try {
 						Thread.sleep (200L);
 					} catch (InterruptedException ex) {
-						VncCommon.getLogger ().log (Level.SEVERE, null, ex);
+						logger.log (Level.SEVERE, null, ex);
 					}
 					btn.setText (String.valueOf (i));
 				}

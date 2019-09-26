@@ -5,7 +5,6 @@
  */
 package ru.dmerkushov.vnc.client.rfb.messages.handshake;
 
-import ru.dmerkushov.vnc.client.VncCommon;
 import ru.dmerkushov.vnc.client.rfb.messages.MessageException;
 import ru.dmerkushov.vnc.client.rfb.messages.RfbMessage;
 import ru.dmerkushov.vnc.client.rfb.session.RfbClientSession;
@@ -18,6 +17,7 @@ import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.logging.Level;
 
+import static ru.dmerkushov.vnc.client.VncCommon.logger;
 import static ru.dmerkushov.vnc.client.rfb.messages.util.RfbMessagesUtil.readString;
 
 /**
@@ -81,9 +81,9 @@ public class SecurityHandshake1_S2C extends RfbMessage {
 					RfbSecurityType secType = RfbSecurityType.getSecTypeByValue (this.secTypesInt[i]);
 
 					if (secType == null) {
-						VncCommon.getLogger ().log (Level.WARNING, "Unsupported security type: {0}, probably Tight(16) or RealVNC(3-4,7-15,128-255)?", this.secTypesInt[i]);
+						logger.log (Level.WARNING, "Unsupported security type: {0}, probably Tight(16) or RealVNC(3-4,7-15,128-255)?", this.secTypesInt[i]);
 					} else {
-						VncCommon.getLogger ().log (Level.INFO, "Adding secType {0} - {1}", new Object[]{this.secTypesInt[i], secType.name ()});
+						logger.log (Level.INFO, "Adding secType {0} - {1}", new Object[]{this.secTypesInt[i], secType.name ()});
 						this.secTypes.add (secType);
 					}
 				}

@@ -5,16 +5,26 @@
  */
 package ru.dmerkushov.vnc.client.rfb.data;
 
-import ru.dmerkushov.vnc.client.VncCommon;
-
 import java.awt.image.BufferedImage;
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Objects;
 import java.util.logging.Level;
 
-import static ru.dmerkushov.vnc.client.rfb.messages.util.RfbMessagesUtil.*;
+import static ru.dmerkushov.vnc.client.VncCommon.logger;
+import static ru.dmerkushov.vnc.client.rfb.messages.util.RfbMessagesUtil.readBoolean;
+import static ru.dmerkushov.vnc.client.rfb.messages.util.RfbMessagesUtil.readBytes;
+import static ru.dmerkushov.vnc.client.rfb.messages.util.RfbMessagesUtil.readU16;
+import static ru.dmerkushov.vnc.client.rfb.messages.util.RfbMessagesUtil.readU8;
+import static ru.dmerkushov.vnc.client.rfb.messages.util.RfbMessagesUtil.writeBoolean;
+import static ru.dmerkushov.vnc.client.rfb.messages.util.RfbMessagesUtil.writeU16;
+import static ru.dmerkushov.vnc.client.rfb.messages.util.RfbMessagesUtil.writeU8;
 
 /**
  * @author dmerkushov
@@ -61,14 +71,14 @@ public class RfbPixelFormat {
 	public void read (InputStream in) throws IOException {
 		byte[] bytes = readBytes (in, 16);
 
-		if (VncCommon.getLogger ().isLoggable (Level.INFO)) {
+		if (logger.isLoggable (Level.INFO)) {
 			StringBuilder logMsgBuilder = new StringBuilder ();
 
 			logMsgBuilder.append ("Read PixelFormat:");
 			for (int i = 0; i < 16; i++) {
 				logMsgBuilder.append (String.format (" %x", bytes[i]));
 			}
-			VncCommon.getLogger ().info (logMsgBuilder.toString ());
+			logger.info (logMsgBuilder.toString ());
 		}
 
 		ByteArrayInputStream bais = new ByteArrayInputStream (bytes);
@@ -107,14 +117,14 @@ public class RfbPixelFormat {
 
 		out.write (bytes);
 
-		if (VncCommon.getLogger ().isLoggable (Level.INFO)) {
+		if (logger.isLoggable (Level.INFO)) {
 			StringBuilder logMsgBuilder = new StringBuilder ();
 
 			logMsgBuilder.append ("Wrote PixelFormat:");
 			for (int i = 0; i < 16; i++) {
 				logMsgBuilder.append (String.format (" %x", bytes[i]));
 			}
-			VncCommon.getLogger ().info (logMsgBuilder.toString ());
+			logger.info (logMsgBuilder.toString ());
 		}
 	}
 

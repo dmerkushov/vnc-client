@@ -8,7 +8,6 @@ package ru.dmerkushov.vnc.client.rfb.session;
 import ru.dmerkushov.lib.threadhelper.AbstractTHRunnable;
 import ru.dmerkushov.lib.threadhelper.ThreadHelper;
 import ru.dmerkushov.lib.threadhelper.ThreadHelperException;
-import ru.dmerkushov.vnc.client.VncCommon;
 import ru.dmerkushov.vnc.client.rfb.data.RfbPixelFormat;
 import ru.dmerkushov.vnc.client.rfb.messages.normal.c2s.C2SMessage;
 import ru.dmerkushov.vnc.client.rfb.operation.HandshakeOperation;
@@ -24,10 +23,19 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.UUID;
 
+import static ru.dmerkushov.vnc.client.VncCommon.logger;
 import static ru.dmerkushov.vnc.client.rfb.session.RfbSessionState.Error;
-import static ru.dmerkushov.vnc.client.rfb.session.RfbSessionState.*;
+import static ru.dmerkushov.vnc.client.rfb.session.RfbSessionState.Finished;
+import static ru.dmerkushov.vnc.client.rfb.session.RfbSessionState.Initial;
 
 /**
  * @author dmerkushov
@@ -152,16 +160,15 @@ public class RfbClientSession {
 		}
 
 		if (prevState != Error && sessionState == Error) {
-			System.out.println ("Session state: Error. Will restart after a while...");
+			logger.warning ("Session state: Error. Will restart after a while...");
 			try {
 				Thread.sleep (2000L);
 			} catch (InterruptedException ex) {
-				VncCommon.getLogger ().throwing ("", "", ex);
+				logger.throwing ("", "", ex);
 			}
 
-			// DEBUG
-			System.out.println ("...but currently in DEBUG state: exiting on error");
-			System.exit (1);
+//			logger.warning ("...but currently in DEBUG state: exiting on error");
+//			System.exit (1);
 
 			try {
 				this.restartSession (sessionState);
@@ -207,11 +214,11 @@ public class RfbClientSession {
 	}
 
 	public void restartSession (RfbSessionState sessionState) throws RfbSessionException, IOException {
-		VncCommon.getLogger ().entering (this.getClass ().getCanonicalName (), "restartSession");
+		logger.entering (this.getClass ().getCanonicalName (), "restartSession");
 		this.finishSession (sessionState);
 		this.sessionState = Initial;
 		this.startSession ();
-		VncCommon.getLogger ().exiting (this.getClass ().getCanonicalName (), "restartSession");
+		logger.exiting (this.getClass ().getCanonicalName (), "restartSession");
 	}
 
 	private void refreshSocket () {

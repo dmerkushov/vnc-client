@@ -22,10 +22,10 @@
 package ru.dmerkushov.vnc.client.ui.events;
 
 import java.awt.event.KeyEvent;
-import ru.dmerkushov.vnc.client.VncCommon;
+
+import static ru.dmerkushov.vnc.client.VncCommon.logger;
 
 /**
- *
  * @author dmerkushov
  */
 public class Keysyms {
@@ -329,18 +329,20 @@ public class Keysyms {
 	private static class KeySymbol {
 
 		public KeySymbol (int keycode_, int[] keysym_) {
-			keycode = keycode_;
-			keysym = new int[5];
-			System.arraycopy (keysym_, 0, keysym, 0, 5);
+			this.keycode = keycode_;
+			this.keysym = new int[5];
+			System.arraycopy (keysym_, 0, this.keysym, 0, 5);
 		}
+
 		int keycode;
 		int[] keysym;
 	}
+
 	private static KeySymbol[] keySymbols = { /*
 		 * KEYCODE LOCATION
 		 */ /*
 		 * UNKNOWN STANDARD LEFT RIGHT NUMPAD
-		 */new KeySymbol (KeyEvent.VK_BACK_SPACE, new int[]{VoidSymbol, BackSpace, VoidSymbol, VoidSymbol, VoidSymbol}), new KeySymbol (KeyEvent.VK_TAB, new int[]{VoidSymbol, Tab, VoidSymbol, VoidSymbol, VoidSymbol}), new KeySymbol (KeyEvent.VK_ENTER, new int[]{VoidSymbol, Return, VoidSymbol, VoidSymbol, KP_Enter}), new KeySymbol (KeyEvent.VK_ESCAPE, new int[]{VoidSymbol, Escape, VoidSymbol, VoidSymbol, VoidSymbol}), new KeySymbol (KeyEvent.VK_CONTROL, new int[]{VoidSymbol, Control_L, Control_L, Control_R, VoidSymbol}), new KeySymbol (KeyEvent.VK_ALT_GRAPH, new int[]{VoidSymbol, ISO_Level3_Shift, VoidSymbol, VoidSymbol, VoidSymbol}), new KeySymbol (KeyEvent.VK_ALT, new int[]{VoidSymbol, ISO_Level3_Shift, Alt_L, Alt_R, VoidSymbol}), new KeySymbol (KeyEvent.VK_SHIFT, new int[]{VoidSymbol, Shift_L, Shift_L, Shift_R, VoidSymbol}), new KeySymbol (KeyEvent.VK_META, new int[]{VoidSymbol, Meta_L, Meta_L, Meta_R, VoidSymbol}), new KeySymbol (KeyEvent.VK_NUMPAD0, new int[]{VoidSymbol, VoidSymbol, VoidSymbol, VoidSymbol, KP_0}), new KeySymbol (KeyEvent.VK_NUMPAD1, new int[]{VoidSymbol, VoidSymbol, VoidSymbol, VoidSymbol, KP_1}), new KeySymbol (KeyEvent.VK_NUMPAD2, new int[]{VoidSymbol, VoidSymbol, VoidSymbol, VoidSymbol, KP_2}), new KeySymbol (KeyEvent.VK_NUMPAD3, new int[]{VoidSymbol, VoidSymbol, VoidSymbol, VoidSymbol, KP_3}), new KeySymbol (KeyEvent.VK_NUMPAD4, new int[]{VoidSymbol, VoidSymbol, VoidSymbol, VoidSymbol, KP_4}), new KeySymbol (KeyEvent.VK_NUMPAD5, new int[]{VoidSymbol, VoidSymbol, VoidSymbol, VoidSymbol, KP_5}), new KeySymbol (KeyEvent.VK_NUMPAD6, new int[]{VoidSymbol, VoidSymbol, VoidSymbol, VoidSymbol, KP_6}), new KeySymbol (KeyEvent.VK_NUMPAD7, new int[]{VoidSymbol, VoidSymbol, VoidSymbol, VoidSymbol, KP_7}), new KeySymbol (KeyEvent.VK_NUMPAD8, new int[]{VoidSymbol, VoidSymbol, VoidSymbol, VoidSymbol, KP_8}), new KeySymbol (KeyEvent.VK_NUMPAD9, new int[]{VoidSymbol, VoidSymbol, VoidSymbol, VoidSymbol, KP_9}), new KeySymbol (KeyEvent.VK_DECIMAL, new int[]{VoidSymbol, KP_Decimal, VoidSymbol, VoidSymbol, KP_Decimal}), new KeySymbol (KeyEvent.VK_ADD, new int[]{VoidSymbol, KP_Add, VoidSymbol, VoidSymbol, KP_Add}), new KeySymbol (KeyEvent.VK_SUBTRACT, new int[]{VoidSymbol, KP_Subtract, VoidSymbol, VoidSymbol, KP_Subtract}), new KeySymbol (KeyEvent.VK_MULTIPLY, new int[]{VoidSymbol, KP_Multiply, VoidSymbol, VoidSymbol, KP_Multiply}), new KeySymbol (KeyEvent.VK_DIVIDE, new int[]{VoidSymbol, KP_Divide, VoidSymbol, VoidSymbol, KP_Divide}), new KeySymbol (KeyEvent.VK_DELETE, new int[]{VoidSymbol, Delete, VoidSymbol, VoidSymbol, KP_Delete}), new KeySymbol (KeyEvent.VK_CLEAR, new int[]{VoidSymbol, Clear, VoidSymbol, VoidSymbol, KP_Begin}), new KeySymbol (KeyEvent.VK_HOME, new int[]{VoidSymbol, Home, VoidSymbol, VoidSymbol, KP_Home}), new KeySymbol (KeyEvent.VK_END, new int[]{VoidSymbol, End, VoidSymbol, VoidSymbol, KP_End}), new KeySymbol (KeyEvent.VK_PAGE_UP, new int[]{VoidSymbol, Page_Up, VoidSymbol, VoidSymbol, KP_Page_Up}), new KeySymbol (KeyEvent.VK_PAGE_DOWN, new int[]{VoidSymbol, Page_Down, VoidSymbol, VoidSymbol, KP_Page_Down}), new KeySymbol (KeyEvent.VK_UP, new int[]{VoidSymbol, Up, VoidSymbol, VoidSymbol, KP_Up}), new KeySymbol (KeyEvent.VK_DOWN, new int[]{VoidSymbol, Down, VoidSymbol, VoidSymbol, KP_Down}), new KeySymbol (KeyEvent.VK_LEFT, new int[]{VoidSymbol, Left, VoidSymbol, VoidSymbol, KP_Left}), new KeySymbol (KeyEvent.VK_RIGHT, new int[]{VoidSymbol, Right, VoidSymbol, VoidSymbol, KP_Right}), new KeySymbol (KeyEvent.VK_BEGIN, new int[]{VoidSymbol, Begin, VoidSymbol, VoidSymbol, KP_Begin}), new KeySymbol (KeyEvent.VK_KP_LEFT, new int[]{VoidSymbol, KP_Left, VoidSymbol, VoidSymbol, KP_Left}), new KeySymbol (KeyEvent.VK_KP_UP, new int[]{VoidSymbol, KP_Up, VoidSymbol, VoidSymbol, KP_Up}), new KeySymbol (KeyEvent.VK_KP_RIGHT, new int[]{VoidSymbol, KP_Right, VoidSymbol, VoidSymbol, KP_Right}), new KeySymbol (KeyEvent.VK_KP_DOWN, new int[]{VoidSymbol, KP_Down, VoidSymbol, VoidSymbol, KP_Down}), new KeySymbol (KeyEvent.VK_PRINTSCREEN, new int[]{VoidSymbol, Print, VoidSymbol, VoidSymbol, VoidSymbol}), new KeySymbol (KeyEvent.VK_SCROLL_LOCK, new int[]{VoidSymbol, Scroll_Lock, VoidSymbol, VoidSymbol, VoidSymbol}), new KeySymbol (KeyEvent.VK_CAPS_LOCK, new int[]{VoidSymbol, Caps_Lock, VoidSymbol, VoidSymbol, VoidSymbol}), new KeySymbol (KeyEvent.VK_NUM_LOCK, new int[]{VoidSymbol, Num_Lock, VoidSymbol, VoidSymbol, Num_Lock}), new KeySymbol (KeyEvent.VK_INSERT, new int[]{VoidSymbol, Insert, VoidSymbol, VoidSymbol, KP_Insert}), new KeySymbol (KeyEvent.VK_AGAIN, new int[]{VoidSymbol, Redo, VoidSymbol, VoidSymbol, VoidSymbol}), new KeySymbol (KeyEvent.VK_UNDO, new int[]{VoidSymbol, Undo, VoidSymbol, VoidSymbol, VoidSymbol}), new KeySymbol (KeyEvent.VK_FIND, new int[]{VoidSymbol, Find, VoidSymbol, VoidSymbol, VoidSymbol}), new KeySymbol (KeyEvent.VK_STOP, new int[]{VoidSymbol, Cancel, VoidSymbol, VoidSymbol, VoidSymbol}), new KeySymbol (KeyEvent.VK_HELP, new int[]{VoidSymbol, Help, VoidSymbol, VoidSymbol, VoidSymbol}), new KeySymbol (KeyEvent.VK_WINDOWS, new int[]{VoidSymbol, Super_L, Super_L, Super_R, VoidSymbol}), new KeySymbol (KeyEvent.VK_CONTEXT_MENU, new int[]{VoidSymbol, Menu, VoidSymbol, VoidSymbol, VoidSymbol}), new KeySymbol (KeyEvent.VK_KANJI, new int[]{VoidSymbol, Kanji, VoidSymbol, VoidSymbol, VoidSymbol}), new KeySymbol (KeyEvent.VK_KATAKANA, new int[]{VoidSymbol, Katakana, VoidSymbol, VoidSymbol, VoidSymbol}), new KeySymbol (KeyEvent.VK_HIRAGANA, new int[]{VoidSymbol, Hiragana, VoidSymbol, VoidSymbol, VoidSymbol}), new KeySymbol (KeyEvent.VK_PREVIOUS_CANDIDATE, new int[]{VoidSymbol, PreviousCandidate, VoidSymbol, VoidSymbol, VoidSymbol}), new KeySymbol (KeyEvent.VK_CODE_INPUT, new int[]{VoidSymbol, Codeinput, VoidSymbol, VoidSymbol, VoidSymbol}), new KeySymbol (KeyEvent.VK_JAPANESE_ROMAN, new int[]{VoidSymbol, Romaji, VoidSymbol, VoidSymbol, VoidSymbol}), new KeySymbol (KeyEvent.VK_KANA_LOCK, new int[]{VoidSymbol, Kana_Lock, VoidSymbol, VoidSymbol, VoidSymbol}), new KeySymbol (KeyEvent.VK_DEAD_ABOVEDOT, new int[]{VoidSymbol, Dead_AboveDot, VoidSymbol, VoidSymbol, VoidSymbol}), new KeySymbol (KeyEvent.VK_DEAD_ABOVERING, new int[]{VoidSymbol, Dead_AboveRing, VoidSymbol, VoidSymbol, VoidSymbol}), new KeySymbol (KeyEvent.VK_DEAD_ACUTE, new int[]{VoidSymbol, Dead_Acute, VoidSymbol, VoidSymbol, VoidSymbol}), new KeySymbol (KeyEvent.VK_DEAD_BREVE, new int[]{VoidSymbol, Dead_Breve, VoidSymbol, VoidSymbol, VoidSymbol}), new KeySymbol (KeyEvent.VK_DEAD_CARON, new int[]{VoidSymbol, Dead_Caron, VoidSymbol, VoidSymbol, VoidSymbol}), new KeySymbol (KeyEvent.VK_DEAD_CIRCUMFLEX, new int[]{VoidSymbol, Dead_Circumflex, VoidSymbol, VoidSymbol, VoidSymbol}), new KeySymbol (KeyEvent.VK_DEAD_DIAERESIS, new int[]{VoidSymbol, Dead_Diaeresis, VoidSymbol, VoidSymbol, VoidSymbol}), new KeySymbol (KeyEvent.VK_DEAD_DOUBLEACUTE, new int[]{VoidSymbol, Dead_DoubleAcute, VoidSymbol, VoidSymbol, VoidSymbol}), new KeySymbol (KeyEvent.VK_DEAD_GRAVE, new int[]{VoidSymbol, Dead_Grave, VoidSymbol, VoidSymbol, VoidSymbol}), new KeySymbol (KeyEvent.VK_DEAD_IOTA, new int[]{VoidSymbol, Dead_Iota, VoidSymbol, VoidSymbol, VoidSymbol}), new KeySymbol (KeyEvent.VK_DEAD_MACRON, new int[]{VoidSymbol, Dead_Macron, VoidSymbol, VoidSymbol, VoidSymbol}), new KeySymbol (KeyEvent.VK_DEAD_OGONEK, new int[]{VoidSymbol, Dead_Ogonek, VoidSymbol, VoidSymbol, VoidSymbol}), new KeySymbol (KeyEvent.VK_DEAD_SEMIVOICED_SOUND, new int[]{VoidSymbol, Dead_SemiVoiced_Sound, VoidSymbol, VoidSymbol, VoidSymbol}), new KeySymbol (KeyEvent.VK_DEAD_TILDE, new int[]{VoidSymbol, Dead_Tilde, VoidSymbol, VoidSymbol, VoidSymbol}), new KeySymbol (KeyEvent.VK_DEAD_VOICED_SOUND, new int[]{VoidSymbol, Dead_Voiced_Sound, VoidSymbol, VoidSymbol, VoidSymbol})};
+		 */new KeySymbol (KeyEvent.VK_BACK_SPACE, new int[]{Keysyms.VoidSymbol, Keysyms.BackSpace, Keysyms.VoidSymbol, Keysyms.VoidSymbol, Keysyms.VoidSymbol}), new KeySymbol (KeyEvent.VK_TAB, new int[]{Keysyms.VoidSymbol, Keysyms.Tab, Keysyms.VoidSymbol, Keysyms.VoidSymbol, Keysyms.VoidSymbol}), new KeySymbol (KeyEvent.VK_ENTER, new int[]{Keysyms.VoidSymbol, Keysyms.Return, Keysyms.VoidSymbol, Keysyms.VoidSymbol, Keysyms.KP_Enter}), new KeySymbol (KeyEvent.VK_ESCAPE, new int[]{Keysyms.VoidSymbol, Keysyms.Escape, Keysyms.VoidSymbol, Keysyms.VoidSymbol, Keysyms.VoidSymbol}), new KeySymbol (KeyEvent.VK_CONTROL, new int[]{Keysyms.VoidSymbol, Keysyms.Control_L, Keysyms.Control_L, Keysyms.Control_R, Keysyms.VoidSymbol}), new KeySymbol (KeyEvent.VK_ALT_GRAPH, new int[]{Keysyms.VoidSymbol, Keysyms.ISO_Level3_Shift, Keysyms.VoidSymbol, Keysyms.VoidSymbol, Keysyms.VoidSymbol}), new KeySymbol (KeyEvent.VK_ALT, new int[]{Keysyms.VoidSymbol, Keysyms.ISO_Level3_Shift, Keysyms.Alt_L, Keysyms.Alt_R, Keysyms.VoidSymbol}), new KeySymbol (KeyEvent.VK_SHIFT, new int[]{Keysyms.VoidSymbol, Keysyms.Shift_L, Keysyms.Shift_L, Keysyms.Shift_R, Keysyms.VoidSymbol}), new KeySymbol (KeyEvent.VK_META, new int[]{Keysyms.VoidSymbol, Keysyms.Meta_L, Keysyms.Meta_L, Keysyms.Meta_R, Keysyms.VoidSymbol}), new KeySymbol (KeyEvent.VK_NUMPAD0, new int[]{Keysyms.VoidSymbol, Keysyms.VoidSymbol, Keysyms.VoidSymbol, Keysyms.VoidSymbol, Keysyms.KP_0}), new KeySymbol (KeyEvent.VK_NUMPAD1, new int[]{Keysyms.VoidSymbol, Keysyms.VoidSymbol, Keysyms.VoidSymbol, Keysyms.VoidSymbol, Keysyms.KP_1}), new KeySymbol (KeyEvent.VK_NUMPAD2, new int[]{Keysyms.VoidSymbol, Keysyms.VoidSymbol, Keysyms.VoidSymbol, Keysyms.VoidSymbol, Keysyms.KP_2}), new KeySymbol (KeyEvent.VK_NUMPAD3, new int[]{Keysyms.VoidSymbol, Keysyms.VoidSymbol, Keysyms.VoidSymbol, Keysyms.VoidSymbol, Keysyms.KP_3}), new KeySymbol (KeyEvent.VK_NUMPAD4, new int[]{Keysyms.VoidSymbol, Keysyms.VoidSymbol, Keysyms.VoidSymbol, Keysyms.VoidSymbol, Keysyms.KP_4}), new KeySymbol (KeyEvent.VK_NUMPAD5, new int[]{Keysyms.VoidSymbol, Keysyms.VoidSymbol, Keysyms.VoidSymbol, Keysyms.VoidSymbol, Keysyms.KP_5}), new KeySymbol (KeyEvent.VK_NUMPAD6, new int[]{Keysyms.VoidSymbol, Keysyms.VoidSymbol, Keysyms.VoidSymbol, Keysyms.VoidSymbol, Keysyms.KP_6}), new KeySymbol (KeyEvent.VK_NUMPAD7, new int[]{Keysyms.VoidSymbol, Keysyms.VoidSymbol, Keysyms.VoidSymbol, Keysyms.VoidSymbol, Keysyms.KP_7}), new KeySymbol (KeyEvent.VK_NUMPAD8, new int[]{Keysyms.VoidSymbol, Keysyms.VoidSymbol, Keysyms.VoidSymbol, Keysyms.VoidSymbol, Keysyms.KP_8}), new KeySymbol (KeyEvent.VK_NUMPAD9, new int[]{Keysyms.VoidSymbol, Keysyms.VoidSymbol, Keysyms.VoidSymbol, Keysyms.VoidSymbol, Keysyms.KP_9}), new KeySymbol (KeyEvent.VK_DECIMAL, new int[]{Keysyms.VoidSymbol, Keysyms.KP_Decimal, Keysyms.VoidSymbol, Keysyms.VoidSymbol, Keysyms.KP_Decimal}), new KeySymbol (KeyEvent.VK_ADD, new int[]{Keysyms.VoidSymbol, Keysyms.KP_Add, Keysyms.VoidSymbol, Keysyms.VoidSymbol, Keysyms.KP_Add}), new KeySymbol (KeyEvent.VK_SUBTRACT, new int[]{Keysyms.VoidSymbol, Keysyms.KP_Subtract, Keysyms.VoidSymbol, Keysyms.VoidSymbol, Keysyms.KP_Subtract}), new KeySymbol (KeyEvent.VK_MULTIPLY, new int[]{Keysyms.VoidSymbol, Keysyms.KP_Multiply, Keysyms.VoidSymbol, Keysyms.VoidSymbol, Keysyms.KP_Multiply}), new KeySymbol (KeyEvent.VK_DIVIDE, new int[]{Keysyms.VoidSymbol, Keysyms.KP_Divide, Keysyms.VoidSymbol, Keysyms.VoidSymbol, Keysyms.KP_Divide}), new KeySymbol (KeyEvent.VK_DELETE, new int[]{Keysyms.VoidSymbol, Keysyms.Delete, Keysyms.VoidSymbol, Keysyms.VoidSymbol, Keysyms.KP_Delete}), new KeySymbol (KeyEvent.VK_CLEAR, new int[]{Keysyms.VoidSymbol, Keysyms.Clear, Keysyms.VoidSymbol, Keysyms.VoidSymbol, Keysyms.KP_Begin}), new KeySymbol (KeyEvent.VK_HOME, new int[]{Keysyms.VoidSymbol, Keysyms.Home, Keysyms.VoidSymbol, Keysyms.VoidSymbol, Keysyms.KP_Home}), new KeySymbol (KeyEvent.VK_END, new int[]{Keysyms.VoidSymbol, Keysyms.End, Keysyms.VoidSymbol, Keysyms.VoidSymbol, Keysyms.KP_End}), new KeySymbol (KeyEvent.VK_PAGE_UP, new int[]{Keysyms.VoidSymbol, Keysyms.Page_Up, Keysyms.VoidSymbol, Keysyms.VoidSymbol, Keysyms.KP_Page_Up}), new KeySymbol (KeyEvent.VK_PAGE_DOWN, new int[]{Keysyms.VoidSymbol, Keysyms.Page_Down, Keysyms.VoidSymbol, Keysyms.VoidSymbol, Keysyms.KP_Page_Down}), new KeySymbol (KeyEvent.VK_UP, new int[]{Keysyms.VoidSymbol, Keysyms.Up, Keysyms.VoidSymbol, Keysyms.VoidSymbol, Keysyms.KP_Up}), new KeySymbol (KeyEvent.VK_DOWN, new int[]{Keysyms.VoidSymbol, Keysyms.Down, Keysyms.VoidSymbol, Keysyms.VoidSymbol, Keysyms.KP_Down}), new KeySymbol (KeyEvent.VK_LEFT, new int[]{Keysyms.VoidSymbol, Keysyms.Left, Keysyms.VoidSymbol, Keysyms.VoidSymbol, Keysyms.KP_Left}), new KeySymbol (KeyEvent.VK_RIGHT, new int[]{Keysyms.VoidSymbol, Keysyms.Right, Keysyms.VoidSymbol, Keysyms.VoidSymbol, Keysyms.KP_Right}), new KeySymbol (KeyEvent.VK_BEGIN, new int[]{Keysyms.VoidSymbol, Keysyms.Begin, Keysyms.VoidSymbol, Keysyms.VoidSymbol, Keysyms.KP_Begin}), new KeySymbol (KeyEvent.VK_KP_LEFT, new int[]{Keysyms.VoidSymbol, Keysyms.KP_Left, Keysyms.VoidSymbol, Keysyms.VoidSymbol, Keysyms.KP_Left}), new KeySymbol (KeyEvent.VK_KP_UP, new int[]{Keysyms.VoidSymbol, Keysyms.KP_Up, Keysyms.VoidSymbol, Keysyms.VoidSymbol, Keysyms.KP_Up}), new KeySymbol (KeyEvent.VK_KP_RIGHT, new int[]{Keysyms.VoidSymbol, Keysyms.KP_Right, Keysyms.VoidSymbol, Keysyms.VoidSymbol, Keysyms.KP_Right}), new KeySymbol (KeyEvent.VK_KP_DOWN, new int[]{Keysyms.VoidSymbol, Keysyms.KP_Down, Keysyms.VoidSymbol, Keysyms.VoidSymbol, Keysyms.KP_Down}), new KeySymbol (KeyEvent.VK_PRINTSCREEN, new int[]{Keysyms.VoidSymbol, Keysyms.Print, Keysyms.VoidSymbol, Keysyms.VoidSymbol, Keysyms.VoidSymbol}), new KeySymbol (KeyEvent.VK_SCROLL_LOCK, new int[]{Keysyms.VoidSymbol, Keysyms.Scroll_Lock, Keysyms.VoidSymbol, Keysyms.VoidSymbol, Keysyms.VoidSymbol}), new KeySymbol (KeyEvent.VK_CAPS_LOCK, new int[]{Keysyms.VoidSymbol, Keysyms.Caps_Lock, Keysyms.VoidSymbol, Keysyms.VoidSymbol, Keysyms.VoidSymbol}), new KeySymbol (KeyEvent.VK_NUM_LOCK, new int[]{Keysyms.VoidSymbol, Keysyms.Num_Lock, Keysyms.VoidSymbol, Keysyms.VoidSymbol, Keysyms.Num_Lock}), new KeySymbol (KeyEvent.VK_INSERT, new int[]{Keysyms.VoidSymbol, Keysyms.Insert, Keysyms.VoidSymbol, Keysyms.VoidSymbol, Keysyms.KP_Insert}), new KeySymbol (KeyEvent.VK_AGAIN, new int[]{Keysyms.VoidSymbol, Keysyms.Redo, Keysyms.VoidSymbol, Keysyms.VoidSymbol, Keysyms.VoidSymbol}), new KeySymbol (KeyEvent.VK_UNDO, new int[]{Keysyms.VoidSymbol, Keysyms.Undo, Keysyms.VoidSymbol, Keysyms.VoidSymbol, Keysyms.VoidSymbol}), new KeySymbol (KeyEvent.VK_FIND, new int[]{Keysyms.VoidSymbol, Keysyms.Find, Keysyms.VoidSymbol, Keysyms.VoidSymbol, Keysyms.VoidSymbol}), new KeySymbol (KeyEvent.VK_STOP, new int[]{Keysyms.VoidSymbol, Keysyms.Cancel, Keysyms.VoidSymbol, Keysyms.VoidSymbol, Keysyms.VoidSymbol}), new KeySymbol (KeyEvent.VK_HELP, new int[]{Keysyms.VoidSymbol, Keysyms.Help, Keysyms.VoidSymbol, Keysyms.VoidSymbol, Keysyms.VoidSymbol}), new KeySymbol (KeyEvent.VK_WINDOWS, new int[]{Keysyms.VoidSymbol, Keysyms.Super_L, Keysyms.Super_L, Keysyms.Super_R, Keysyms.VoidSymbol}), new KeySymbol (KeyEvent.VK_CONTEXT_MENU, new int[]{Keysyms.VoidSymbol, Keysyms.Menu, Keysyms.VoidSymbol, Keysyms.VoidSymbol, Keysyms.VoidSymbol}), new KeySymbol (KeyEvent.VK_KANJI, new int[]{Keysyms.VoidSymbol, Keysyms.Kanji, Keysyms.VoidSymbol, Keysyms.VoidSymbol, Keysyms.VoidSymbol}), new KeySymbol (KeyEvent.VK_KATAKANA, new int[]{Keysyms.VoidSymbol, Keysyms.Katakana, Keysyms.VoidSymbol, Keysyms.VoidSymbol, Keysyms.VoidSymbol}), new KeySymbol (KeyEvent.VK_HIRAGANA, new int[]{Keysyms.VoidSymbol, Keysyms.Hiragana, Keysyms.VoidSymbol, Keysyms.VoidSymbol, Keysyms.VoidSymbol}), new KeySymbol (KeyEvent.VK_PREVIOUS_CANDIDATE, new int[]{Keysyms.VoidSymbol, Keysyms.PreviousCandidate, Keysyms.VoidSymbol, Keysyms.VoidSymbol, Keysyms.VoidSymbol}), new KeySymbol (KeyEvent.VK_CODE_INPUT, new int[]{Keysyms.VoidSymbol, Keysyms.Codeinput, Keysyms.VoidSymbol, Keysyms.VoidSymbol, Keysyms.VoidSymbol}), new KeySymbol (KeyEvent.VK_JAPANESE_ROMAN, new int[]{Keysyms.VoidSymbol, Keysyms.Romaji, Keysyms.VoidSymbol, Keysyms.VoidSymbol, Keysyms.VoidSymbol}), new KeySymbol (KeyEvent.VK_KANA_LOCK, new int[]{Keysyms.VoidSymbol, Keysyms.Kana_Lock, Keysyms.VoidSymbol, Keysyms.VoidSymbol, Keysyms.VoidSymbol}), new KeySymbol (KeyEvent.VK_DEAD_ABOVEDOT, new int[]{Keysyms.VoidSymbol, Keysyms.Dead_AboveDot, Keysyms.VoidSymbol, Keysyms.VoidSymbol, Keysyms.VoidSymbol}), new KeySymbol (KeyEvent.VK_DEAD_ABOVERING, new int[]{Keysyms.VoidSymbol, Keysyms.Dead_AboveRing, Keysyms.VoidSymbol, Keysyms.VoidSymbol, Keysyms.VoidSymbol}), new KeySymbol (KeyEvent.VK_DEAD_ACUTE, new int[]{Keysyms.VoidSymbol, Keysyms.Dead_Acute, Keysyms.VoidSymbol, Keysyms.VoidSymbol, Keysyms.VoidSymbol}), new KeySymbol (KeyEvent.VK_DEAD_BREVE, new int[]{Keysyms.VoidSymbol, Keysyms.Dead_Breve, Keysyms.VoidSymbol, Keysyms.VoidSymbol, Keysyms.VoidSymbol}), new KeySymbol (KeyEvent.VK_DEAD_CARON, new int[]{Keysyms.VoidSymbol, Keysyms.Dead_Caron, Keysyms.VoidSymbol, Keysyms.VoidSymbol, Keysyms.VoidSymbol}), new KeySymbol (KeyEvent.VK_DEAD_CIRCUMFLEX, new int[]{Keysyms.VoidSymbol, Keysyms.Dead_Circumflex, Keysyms.VoidSymbol, Keysyms.VoidSymbol, Keysyms.VoidSymbol}), new KeySymbol (KeyEvent.VK_DEAD_DIAERESIS, new int[]{Keysyms.VoidSymbol, Keysyms.Dead_Diaeresis, Keysyms.VoidSymbol, Keysyms.VoidSymbol, Keysyms.VoidSymbol}), new KeySymbol (KeyEvent.VK_DEAD_DOUBLEACUTE, new int[]{Keysyms.VoidSymbol, Keysyms.Dead_DoubleAcute, Keysyms.VoidSymbol, Keysyms.VoidSymbol, Keysyms.VoidSymbol}), new KeySymbol (KeyEvent.VK_DEAD_GRAVE, new int[]{Keysyms.VoidSymbol, Keysyms.Dead_Grave, Keysyms.VoidSymbol, Keysyms.VoidSymbol, Keysyms.VoidSymbol}), new KeySymbol (KeyEvent.VK_DEAD_IOTA, new int[]{Keysyms.VoidSymbol, Keysyms.Dead_Iota, Keysyms.VoidSymbol, Keysyms.VoidSymbol, Keysyms.VoidSymbol}), new KeySymbol (KeyEvent.VK_DEAD_MACRON, new int[]{Keysyms.VoidSymbol, Keysyms.Dead_Macron, Keysyms.VoidSymbol, Keysyms.VoidSymbol, Keysyms.VoidSymbol}), new KeySymbol (KeyEvent.VK_DEAD_OGONEK, new int[]{Keysyms.VoidSymbol, Keysyms.Dead_Ogonek, Keysyms.VoidSymbol, Keysyms.VoidSymbol, Keysyms.VoidSymbol}), new KeySymbol (KeyEvent.VK_DEAD_SEMIVOICED_SOUND, new int[]{Keysyms.VoidSymbol, Keysyms.Dead_SemiVoiced_Sound, Keysyms.VoidSymbol, Keysyms.VoidSymbol, Keysyms.VoidSymbol}), new KeySymbol (KeyEvent.VK_DEAD_TILDE, new int[]{Keysyms.VoidSymbol, Keysyms.Dead_Tilde, Keysyms.VoidSymbol, Keysyms.VoidSymbol, Keysyms.VoidSymbol}), new KeySymbol (KeyEvent.VK_DEAD_VOICED_SOUND, new int[]{Keysyms.VoidSymbol, Keysyms.Dead_Voiced_Sound, Keysyms.VoidSymbol, Keysyms.VoidSymbol, Keysyms.VoidSymbol})};
 
 	public static int translateFxKeyEvent (javafx.scene.input.KeyEvent ev) {
 		javafx.scene.input.KeyCode fxKeyCode = ev.getCode ();
@@ -352,18 +354,18 @@ public class Keysyms {
 		String keyCharStr = fxKeyCode.impl_getChar ();
 		if (keyCharStr != null && keyCharStr.length () > 0) {
 			keyChar = keyCharStr.charAt (0);
-			System.out.println ("KeyCharStr " + keyCharStr);
+			logger.finest ("KeyCharStr " + keyCharStr);
 		}
 		if (!shiftDown) {
 			keyChar = Character.toLowerCase (keyChar);
 		}
-		System.out.println ("keyChar " + keyChar);
+		logger.finest ("keyChar " + keyChar);
 
 		int awtKeyCode = fxKeyCode.impl_getCode ();
 
 		int location = KeyEvent.KEY_LOCATION_UNKNOWN;
 
-		return translateAwtKeyEvent (controlDown, shiftDown, keyChar, location, awtKeyCode);
+		return Keysyms.translateAwtKeyEvent (controlDown, shiftDown, keyChar, location, awtKeyCode);
 	}
 
 	public static int translateAwtKeyEvent (KeyEvent ev) {
@@ -372,7 +374,7 @@ public class Keysyms {
 		int location = ev.getKeyLocation ();
 		char keyChar = ev.getKeyChar ();
 		int keyCode = ev.getKeyCode ();
-		return translateAwtKeyEvent (controlDown, shiftDown, keyChar, location, keyCode);
+		return Keysyms.translateAwtKeyEvent (controlDown, shiftDown, keyChar, location, keyCode);
 	}
 
 	private static int translateAwtKeyEvent (boolean controlDown, boolean shiftDown, char keyChar, int location, int keyCode) {
@@ -412,65 +414,65 @@ public class Keysyms {
 		//			}
 		// Then other special keys
 		if (keyCode == KeyEvent.VK_PAUSE) {
-			return controlDown ? Break : Pause;
+			return controlDown ? Keysyms.Break : Keysyms.Pause;
 		} else if (keyCode == KeyEvent.VK_PRINTSCREEN) {
-			return controlDown ? Sys_Req : Print;
+			return controlDown ? Keysyms.Sys_Req : Keysyms.Print;
 		} else if (keyCode == KeyEvent.VK_ESCAPE) {
-			return Escape;
+			return Keysyms.Escape;
 		} else if (keyCode == KeyEvent.VK_TAB) {
-			return Tab;
+			return Keysyms.Tab;
 		} else if (keyCode == KeyEvent.VK_CAPS_LOCK) {
-			return Caps_Lock;
+			return Keysyms.Caps_Lock;
 		} else if (keyCode == KeyEvent.VK_SHIFT && location == KeyEvent.KEY_LOCATION_RIGHT) {
-			return Shift_R;
+			return Keysyms.Shift_R;
 		} else if (keyCode == KeyEvent.VK_SHIFT) {
-			return Shift_L;
+			return Keysyms.Shift_L;
 		} else if (keyCode == KeyEvent.VK_CONTROL && location == KeyEvent.KEY_LOCATION_RIGHT) {
-			return Control_R;
+			return Keysyms.Control_R;
 		} else if (keyCode == KeyEvent.VK_CONTROL) {
-			return Control_L;
+			return Keysyms.Control_L;
 		} else if (keyCode == KeyEvent.VK_ALT) {
-			return Alt_L;
+			return Keysyms.Alt_L;
 		} else if (keyCode == KeyEvent.VK_ALT_GRAPH) {
-			return Alt_R;
+			return Keysyms.Alt_R;
 		} else if (keyCode == KeyEvent.VK_ENTER) {
-			return Return;
+			return Keysyms.Return;
 		} else if (keyCode == KeyEvent.VK_BACK_SPACE) {
-			return BackSpace;
+			return Keysyms.BackSpace;
 		} else if (keyCode == KeyEvent.VK_INSERT) {
-			return Insert;
+			return Keysyms.Insert;
 		} else if (keyCode == KeyEvent.VK_DELETE) {
-			return Delete;
+			return Keysyms.Delete;
 		} else if (keyCode == KeyEvent.VK_HOME) {
-			return Home;
+			return Keysyms.Home;
 		} else if (keyCode == KeyEvent.VK_END) {
-			return End;
+			return Keysyms.End;
 		} else if (keyCode == KeyEvent.VK_PAGE_UP) {
-			return Page_Up;
+			return Keysyms.Page_Up;
 		} else if (keyCode == KeyEvent.VK_PAGE_DOWN) {
-			return Page_Down;
+			return Keysyms.Page_Down;
 		} else if (keyCode == KeyEvent.VK_UP) {
-			return Up;
+			return Keysyms.Up;
 		} else if (keyCode == KeyEvent.VK_DOWN) {
-			return Down;
+			return Keysyms.Down;
 		} else if (keyCode == KeyEvent.VK_LEFT) {
-			return Left;
+			return Keysyms.Left;
 		} else if (keyCode == KeyEvent.VK_RIGHT) {
-			return Right;
+			return Keysyms.Right;
 		} else if (keyCode == KeyEvent.VK_NUM_LOCK) {
-			return Num_Lock;
+			return Keysyms.Num_Lock;
 		} else {
-			for (int i = 0; i < keySymbols.length; i++) {
-				if (keySymbols[i].keycode == keyCode) {
-					return (keySymbols[i].keysym)[location];
+			for (int i = 0; i < Keysyms.keySymbols.length; i++) {
+				if (Keysyms.keySymbols[i].keycode == keyCode) {
+					return (Keysyms.keySymbols[i].keysym)[location];
 				}
 			}
 		}
 		// Unknown special key?
 		if (KeyEvent.getKeyText (keyCode).isEmpty ()) {
 //			String fmt = ev.paramString ().replaceAll ("%", "%%");
-			VncCommon.getLogger ().warning ("Unknown key code: " + keyCode);// + String.format (fmt.replaceAll (",", "%n       ")));
-			return VoidSymbol;
+			logger.warning ("Unknown key code: " + keyCode);// + String.format (fmt.replaceAll (",", "%n       ")));
+			return Keysyms.VoidSymbol;
 		}
 //		char keyChar = ev.getKeyChar ();
 		if (!controlDown && keyChar != KeyEvent.CHAR_UNDEFINED) {

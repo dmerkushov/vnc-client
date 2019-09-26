@@ -32,7 +32,6 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
-import ru.dmerkushov.vnc.client.VncCommon;
 import ru.dmerkushov.vnc.client.rfb.messages.normal.c2s.KeyEventMessageSequence;
 import ru.dmerkushov.vnc.client.rfb.messages.normal.c2s.PointerEventMessage;
 import ru.dmerkushov.vnc.client.rfb.messages.normal.c2s.PointerEventMessageSequence;
@@ -41,8 +40,9 @@ import ru.dmerkushov.vnc.client.rfb.session.RfbFramebuffer;
 import ru.dmerkushov.vnc.client.ui.events.Keysyms;
 import sun.awt.image.IntegerComponentRaster;
 
-import javax.swing.*;
-import java.awt.*;
+import javax.swing.JComponent;
+import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.image.BufferedImage;
 import java.nio.IntBuffer;
 import java.util.Objects;
@@ -50,6 +50,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static ru.dmerkushov.vnc.client.VncCommon.logger;
 import static ru.dmerkushov.vnc.client.VncCommon.vncPrefs;
 
 /**
@@ -131,7 +132,7 @@ public class DefaultJavaFxVncView extends VncCanvas implements VncView {
 		this.addEventFilter (KeyEvent.KEY_PRESSED, (KeyEvent e) -> {
 			int keySym = Keysyms.translateFxKeyEvent (e);
 
-			System.out.println ("KeyEvent " + e + " : keysym " + keySym + " " + Integer.toHexString (keySym));
+			logger.finest ("KeyEvent " + e + " : keysym " + keySym + " " + Integer.toHexString (keySym));
 
 			KeyEventMessageSequence seq = new KeyEventMessageSequence (session, KeyEventMessageSequence.EVENTTYPE_PRESSED, keySym);
 			session.sendMessage (seq);
@@ -141,7 +142,7 @@ public class DefaultJavaFxVncView extends VncCanvas implements VncView {
 		this.addEventFilter (KeyEvent.KEY_RELEASED, (KeyEvent e) -> {
 			int keySym = Keysyms.translateFxKeyEvent (e);
 
-			System.out.println ("KeyEvent " + e + " : keysym " + keySym + " " + Integer.toHexString (keySym));
+			logger.finest ("KeyEvent " + e + " : keysym " + keySym + " " + Integer.toHexString (keySym));
 
 			KeyEventMessageSequence seq = new KeyEventMessageSequence (session, KeyEventMessageSequence.EVENTTYPE_RELEASED, keySym);
 			session.sendMessage (seq);
@@ -191,7 +192,7 @@ public class DefaultJavaFxVncView extends VncCanvas implements VncView {
 		RfbFramebuffer framebuffer = this.session.getFramebuffer ();
 
 		if (framebuffer == null) {
-			VncCommon.getLogger ().warning ("No framebuffer attached to session");
+			logger.warning ("No framebuffer attached to session");
 			return;
 		}
 
@@ -207,7 +208,6 @@ public class DefaultJavaFxVncView extends VncCanvas implements VncView {
 			// Skip this framebuffer update if it's old
 //				if (framebuffer.fbuIndex.get () != FramebufferUpdateMessage.currentFbuIndex.get ()) {
 //
-//					// DEBUG
 //					System.out.println ("Skipping");
 //
 //					doneLatch.countDown ();
@@ -232,8 +232,7 @@ public class DefaultJavaFxVncView extends VncCanvas implements VncView {
 			Logger.getLogger (DefaultJavaFxVncView.class.getName ()).log (Level.SEVERE, null, ex);
 		}
 
-		// DEBUG
-		System.out.println ("def paintNow WxH: " + this.getWidth () + "x" + this.getHeight ());
+		logger.finest ("def paintNow WxH: " + this.getWidth () + "x" + this.getHeight ());
 	}
 
 	@Override
@@ -252,9 +251,8 @@ public class DefaultJavaFxVncView extends VncCanvas implements VncView {
 			PixelFormat<IntBuffer> pf = PixelFormat.getIntArgbInstance ();
 			pw.setPixels (0, 0, cursor.getWidth (), cursor.getHeight (), pf, data, offset, scan);
 
-			// DEBUG
-			System.out.println ("New cursor buf: w=" + cursor.getWidth () + " h=" + cursor.getHeight ());
-			System.out.println ("New cursor fx: w=" + wimg.widthProperty ().get () + " h=" + wimg.heightProperty ().get ());
+			logger.finest ("New cursor buf: w=" + cursor.getWidth () + " h=" + cursor.getHeight ());
+			logger.finest ("New cursor fx: w=" + wimg.widthProperty ().get () + " h=" + wimg.heightProperty ().get ());
 
 			ImageCursor fxImgCursor = new ImageCursor (wimg, hotspotX, hotspotY);
 
