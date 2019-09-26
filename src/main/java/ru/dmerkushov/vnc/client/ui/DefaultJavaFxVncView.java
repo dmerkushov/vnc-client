@@ -17,14 +17,6 @@
  */
 package ru.dmerkushov.vnc.client.ui;
 
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.image.BufferedImage;
-import java.nio.IntBuffer;
-import java.util.Objects;
-import java.util.concurrent.CountDownLatch;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javafx.application.Platform;
 import javafx.event.EventHandler;
 import javafx.event.EventType;
@@ -40,9 +32,7 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
-import javax.swing.JComponent;
 import ru.dmerkushov.vnc.client.VncCommon;
-import static ru.dmerkushov.vnc.client.VncCommon.vncPrefs;
 import ru.dmerkushov.vnc.client.rfb.messages.normal.c2s.KeyEventMessageSequence;
 import ru.dmerkushov.vnc.client.rfb.messages.normal.c2s.PointerEventMessage;
 import ru.dmerkushov.vnc.client.rfb.messages.normal.c2s.PointerEventMessageSequence;
@@ -51,8 +41,18 @@ import ru.dmerkushov.vnc.client.rfb.session.RfbFramebuffer;
 import ru.dmerkushov.vnc.client.ui.events.Keysyms;
 import sun.awt.image.IntegerComponentRaster;
 
+import javax.swing.*;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.nio.IntBuffer;
+import java.util.Objects;
+import java.util.concurrent.CountDownLatch;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import static ru.dmerkushov.vnc.client.VncCommon.vncPrefs;
+
 /**
- *
  * @author dmerkushov
  */
 public class DefaultJavaFxVncView extends VncCanvas implements VncView {
@@ -72,7 +72,7 @@ public class DefaultJavaFxVncView extends VncCanvas implements VncView {
 		this.addEventFilter (MouseEvent.ANY, new EventHandler<MouseEvent> () {
 
 			long lastMoveTimestamp = 0;
-			long mouseMoveSendDelayMs = vncPrefs.getLong ("MOUSEMOVE_SEND_DELAY", 100l);
+			long mouseMoveSendDelayMs = vncPrefs.getLong ("MOUSEMOVE_SEND_DELAY", 100L);
 
 			@Override
 			public void handle (MouseEvent e) {
@@ -97,40 +97,36 @@ public class DefaultJavaFxVncView extends VncCanvas implements VncView {
 
 					// Don't spam the server with mouse position updates
 					long motionTimestamp = System.currentTimeMillis ();
-					if (motionTimestamp - lastMoveTimestamp > mouseMoveSendDelayMs) {
+					if (motionTimestamp - this.lastMoveTimestamp > this.mouseMoveSendDelayMs) {
 						PointerEventMessageSequence pointerEventMsg = new PointerEventMessageSequence (session, PointerEventMessageSequence.EVENTTYPE_CAMEHERE, x, y);
 						session.sendMessage (pointerEventMsg);
 
-						lastMoveTimestamp = motionTimestamp;
+						this.lastMoveTimestamp = motionTimestamp;
 					}
 				}
 			}
 		});
-		this.addEventFilter (ScrollEvent.ANY, new EventHandler<ScrollEvent> () {
-			@Override
-			public void handle (ScrollEvent e) {
-				int x = (int) e.getX ();
-				int y = (int) e.getY ();
+		this.addEventFilter (ScrollEvent.ANY, (ScrollEvent e) -> {
+			int x = (int) e.getX ();
+			int y = (int) e.getY ();
 
-				int eventType;
-				int times;
+			int eventType;
+			int times;
 
-				int wheelRotation = (int) (e.getDeltaY () / e.getMultiplierY ());
-				if (wheelRotation < 0) {		// wheel rotated up
-					eventType = PointerEventMessageSequence.EVENTTYPE_WHEEL_UP;
-					times = wheelRotation;
-				} else {						// wheel rotated down
-					eventType = PointerEventMessageSequence.EVENTTYPE_WHEEL_DOWN;
-					times = -wheelRotation;
-				}
-
-				PointerEventMessageSequence pointerEventMsg = new PointerEventMessageSequence (session, eventType, x, y);
-
-				for (int i = 0; i < times; i++) {
-					session.sendMessage (pointerEventMsg);
-				}
+			int wheelRotation = (int) (e.getDeltaY () / e.getMultiplierY ());
+			if (wheelRotation < 0) {        // wheel rotated down
+				eventType = PointerEventMessageSequence.EVENTTYPE_WHEEL_DOWN;
+				times = -wheelRotation;
+			} else {                        // wheel rotated up
+				eventType = PointerEventMessageSequence.EVENTTYPE_WHEEL_UP;
+				times = wheelRotation;
 			}
 
+			PointerEventMessageSequence pointerEventMsg = new PointerEventMessageSequence (session, eventType, x, y);
+
+			for (int i = 0; i < times; i++) {
+				session.sendMessage (pointerEventMsg);
+			}
 		});
 		this.addEventFilter (KeyEvent.KEY_PRESSED, (KeyEvent e) -> {
 			int keySym = Keysyms.translateFxKeyEvent (e);
@@ -159,7 +155,7 @@ public class DefaultJavaFxVncView extends VncCanvas implements VncView {
 
 	@Override
 	public RfbClientSession getSession () {
-		return session;
+		return this.session;
 	}
 
 	@Override
@@ -179,7 +175,7 @@ public class DefaultJavaFxVncView extends VncCanvas implements VncView {
 
 	@Override
 	public Dimension getPreferredSize () {
-		RfbFramebuffer framebuffer = session.getFramebuffer ();
+		RfbFramebuffer framebuffer = this.session.getFramebuffer ();
 
 		if (framebuffer == null) {
 			return new Dimension (1000, 1000);
@@ -192,7 +188,7 @@ public class DefaultJavaFxVncView extends VncCanvas implements VncView {
 
 	@Override
 	public void paintNow (int x, int y, int width, int height) {
-		RfbFramebuffer framebuffer = session.getFramebuffer ();
+		RfbFramebuffer framebuffer = this.session.getFramebuffer ();
 
 		if (framebuffer == null) {
 			VncCommon.getLogger ().warning ("No framebuffer attached to session");
@@ -207,10 +203,8 @@ public class DefaultJavaFxVncView extends VncCanvas implements VncView {
 
 		final CountDownLatch doneLatch = new CountDownLatch (1);
 
-		Platform.runLater (new Runnable () {
-			@Override
-			public void run () {
-				// Skip this framebuffer update if it's old
+		Platform.runLater (() -> {
+			// Skip this framebuffer update if it's old
 //				if (framebuffer.fbuIndex.get () != FramebufferUpdateMessage.currentFbuIndex.get ()) {
 //
 //					// DEBUG
@@ -220,16 +214,15 @@ public class DefaultJavaFxVncView extends VncCanvas implements VncView {
 //					return;
 //				}
 
-				try {
-					DefaultJavaFxVncView.this.setWidth (fxImg.getWidth ());
-					DefaultJavaFxVncView.this.setHeight (fxImg.getHeight ());
+			try {
+				DefaultJavaFxVncView.this.setWidth (fxImg.getWidth ());
+				DefaultJavaFxVncView.this.setHeight (fxImg.getHeight ());
 
-					GraphicsContext gc = DefaultJavaFxVncView.this.getGraphicsContext2D ();
+				GraphicsContext gc = DefaultJavaFxVncView.this.getGraphicsContext2D ();
 
-					gc.drawImage (fxImg, 0, 0, width, height);
-				} finally {
-					doneLatch.countDown ();
-				}
+				gc.drawImage (fxImg, 0, 0, width, height);
+			} finally {
+				doneLatch.countDown ();
 			}
 		});
 
@@ -240,7 +233,7 @@ public class DefaultJavaFxVncView extends VncCanvas implements VncView {
 		}
 
 		// DEBUG
-		System.out.println ("WxH: " + getWidth () + "x" + getHeight ());
+		System.out.println ("def paintNow WxH: " + this.getWidth () + "x" + this.getHeight ());
 	}
 
 	@Override
@@ -253,7 +246,7 @@ public class DefaultJavaFxVncView extends VncCanvas implements VncView {
 			WritableImage wimg = new WritableImage (bestWidth, bestHeight);
 			PixelWriter pw = wimg.getPixelWriter ();
 			IntegerComponentRaster icr = (IntegerComponentRaster) cursor.getRaster ();
-			int data[] = icr.getDataStorage ();
+			int[] data = icr.getDataStorage ();
 			int offset = icr.getDataOffset (0);
 			int scan = icr.getScanlineStride ();
 			PixelFormat<IntBuffer> pf = PixelFormat.getIntArgbInstance ();

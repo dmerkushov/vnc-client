@@ -17,24 +17,23 @@
  */
 package ru.dmerkushov.vnc.client.ui;
 
-import java.awt.Component;
-import java.awt.Dimension;
+import javafx.application.Platform;
+import javafx.scene.Node;
+import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.image.Image;
+import ru.dmerkushov.vnc.client.VncCommon;
+import ru.dmerkushov.vnc.client.rfb.session.RfbClientSession;
+import ru.dmerkushov.vnc.client.rfb.session.RfbFramebuffer;
+
+import javax.swing.*;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javafx.application.Platform;
-import javafx.scene.Node;
-import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.image.Image;
-import javax.swing.JComponent;
-import ru.dmerkushov.vnc.client.VncCommon;
-import ru.dmerkushov.vnc.client.rfb.session.RfbClientSession;
-import ru.dmerkushov.vnc.client.rfb.session.RfbFramebuffer;
 
 /**
- *
  * @author dmerkushov
  */
 public class ThumbnailJavafxVncView extends VncCanvas implements VncView {
@@ -54,7 +53,7 @@ public class ThumbnailJavafxVncView extends VncCanvas implements VncView {
 
 	@Override
 	public RfbClientSession getSession () {
-		return session;
+		return this.session;
 	}
 
 	@Override
@@ -74,7 +73,7 @@ public class ThumbnailJavafxVncView extends VncCanvas implements VncView {
 
 	@Override
 	public Dimension getPreferredSize () {
-		RfbFramebuffer framebuffer = session.getFramebuffer ();
+		RfbFramebuffer framebuffer = this.session.getFramebuffer ();
 
 		if (framebuffer == null) {
 			return new Dimension (1000, 1000);
@@ -87,7 +86,7 @@ public class ThumbnailJavafxVncView extends VncCanvas implements VncView {
 
 	@Override
 	public void paintNow (int x, int y, int width, int height) {
-		RfbFramebuffer framebuffer = session.getFramebuffer ();
+		RfbFramebuffer framebuffer = this.session.getFramebuffer ();
 
 		if (framebuffer == null) {
 			VncCommon.getLogger ().warning ("No framebuffer attached to session");
@@ -102,21 +101,17 @@ public class ThumbnailJavafxVncView extends VncCanvas implements VncView {
 
 		final CountDownLatch doneLatch = new CountDownLatch (1);
 
-		Platform.runLater (new Runnable () {
-			@Override
-			public void run () {
+		Platform.runLater (() -> {
+			try {
 
-				try {
+				GraphicsContext gc = ThumbnailJavafxVncView.this.getGraphicsContext2D ();
 
-					GraphicsContext gc = ThumbnailJavafxVncView.this.getGraphicsContext2D ();
+				double thumbWidth = ThumbnailJavafxVncView.this.getWidth ();
+				double thumbHeight = ThumbnailJavafxVncView.this.getHeight ();
 
-					double width = ThumbnailJavafxVncView.this.getWidth ();
-					double height = ThumbnailJavafxVncView.this.getHeight ();
-
-					gc.drawImage (fxImg, 0, 0, width, height);
-				} finally {
-					doneLatch.countDown ();
-				}
+				gc.drawImage (fxImg, 0, 0, thumbWidth, thumbHeight);
+			} finally {
+				doneLatch.countDown ();
 			}
 		});
 
@@ -126,7 +121,7 @@ public class ThumbnailJavafxVncView extends VncCanvas implements VncView {
 			Logger.getLogger (DefaultJavaFxVncView.class.getName ()).log (Level.SEVERE, null, ex);
 		}
 
-		System.out.println ("WxH: " + getWidth () + "x" + getHeight ());
+		System.out.println ("thumb paintNow WxH: " + this.getWidth () + "x" + this.getHeight ());
 	}
 
 	@Override

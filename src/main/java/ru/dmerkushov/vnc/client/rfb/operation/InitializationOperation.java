@@ -68,7 +68,8 @@ public class InitializationOperation extends Operation {
 		on regular office applications).
 		 */
 //		encodings.add (RfbPixelData.ENCODINGTYPE_RAW);
-		encodings.add (RfbPixelData.ENCODINGTYPE_ZLIB);
+//		encodings.add (RfbPixelData.ENCODINGTYPE_ZLIB);
+		encodings.add (RfbPixelData.ENCODINGTYPE_TIGHT);
 //		encodings.add (RfbPixelData.ENCODINGTYPE_COPYRECT);
 //		encodings.add (RfbPixelData.ENCODINGTYPE_TRLE);
 		encodings.add (RfbPixelData.ENCODINGTYPE_PSEUDO_CURSOR);

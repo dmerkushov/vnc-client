@@ -36,6 +36,9 @@ public class S2CMessageFactory {
 		return instance;
 	}
 
+	private final int maxErrorCounter = 5;
+	private int errorCounter = 0;
+
 	public S2CMessage readMessage (RfbClientSession session) throws MessageFactoryException, IOException {
 		Objects.requireNonNull (session, "session");
 
@@ -71,11 +74,19 @@ public class S2CMessageFactory {
 			message.read (in);
 		} catch (MessageException ex) {
 			VncCommon.getLogger ().warning ("MessageException: " + ex.getMessage ());
+			ex.printStackTrace ();
+
+//			errorCounter++;
+//			if (errorCounter > maxErrorCounter) {
+			// DEBUG
+			System.exit (1);
+
 			try {
 				session.setSessionState (RfbSessionState.Error);
 			} catch (RfbSessionException ex1) {
 				throw new MessageFactoryException (ex1);
 			}
+//			}
 		}
 
 		return message;

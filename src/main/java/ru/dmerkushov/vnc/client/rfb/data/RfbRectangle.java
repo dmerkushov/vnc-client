@@ -5,25 +5,18 @@
  */
 package ru.dmerkushov.vnc.client.rfb.data;
 
+import ru.dmerkushov.vnc.client.rfb.data.pixeldata.*;
+import ru.dmerkushov.vnc.client.rfb.messages.MessageException;
+import ru.dmerkushov.vnc.client.rfb.session.RfbClientSession;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Objects;
-import ru.dmerkushov.vnc.client.rfb.data.pixeldata.RfbCopyRectPixelData;
-import ru.dmerkushov.vnc.client.rfb.data.pixeldata.RfbCursorPseudoPixelData;
-import ru.dmerkushov.vnc.client.rfb.data.pixeldata.RfbPixelData;
-import ru.dmerkushov.vnc.client.rfb.data.pixeldata.RfbRawPixelData;
-import ru.dmerkushov.vnc.client.rfb.data.pixeldata.RfbTrlePixelData;
-import ru.dmerkushov.vnc.client.rfb.data.pixeldata.RfbZlibPixelData;
-import ru.dmerkushov.vnc.client.rfb.messages.MessageException;
-import static ru.dmerkushov.vnc.client.rfb.messages.util.RfbMessagesUtil.readS32;
-import static ru.dmerkushov.vnc.client.rfb.messages.util.RfbMessagesUtil.readU16;
-import static ru.dmerkushov.vnc.client.rfb.messages.util.RfbMessagesUtil.writeS32;
-import static ru.dmerkushov.vnc.client.rfb.messages.util.RfbMessagesUtil.writeU16;
-import ru.dmerkushov.vnc.client.rfb.session.RfbClientSession;
+
+import static ru.dmerkushov.vnc.client.rfb.messages.util.RfbMessagesUtil.*;
 
 /**
- *
  * @author dmerkushov
  */
 public class RfbRectangle {
@@ -35,7 +28,7 @@ public class RfbRectangle {
 	private int width;
 	private int height;
 	private int encodingType;
-	RfbPixelData pixelData;
+	private RfbPixelData pixelData;
 	private RfbClientSession session;
 
 	public RfbRectangle (RfbPixelFormat pixelFormat, RfbClientSession session) {
@@ -47,19 +40,19 @@ public class RfbRectangle {
 	}
 
 	public void read (InputStream in) throws MessageException, IOException {
-		xPosition = readU16 (in, true);
-		yPosition = readU16 (in, true);
-		width = readU16 (in, true);
-		height = readU16 (in, true);
+		this.xPosition = readU16 (in, true);
+		this.yPosition = readU16 (in, true);
+		this.width = readU16 (in, true);
+		this.height = readU16 (in, true);
 
-		encodingType = readS32 (in, true);
+		this.encodingType = readS32 (in, true);
 
-		switch (encodingType) {
+		switch (this.encodingType) {
 			case RfbPixelData.ENCODINGTYPE_RAW:
-				pixelData = new RfbRawPixelData (this);
+				this.pixelData = new RfbRawPixelData (this);
 				break;
 			case RfbPixelData.ENCODINGTYPE_COPYRECT:
-				pixelData = new RfbCopyRectPixelData (this);
+				this.pixelData = new RfbCopyRectPixelData (this);
 				break;
 //			case RfbPixelData.ENCODINGTYPE_RRE:
 //				pixelData = new RfbRrePixelData (this, width, height);
@@ -68,62 +61,65 @@ public class RfbRectangle {
 //				pixelData = new RfbHextilePixelData (this, width, height);
 //				break;
 			case RfbPixelData.ENCODINGTYPE_TRLE:
-				pixelData = new RfbTrlePixelData (this);
+				this.pixelData = new RfbTrlePixelData (this);
 				break;
 			case RfbPixelData.ENCODINGTYPE_ZLIB:
-				pixelData = new RfbZlibPixelData (this);
+				this.pixelData = new RfbZlibPixelData (this);
+				break;
+			case RfbPixelData.ENCODINGTYPE_TIGHT:
+				this.pixelData = new RfbTightPixelData (this);
 				break;
 //			case RfbPixelData.ENCODINGTYPE_ZRLE:
 //				pixelData = new RfbZrlePixelData (this, width, height);
 //				break;
 			case RfbPixelData.ENCODINGTYPE_PSEUDO_CURSOR:
-				pixelData = new RfbCursorPseudoPixelData (this, session);
+				this.pixelData = new RfbCursorPseudoPixelData (this, this.session);
 				break;
 //			case RfbPixelData.ENCODINGTYPE_PSEUDO_DESKTOPSIZE:
 //				pixelData = new RfbDesktopSizePseudoPixelData (this);
 //				break;
 			default:
-				throw new MessageException ("Unknown encoding type: " + encodingType);
+				throw new MessageException ("Unknown encoding type: " + this.encodingType);
 		}
 
-		pixelData.read (in);
+		this.pixelData.read (in);
 	}
 
 	public void write (OutputStream out) throws IOException {
 		Objects.requireNonNull (out, "out");
-		Objects.requireNonNull (pixelData, "pixelData");
+		Objects.requireNonNull (this.pixelData, "pixelData");
 
-		writeU16 (out, xPosition, true);
-		writeU16 (out, yPosition, true);
-		writeU16 (out, width, true);
-		writeU16 (out, height, true);
-		writeS32 (out, encodingType, true);
+		writeU16 (out, this.xPosition, true);
+		writeU16 (out, this.yPosition, true);
+		writeU16 (out, this.width, true);
+		writeU16 (out, this.height, true);
+		writeS32 (out, this.encodingType, true);
 
-		pixelData.write (out);
+		this.pixelData.write (out);
 	}
 
 	public RfbPixelData getPixelData () {
-		return pixelData;
+		return this.pixelData;
 	}
 
 	public int getX () {
-		return xPosition;
+		return this.xPosition;
 	}
 
 	public int getY () {
-		return yPosition;
+		return this.yPosition;
 	}
 
 	public int getWidth () {
-		return width;
+		return this.width;
 	}
 
 	public int getHeight () {
-		return height;
+		return this.height;
 	}
 
 	public RfbClientSession getSession () {
-		return session;
+		return this.session;
 	}
 
 }

@@ -5,20 +5,6 @@
  */
 package ru.dmerkushov.vnc.client.rfb.session;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.InetAddress;
-import java.net.Socket;
-import java.net.UnknownHostException;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.UUID;
 import ru.dmerkushov.lib.threadhelper.AbstractTHRunnable;
 import ru.dmerkushov.lib.threadhelper.ThreadHelper;
 import ru.dmerkushov.lib.threadhelper.ThreadHelperException;
@@ -29,15 +15,21 @@ import ru.dmerkushov.vnc.client.rfb.operation.HandshakeOperation;
 import ru.dmerkushov.vnc.client.rfb.operation.InitializationOperation;
 import ru.dmerkushov.vnc.client.rfb.operation.NormalOperation;
 import ru.dmerkushov.vnc.client.rfb.operation.Operation;
-import static ru.dmerkushov.vnc.client.rfb.session.RfbSessionState.Error;
-import static ru.dmerkushov.vnc.client.rfb.session.RfbSessionState.Finished;
-import static ru.dmerkushov.vnc.client.rfb.session.RfbSessionState.Initial;
 import ru.dmerkushov.vnc.client.rfb.session.password.PasswordSupplier;
 import ru.dmerkushov.vnc.client.rfb.session.password.UiPasswordSupplier;
 import ru.dmerkushov.vnc.client.ui.VncView;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.InetAddress;
+import java.net.Socket;
+import java.util.*;
+
+import static ru.dmerkushov.vnc.client.rfb.session.RfbSessionState.Error;
+import static ru.dmerkushov.vnc.client.rfb.session.RfbSessionState.*;
+
 /**
- *
  * @author dmerkushov
  */
 public class RfbClientSession {
@@ -89,7 +81,7 @@ public class RfbClientSession {
 
 	public final Map<String, Object> sessionObjects;
 
-	public RfbClientSession (String serverHost, int serverPort) throws UnknownHostException, IOException {
+	public RfbClientSession (String serverHost, int serverPort) throws IOException {
 		this (InetAddress.getByName (serverHost), serverPort);
 	}
 
@@ -110,7 +102,7 @@ public class RfbClientSession {
 		this.vncViews = Collections.synchronizedSet (new HashSet<> ());
 
 		// Must do this to initialize a group for this session in thread-helper
-		ThreadHelper.getInstance ().addRunnable (getThreadGroupName (), new AbstractTHRunnable () {
+		ThreadHelper.getInstance ().addRunnable (this.getThreadGroupName (), new AbstractTHRunnable () {
 
 			@Override
 			public void doSomething () {
@@ -123,14 +115,14 @@ public class RfbClientSession {
 	}
 
 	public RfbVersion getRfbVersion () {
-		return rfbVersion;
+		return this.rfbVersion;
 	}
 
 	public void setRfbVersion (RfbVersion rfbVersion) throws RfbSessionException {
 		Objects.requireNonNull (rfbVersion);
 
-		if (sessionState != Initial) {
-			throw new RfbSessionException ("Cannot change RFB version when the session is not in state " + Initial + ". Current state is " + sessionState);
+		if (this.sessionState != Initial) {
+			throw new RfbSessionException ("Cannot change RFB version when the session is not in state " + Initial + ". Current state is " + this.sessionState);
 		}
 
 		this.rfbVersion = rfbVersion;
@@ -156,12 +148,23 @@ public class RfbClientSession {
 
 		if ((prevState != Error && sessionState == Error) || (prevState != Finished && sessionState == Finished)) {
 
-			finishSession (sessionState);
+			this.finishSession (sessionState);
 		}
 
 		if (prevState != Error && sessionState == Error) {
+			System.out.println ("Session state: Error. Will restart after a while...");
 			try {
-				restartSession (sessionState);
+				Thread.sleep (2000L);
+			} catch (InterruptedException ex) {
+				VncCommon.getLogger ().throwing ("", "", ex);
+			}
+
+			// DEBUG
+			System.out.println ("...but currently in DEBUG state: exiting on error");
+			System.exit (1);
+
+			try {
+				this.restartSession (sessionState);
 			} catch (IOException ex) {
 				throw new RfbSessionException (ex);
 			}
@@ -169,54 +172,54 @@ public class RfbClientSession {
 	}
 
 	public RfbSessionState getSessionState () {
-		return sessionState;
+		return this.sessionState;
 	}
 
 	public Socket getSocket () {
-		return socket;
+		return this.socket;
 	}
 
 	public void startSession () throws RfbSessionException, IOException {
-		refreshSocket ();
+		this.refreshSocket ();
 
-		operation = new HandshakeOperation (this);
-		operation.operate ();
-		operation = new InitializationOperation (this);
-		operation.operate ();
-		operation = new NormalOperation (this);
-		this.normalOperation = (NormalOperation) operation;
-		operation.operate ();
+		this.operation = new HandshakeOperation (this);
+		this.operation.operate ();
+		this.operation = new InitializationOperation (this);
+		this.operation.operate ();
+		this.operation = new NormalOperation (this);
+		this.normalOperation = (NormalOperation) this.operation;
+		this.operation.operate ();
 	}
 
 	private void finishSession (RfbSessionState sessionState) throws RfbSessionException {
 		Objects.requireNonNull (sessionState);
 
 		try {
-			ThreadHelper.getInstance ().finish (getThreadGroupName (), 1000L);
+			ThreadHelper.getInstance ().finish (this.getThreadGroupName (), 1000L);
 		} catch (ThreadHelperException ex) {
 			throw new RfbSessionException (ex);
 		}
 		try {
-			getSocket ().close ();
+			this.getSocket ().close ();
 		} catch (IOException ex) {
 			throw new RfbSessionException (ex);
 		}
 	}
 
 	public void restartSession (RfbSessionState sessionState) throws RfbSessionException, IOException {
-		VncCommon.getLogger ().entering (getClass ().getCanonicalName (), "restartSession");
-		finishSession (sessionState);
+		VncCommon.getLogger ().entering (this.getClass ().getCanonicalName (), "restartSession");
+		this.finishSession (sessionState);
 		this.sessionState = Initial;
-		startSession ();
-		VncCommon.getLogger ().exiting (getClass ().getCanonicalName (), "restartSession");
+		this.startSession ();
+		VncCommon.getLogger ().exiting (this.getClass ().getCanonicalName (), "restartSession");
 	}
 
-	public void refreshSocket () {
-		socket = new Socket ();
+	private void refreshSocket () {
+		this.socket = new Socket ();
 	}
 
 	public RfbFramebuffer getFramebuffer () {
-		return framebuffer;
+		return this.framebuffer;
 	}
 
 	void attachFramebuffer (RfbFramebuffer framebuffer) {
@@ -225,16 +228,16 @@ public class RfbClientSession {
 		this.framebuffer = framebuffer;
 	}
 
-	public void detachFramebuffer () {
+	void detachFramebuffer () {
 		this.framebuffer = null;
 	}
 
 	public boolean isFramebufferAttached () {
-		return framebuffer != null;
+		return this.framebuffer != null;
 	}
 
 	public Set<VncView> getViews () {
-		return vncViews;
+		return this.vncViews;
 	}
 
 	public void attachView (VncView vncView) {
@@ -250,33 +253,33 @@ public class RfbClientSession {
 	}
 
 	public boolean isViewAttached () {
-		return vncViews.size () > 0;
+		return this.vncViews.size () > 0;
 	}
 
 	public boolean isViewAttached (VncView vncView) {
 		Objects.requireNonNull (vncView, "vncView");
 
-		return vncViews.contains (vncView);
+		return this.vncViews.contains (vncView);
 	}
 
 	public InetAddress getServerHost () {
-		return serverHost;
+		return this.serverHost;
 	}
 
 	public int getServerPort () {
-		return serverPort;
+		return this.serverPort;
 	}
 
 	public Operation getOperation () {
-		return operation;
+		return this.operation;
 	}
 
 	public InputStream getIn () throws RfbSessionException {
-		Objects.requireNonNull (socket, "socket");
+		Objects.requireNonNull (this.socket, "socket");
 
 		InputStream in;
 		try {
-			in = socket.getInputStream ();
+			in = this.socket.getInputStream ();
 		} catch (IOException ex) {
 			throw new RfbSessionException (ex);
 		}
@@ -285,11 +288,11 @@ public class RfbClientSession {
 	}
 
 	public OutputStream getOut () throws RfbSessionException {
-		Objects.requireNonNull (socket, "socket");
+		Objects.requireNonNull (this.socket, "socket");
 
 		OutputStream out;
 		try {
-			out = socket.getOutputStream ();
+			out = this.socket.getOutputStream ();
 		} catch (IOException ex) {
 			throw new RfbSessionException (ex);
 		}
@@ -298,7 +301,7 @@ public class RfbClientSession {
 	}
 
 	public PasswordSupplier getPasswordSupplier () {
-		return passwordSupplier;
+		return this.passwordSupplier;
 	}
 
 	public void setPasswordSupplier (PasswordSupplier passwordSupplier) {
@@ -308,7 +311,7 @@ public class RfbClientSession {
 	}
 
 	public RfbPixelFormat getPixelFormat () {
-		return pixelFormat;
+		return this.pixelFormat;
 	}
 
 	public void setPixelFormat (RfbPixelFormat pixelFormat) {
@@ -316,19 +319,19 @@ public class RfbClientSession {
 	}
 
 	public void sendMessage (C2SMessage message) {
-		if (normalOperation != null) {
-			normalOperation.sendMessage (message);
+		if (this.normalOperation != null) {
+			this.normalOperation.sendMessage (message);
 		}
 	}
 
 	public final String getThreadGroupName () {
-		return getClass ().getName () + "_" + uuid.toString ();
+		return this.getClass ().getName () + "_" + this.uuid.toString ();
 	}
 
 	@Override
 	public String toString () {
 		StringBuilder sb = new StringBuilder ();
-		sb.append (getClass ().getName ()).append (" {uuid=").append (uuid.toString ()).append ("; framebuffer: ");
+		sb.append (this.getClass ().getName ()).append (" {uuid=").append (this.uuid.toString ()).append ("; framebuffer: ");
 
 		RfbFramebuffer framebuffer = this.getFramebuffer ();
 		synchronized (framebuffer) {
@@ -340,7 +343,7 @@ public class RfbClientSession {
 		}
 		sb.append ("vncViews: [");
 
-		Iterator<VncView> vncViewIter = vncViews.iterator ();
+		Iterator<VncView> vncViewIter = this.vncViews.iterator ();
 		while (vncViewIter.hasNext ()) {
 			VncView vncView = vncViewIter.next ();
 			sb.append (vncView.toString ());
@@ -349,7 +352,7 @@ public class RfbClientSession {
 			}
 		}
 		sb.append ("]; socket: ");
-		sb.append (getSocket ().toString ());
+		sb.append (this.getSocket ().toString ());
 		sb.append ("}");
 		return sb.toString ();
 	}
@@ -363,7 +366,7 @@ public class RfbClientSession {
 	}
 
 	public boolean isSuspended () {
-		return suspended;
+		return this.suspended;
 	}
 
 }

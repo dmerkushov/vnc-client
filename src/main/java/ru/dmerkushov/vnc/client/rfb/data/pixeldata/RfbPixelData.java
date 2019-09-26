@@ -24,10 +24,16 @@ public abstract class RfbPixelData {
 	public static final int ENCODINGTYPE_RRE = 2;
 	public static final int ENCODINGTYPE_HEXTILE = 5;
 	public static final int ENCODINGTYPE_ZLIB = 6;
+	public static final int ENCODINGTYPE_TIGHT = 7;
+	public static final int ENCODINGTYPE_ZLIBHEX = 8;
 	public static final int ENCODINGTYPE_TRLE = 15;
 	public static final int ENCODINGTYPE_ZRLE = 16;
-	public static final int ENCODINGTYPE_PSEUDO_DESKTOPSIZE = -223;
+	public static final int ENCODINGTYPE_PSEUDO_DESKTOPSIZE = -223;		// TODO Support for desktop size changing
+	public static final int ENCODINGTYPE_PSEUDO_JPEG_QUALITY_LVL_HIGH = -23;
+	public static final int ENCODINGTYPE_PSEUDO_JPEG_QUALITY_LVL_MEDIUM = -27;
+	public static final int ENCODINGTYPE_PSEUDO_JPEG_QUALITY_LVL_LOW = -32;
 	public static final int ENCODINGTYPE_PSEUDO_CURSOR = -239;
+	public static final int ENCODINGTYPE_CONTINUOUS_UPDATES = -313;		// TODO Support for continuous updates and LastRect
 
 	public final RfbRectangle rectangle;
 

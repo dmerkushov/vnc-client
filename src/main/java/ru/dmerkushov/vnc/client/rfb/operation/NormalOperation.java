@@ -5,20 +5,10 @@
  */
 package ru.dmerkushov.vnc.client.rfb.operation;
 
-import java.awt.Dimension;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.net.SocketException;
-import java.util.Objects;
-import java.util.Queue;
-import java.util.Set;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.logging.Level;
 import ru.dmerkushov.lib.threadhelper.AbstractTHRunnable;
 import ru.dmerkushov.lib.threadhelper.ThreadHelper;
 import ru.dmerkushov.lib.threadhelper.ThreadHelperException;
 import ru.dmerkushov.vnc.client.VncCommon;
-import static ru.dmerkushov.vnc.client.VncCommon.vncPrefs;
 import ru.dmerkushov.vnc.client.rfb.data.RfbRectangle;
 import ru.dmerkushov.vnc.client.rfb.data.pixeldata.RfbPixelDataException;
 import ru.dmerkushov.vnc.client.rfb.messages.MessageException;
@@ -34,60 +24,71 @@ import ru.dmerkushov.vnc.client.rfb.session.RfbSessionException;
 import ru.dmerkushov.vnc.client.rfb.session.RfbSessionState;
 import ru.dmerkushov.vnc.client.ui.VncView;
 
+import java.awt.*;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.SocketException;
+import java.util.Objects;
+import java.util.Queue;
+import java.util.Set;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.logging.Level;
+
+import static ru.dmerkushov.vnc.client.VncCommon.vncPrefs;
+
 /**
- *
  * @author dmerkushov
  */
 public class NormalOperation extends Operation {
 
-	AbstractTHRunnable getMessagesThread;
-	final Queue<S2CMessage> incomingMessagesQueue;
-	AbstractTHRunnable processMessagesThread;
-	AbstractTHRunnable framebufferUpdateRequestThread;
-	final Queue<C2SMessage> outgoingMessagesQueue;
-	AbstractTHRunnable sendMessagesThread;
+	private AbstractTHRunnable getMessagesThread;
+	private final Queue<S2CMessage> incomingMessagesQueue;
+	private AbstractTHRunnable processMessagesThread;
+	private AbstractTHRunnable framebufferUpdateRequestThread;
+	private final Queue<C2SMessage> outgoingMessagesQueue;
+	private AbstractTHRunnable sendMessagesThread;
 
 	public NormalOperation (RfbClientSession session) {
 		super (session);
 
-		incomingMessagesQueue = new ConcurrentLinkedQueue<> ();
-		outgoingMessagesQueue = new ConcurrentLinkedQueue<> ();
+		this.incomingMessagesQueue = new ConcurrentLinkedQueue<> ();
+		this.outgoingMessagesQueue = new ConcurrentLinkedQueue<> ();
 
 		String threadGroupName = session.getThreadGroupName ();
 
-		getMessagesThread = new GetMessagesRunnable ();
-		processMessagesThread = new ProcessMessagesRunnable ();
-		framebufferUpdateRequestThread = new FramebufferUpdateRequestRunnable ();
-		sendMessagesThread = new SendMessagesRunnable ();
+		this.getMessagesThread = new GetMessagesRunnable ();
+		this.processMessagesThread = new ProcessMessagesRunnable ();
+		this.framebufferUpdateRequestThread = new FramebufferUpdateRequestRunnable ();
+		this.sendMessagesThread = new SendMessagesRunnable ();
 
-		ThreadHelper.getInstance ().addRunnable (threadGroupName, getMessagesThread);
-		ThreadHelper.getInstance ().addRunnable (threadGroupName, processMessagesThread);
-		ThreadHelper.getInstance ().addRunnable (threadGroupName, framebufferUpdateRequestThread);
-		ThreadHelper.getInstance ().addRunnable (threadGroupName, sendMessagesThread);
+		ThreadHelper.getInstance ().addRunnable (threadGroupName, this.getMessagesThread);
+		ThreadHelper.getInstance ().addRunnable (threadGroupName, this.processMessagesThread);
+		ThreadHelper.getInstance ().addRunnable (threadGroupName, this.framebufferUpdateRequestThread);
+		ThreadHelper.getInstance ().addRunnable (threadGroupName, this.sendMessagesThread);
 	}
 
 	@Override
 	public void operate () {
 		try {
-			getMessagesThread.start ();
+			this.getMessagesThread.start ();
 		} catch (ThreadHelperException ex) {
 			VncCommon.getLogger ().log (Level.SEVERE, null, ex);
 			return;
 		}
 		try {
-			processMessagesThread.start ();
+			this.processMessagesThread.start ();
 		} catch (ThreadHelperException ex) {
 			VncCommon.getLogger ().log (Level.SEVERE, null, ex);
 			return;
 		}
 		try {
-			framebufferUpdateRequestThread.start ();
+			this.framebufferUpdateRequestThread.start ();
 		} catch (ThreadHelperException ex) {
 			VncCommon.getLogger ().log (Level.SEVERE, null, ex);
 			return;
 		}
 		try {
-			sendMessagesThread.start ();
+			this.sendMessagesThread.start ();
 		} catch (ThreadHelperException ex) {
 			VncCommon.getLogger ().log (Level.SEVERE, null, ex);
 			return;
@@ -97,7 +98,7 @@ public class NormalOperation extends Operation {
 	public void sendMessage (C2SMessage message) {
 		Objects.requireNonNull (message, "message");
 
-		outgoingMessagesQueue.add (message);
+		this.outgoingMessagesQueue.add (message);
 	}
 
 	class GetMessagesRunnable extends AbstractTHRunnable {
@@ -106,39 +107,49 @@ public class NormalOperation extends Operation {
 
 		@Override
 		public void doSomething () {
-			while (goOn && session.getSocket ().isConnected ()) {
+			while (this.goOn && ru.dmerkushov.vnc.client.rfb.operation.NormalOperation.this.session.getSocket ().isConnected ()) {
 				S2CMessage message = null;
 
 				try {
-					message = S2CMessageFactory.getInstance ().readMessage (session);
+					message = S2CMessageFactory.getInstance ().readMessage (ru.dmerkushov.vnc.client.rfb.operation.NormalOperation.this.session);
 				} catch (IOException ex) {
-					if (session.getSessionState () == RfbSessionState.Finished) {
+					if (ru.dmerkushov.vnc.client.rfb.operation.NormalOperation.this.session.getSessionState () == RfbSessionState.Finished) {
 						return;
 					}
 					VncCommon.getLogger ().log (Level.SEVERE, null, ex);
 				} catch (MessageFactoryException ex) {
 					VncCommon.getLogger ().log (Level.SEVERE, null, ex);
 				}
-				if (message == null && session.getSessionState () != RfbSessionState.Finished) {	// Means the socket is closed by the server
-					VncCommon.getLogger ().log (Level.WARNING, "Setting session state to Error because incoming message is null (probably VNC server has closed TCP connection): session {0}, socket connected? - {1}", new Object[]{session.toString (), session.getSocket ().isConnected ()});
+				if (message == null && ru.dmerkushov.vnc.client.rfb.operation.NormalOperation.this.session.getSessionState () != RfbSessionState.Finished) {    // Means the socket is closed by the server
+					VncCommon.getLogger ().log (Level.WARNING, "Setting session state to Error because incoming message is null (probably VNC server has closed TCP connection): session {0}, socket connected? - {1}", new Object[]{ru.dmerkushov.vnc.client.rfb.operation.NormalOperation.this.session.toString (), ru.dmerkushov.vnc.client.rfb.operation.NormalOperation.this.session.getSocket ().isConnected ()});
+
+					// DEBUG
 					try {
-						session.setSessionState (RfbSessionState.Error);
+						ThreadHelper.getInstance ().finish (ru.dmerkushov.vnc.client.rfb.operation.NormalOperation.this.session.getThreadGroupName (), 0);
+					} catch (ThreadHelperException ex) {
+						VncCommon.getLogger ().throwing ("", "", ex);
+						System.exit (1);
+					}
+
+					try {
+						ru.dmerkushov.vnc.client.rfb.operation.NormalOperation.this.session.setSessionState (RfbSessionState.Error);
 					} catch (RfbSessionException ex) {
 						VncCommon.getLogger ().log (Level.SEVERE, null, ex);
 					}
 					try {
 						Thread.sleep (1000L);
 					} catch (InterruptedException ex) {
+						VncCommon.getLogger ().throwing ("", "", ex);
 					}
-				} else if (!session.isSuspended ()) {
-					incomingMessagesQueue.add (message);
+				} else if (!ru.dmerkushov.vnc.client.rfb.operation.NormalOperation.this.session.isSuspended ()) {
+					ru.dmerkushov.vnc.client.rfb.operation.NormalOperation.this.incomingMessagesQueue.add (message);
 				}
 			}
 		}
 
 		@Override
 		public void finish () throws ThreadHelperException {
-			goOn = false;
+			this.goOn = false;
 		}
 	}
 
@@ -149,29 +160,30 @@ public class NormalOperation extends Operation {
 		@Override
 		public void doSomething () {
 			OutputStream out;
-			C2SMessage message = null;
-			while (goOn && session.getSocket ().isConnected ()) {
-				message = outgoingMessagesQueue.poll ();
+			C2SMessage message;
+			while (this.goOn && ru.dmerkushov.vnc.client.rfb.operation.NormalOperation.this.session.getSocket ().isConnected ()) {
+				message = ru.dmerkushov.vnc.client.rfb.operation.NormalOperation.this.outgoingMessagesQueue.poll ();
 
-				if (message != null && !session.isSuspended ()) {
+				if (message != null && !ru.dmerkushov.vnc.client.rfb.operation.NormalOperation.this.session.isSuspended ()) {
 					try {
-						out = session.getOut ();
+						out = ru.dmerkushov.vnc.client.rfb.operation.NormalOperation.this.session.getOut ();
 					} catch (RfbSessionException ex) {
 						VncCommon.getLogger ().log (Level.WARNING, null, ex);
-						if (session.getSessionState () == RfbSessionState.Finished) {
+						if (ru.dmerkushov.vnc.client.rfb.operation.NormalOperation.this.session.getSessionState () == RfbSessionState.Finished) {
 							return;
 						} else {
 							try {
-								session.setSessionState (RfbSessionState.Error);
+								ru.dmerkushov.vnc.client.rfb.operation.NormalOperation.this.session.setSessionState (RfbSessionState.Error);
 							} catch (RfbSessionException ex1) {
 								VncCommon.getLogger ().log (Level.SEVERE, null, ex1);
 							}
 							try {
 								Thread.sleep (1000L);
 							} catch (InterruptedException ex1) {
+								VncCommon.getLogger ().log (Level.SEVERE, null, ex1);
 							}
 							try {
-								out = session.getOut ();
+								out = ru.dmerkushov.vnc.client.rfb.operation.NormalOperation.this.session.getOut ();
 							} catch (RfbSessionException ex1) {
 								VncCommon.getLogger ().log (Level.SEVERE, null, ex1);
 								return;
@@ -186,15 +198,15 @@ public class NormalOperation extends Operation {
 						if (ex instanceof SocketException) {
 							VncCommon.getLogger ().log (Level.WARNING, "Socket broken (probably 'broken pipe' exception caught). Trying to restart the session", ex);
 							try {
-								session.restartSession (RfbSessionState.Error);
+								ru.dmerkushov.vnc.client.rfb.operation.NormalOperation.this.session.restartSession (RfbSessionState.Error);
 							} catch (RfbSessionException | IOException ex1) {
 								VncCommon.getLogger ().log (Level.SEVERE, null, ex1);
 							}
 						}
 						VncCommon.getLogger ().log (Level.SEVERE, null, ex);
-						if (session.getSessionState () != RfbSessionState.Finished) {
+						if (ru.dmerkushov.vnc.client.rfb.operation.NormalOperation.this.session.getSessionState () != RfbSessionState.Finished) {
 							try {
-								session.setSessionState (RfbSessionState.Error);
+								ru.dmerkushov.vnc.client.rfb.operation.NormalOperation.this.session.setSessionState (RfbSessionState.Error);
 							} catch (RfbSessionException ex1) {
 								VncCommon.getLogger ().log (Level.SEVERE, null, ex1);
 							}
@@ -203,15 +215,16 @@ public class NormalOperation extends Operation {
 				}
 
 				try {
-					Thread.sleep (10l);
+					Thread.sleep (10L);
 				} catch (InterruptedException ex) {
+					VncCommon.getLogger ().log (Level.SEVERE, null, ex);
 				}
 			}
 		}
 
 		@Override
 		public void finish () throws ThreadHelperException {
-			goOn = false;
+			this.goOn = false;
 		}
 	}
 
@@ -221,16 +234,16 @@ public class NormalOperation extends Operation {
 
 		@Override
 		public void doSomething () {
-			while (goOn && session.getSocket ().isConnected ()) {
-				S2CMessage message = incomingMessagesQueue.poll ();
-				if (message != null && message instanceof FramebufferUpdateMessage && session.isFramebufferAttached () && !session.isSuspended ()) {
+			while (this.goOn && ru.dmerkushov.vnc.client.rfb.operation.NormalOperation.this.session.getSocket ().isConnected ()) {
+				S2CMessage message = ru.dmerkushov.vnc.client.rfb.operation.NormalOperation.this.incomingMessagesQueue.poll ();
+				if (message != null && message instanceof FramebufferUpdateMessage && ru.dmerkushov.vnc.client.rfb.operation.NormalOperation.this.session.isFramebufferAttached () && !ru.dmerkushov.vnc.client.rfb.operation.NormalOperation.this.session.isSuspended ()) {
 					FramebufferUpdateMessage fbuMessage = (FramebufferUpdateMessage) message;
 
 					RfbRectangle[] rectangles = fbuMessage.getRectangles ();
 					for (int i = 0; i < rectangles.length; i++) {
 						RfbRectangle rectangle = rectangles[i];
 						if (rectangle != null) {
-							RfbFramebuffer framebuffer = session.getFramebuffer ();
+							RfbFramebuffer framebuffer = ru.dmerkushov.vnc.client.rfb.operation.NormalOperation.this.session.getFramebuffer ();
 
 							if (framebuffer == null) {
 								VncCommon.getLogger ().warning ("Framebuffer not attached to session");
@@ -247,16 +260,17 @@ public class NormalOperation extends Operation {
 							VncCommon.getLogger ().log (Level.WARNING, "Rectangle #{0} of {1} is null", new Object[]{i, rectangles.length});
 						}
 					}
-					Set<VncView> vncViews = session.getViews ();
+					Set<VncView> vncViews = ru.dmerkushov.vnc.client.rfb.operation.NormalOperation.this.session.getViews ();
 					for (VncView vncView : vncViews) {
 						Dimension size = vncView.getPreferredSize ();
 						vncView.paintNow (0, 0, size.width, size.height);
 					}
 				}
-				if (incomingMessagesQueue.isEmpty ()) {
+				if (ru.dmerkushov.vnc.client.rfb.operation.NormalOperation.this.incomingMessagesQueue.isEmpty ()) {
 					try {
-						Thread.sleep (10l);
+						Thread.sleep (10L);
 					} catch (InterruptedException ex) {
+						VncCommon.getLogger ().log (Level.SEVERE, null, ex);
 					}
 				}
 			}
@@ -264,7 +278,7 @@ public class NormalOperation extends Operation {
 
 		@Override
 		public void finish () throws ThreadHelperException {
-			goOn = false;
+			this.goOn = false;
 		}
 	}
 
@@ -274,18 +288,18 @@ public class NormalOperation extends Operation {
 
 		@Override
 		public void doSomething () {
-			int counter = 1;
+			int counter = 0;
 
-			long framebufferUpdateDelay = vncPrefs.getLong ("FRAMEBUFFER_UPDATE_DELAY", 100l);
-			long fullUpdateCounter = vncPrefs.getLong ("FULL_UPDATE_COUNTER", 256l);
+			long framebufferUpdateDelay = vncPrefs.getLong ("FRAMEBUFFER_UPDATE_DELAY", 100L);
+			long fullUpdateCounter = vncPrefs.getLong ("FULL_UPDATE_COUNTER", 256L);
 
 			System.err.println ("Framebuffer update delay: " + framebufferUpdateDelay);
 			System.err.println ("Full update counter: " + fullUpdateCounter);
 
-			while (goOn && session.getSocket ().isConnected ()) {
-				FramebufferUpdateRequestMessage furm = new FramebufferUpdateRequestMessage (session, (counter % fullUpdateCounter != 0));
+			while (this.goOn && ru.dmerkushov.vnc.client.rfb.operation.NormalOperation.this.session.getSocket ().isConnected ()) {
+				FramebufferUpdateRequestMessage furm = new FramebufferUpdateRequestMessage (ru.dmerkushov.vnc.client.rfb.operation.NormalOperation.this.session, (counter % fullUpdateCounter != 0));
 
-				session.sendMessage (furm);
+				ru.dmerkushov.vnc.client.rfb.operation.NormalOperation.this.session.sendMessage (furm);
 
 				if (counter == fullUpdateCounter) {
 					counter = 1;
@@ -303,7 +317,7 @@ public class NormalOperation extends Operation {
 
 		@Override
 		public void finish () throws ThreadHelperException {
-			goOn = false;
+			this.goOn = false;
 		}
 	}
 }

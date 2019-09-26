@@ -5,28 +5,18 @@
  */
 package ru.dmerkushov.vnc.client.rfb.data;
 
+import ru.dmerkushov.vnc.client.VncCommon;
+
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Objects;
 import java.util.logging.Level;
-import ru.dmerkushov.vnc.client.VncCommon;
-import static ru.dmerkushov.vnc.client.rfb.messages.util.RfbMessagesUtil.readBoolean;
-import static ru.dmerkushov.vnc.client.rfb.messages.util.RfbMessagesUtil.readBytes;
-import static ru.dmerkushov.vnc.client.rfb.messages.util.RfbMessagesUtil.readU16;
-import static ru.dmerkushov.vnc.client.rfb.messages.util.RfbMessagesUtil.readU8;
-import static ru.dmerkushov.vnc.client.rfb.messages.util.RfbMessagesUtil.writeBoolean;
-import static ru.dmerkushov.vnc.client.rfb.messages.util.RfbMessagesUtil.writeU16;
-import static ru.dmerkushov.vnc.client.rfb.messages.util.RfbMessagesUtil.writeU8;
+
+import static ru.dmerkushov.vnc.client.rfb.messages.util.RfbMessagesUtil.*;
 
 /**
- *
  * @author dmerkushov
  */
 public class RfbPixelFormat {
@@ -61,11 +51,11 @@ public class RfbPixelFormat {
 	private static RfbPixelFormat defaultPixelFormat;
 
 	public static RfbPixelFormat getDefaultPixelFormat () {
-		if (defaultPixelFormat == null) {
+		if (ru.dmerkushov.vnc.client.rfb.data.RfbPixelFormat.defaultPixelFormat == null) {
 //			defaultPixelFormat = new RfbPixelFormat (32, 24, true, true, 0xFF, 0xFF, 0xFF, 16, 8, 0);
-			defaultPixelFormat = new RfbPixelFormat (32, 24, true, true, 0xFF, 0xFF, 0xFF, 24, 16, 8);
+			ru.dmerkushov.vnc.client.rfb.data.RfbPixelFormat.defaultPixelFormat = new RfbPixelFormat (32, 24, true, true, 0xFF, 0xFF, 0xFF, 24, 16, 8);
 		}
-		return defaultPixelFormat;
+		return ru.dmerkushov.vnc.client.rfb.data.RfbPixelFormat.defaultPixelFormat;
 	}
 
 	public void read (InputStream in) throws IOException {
@@ -83,35 +73,35 @@ public class RfbPixelFormat {
 
 		ByteArrayInputStream bais = new ByteArrayInputStream (bytes);
 
-		bitsPerPixel = readU8 (bais);
-		depth = readU8 (bais);
-		bigEndian = readBoolean (bais);
-		trueColor = readBoolean (bais);
-		redMax = readU16 (bais, true);
-		greenMax = readU16 (bais, true);
-		blueMax = readU16 (bais, true);
-		redShift = readU8 (bais);
-		greenShift = readU8 (bais);
-		blueShift = readU8 (bais);
-		readBytes (bais, 3);		// Padding
+		this.bitsPerPixel = readU8 (bais);
+		this.depth = readU8 (bais);
+		this.bigEndian = readBoolean (bais);
+		this.trueColor = readBoolean (bais);
+		this.redMax = readU16 (bais, true);
+		this.greenMax = readU16 (bais, true);
+		this.blueMax = readU16 (bais, true);
+		this.redShift = readU8 (bais);
+		this.greenShift = readU8 (bais);
+		this.blueShift = readU8 (bais);
+		readBytes (bais, 3);        // Padding
 	}
 
 	public void write (OutputStream out) throws IOException {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream (16);
 
-		writeU8 (baos, bitsPerPixel);
-		writeU8 (baos, depth);
-		writeBoolean (baos, bigEndian);
-		writeBoolean (baos, trueColor);
-		writeU16 (baos, redMax, true);
-		writeU16 (baos, greenMax, true);
-		writeU16 (baos, blueMax, true);
-		writeU8 (baos, redShift);
-		writeU8 (baos, greenShift);
-		writeU8 (baos, blueShift);
-		writeU8 (baos, 0);	// Padding
-		writeU8 (baos, 0);	//
-		writeU8 (baos, 0);	//
+		writeU8 (baos, this.bitsPerPixel);
+		writeU8 (baos, this.depth);
+		writeBoolean (baos, this.bigEndian);
+		writeBoolean (baos, this.trueColor);
+		writeU16 (baos, this.redMax, true);
+		writeU16 (baos, this.greenMax, true);
+		writeU16 (baos, this.blueMax, true);
+		writeU8 (baos, this.redShift);
+		writeU8 (baos, this.greenShift);
+		writeU8 (baos, this.blueShift);
+		writeU8 (baos, 0);    // Padding
+		writeU8 (baos, 0);    //
+		writeU8 (baos, 0);    //
 
 		byte[] bytes = baos.toByteArray ();
 
@@ -129,7 +119,7 @@ public class RfbPixelFormat {
 	}
 
 	private int normalizeOrder (int value) {
-		if (!bigEndian) {
+		if (!this.bigEndian) {
 			ByteBuffer bb = ByteBuffer.allocate (Integer.BYTES);
 			bb.order (ByteOrder.LITTLE_ENDIAN);
 			bb.putInt (value);
@@ -141,22 +131,22 @@ public class RfbPixelFormat {
 	}
 
 	public int getRed (int value) {
-		value = (normalizeOrder (value) >> redShift);
-		return (value & redMax);
+		value = (this.normalizeOrder (value) >> this.redShift);
+		return (value & this.redMax);
 	}
 
 	public int getGreen (int value) {
-		value = (normalizeOrder (value) >> greenShift);
-		return (value & greenMax);
+		value = (this.normalizeOrder (value) >> this.greenShift);
+		return (value & this.greenMax);
 	}
 
 	public int getBlue (int value) {
-		value = (normalizeOrder (value) >> blueShift);
-		return (value & blueMax);
+		value = (this.normalizeOrder (value) >> this.blueShift);
+		return (value & this.blueMax);
 	}
 
 	public int getBitsPerPixel () {
-		return bitsPerPixel;
+		return this.bitsPerPixel;
 	}
 
 	public void setBitsPerPixel (int bitsPerPixel) {
@@ -164,7 +154,7 @@ public class RfbPixelFormat {
 	}
 
 	public int getDepth () {
-		return depth;
+		return this.depth;
 	}
 
 	public void setDepth (int depth) {
@@ -172,7 +162,7 @@ public class RfbPixelFormat {
 	}
 
 	public boolean isBigEndian () {
-		return bigEndian;
+		return this.bigEndian;
 	}
 
 	public void setBigEndian (boolean bigEndian) {
@@ -180,7 +170,7 @@ public class RfbPixelFormat {
 	}
 
 	public boolean isTrueColor () {
-		return trueColor;
+		return this.trueColor;
 	}
 
 	public void setTrueColor (boolean trueColor) {
@@ -188,7 +178,7 @@ public class RfbPixelFormat {
 	}
 
 	public int getRedMax () {
-		return redMax;
+		return this.redMax;
 	}
 
 	public void setRedMax (int redMax) {
@@ -196,7 +186,7 @@ public class RfbPixelFormat {
 	}
 
 	public int getGreenMax () {
-		return greenMax;
+		return this.greenMax;
 	}
 
 	public void setGreenMax (int greenMax) {
@@ -204,7 +194,7 @@ public class RfbPixelFormat {
 	}
 
 	public int getBlueMax () {
-		return blueMax;
+		return this.blueMax;
 	}
 
 	public void setBlueMax (int blueMax) {
@@ -212,7 +202,7 @@ public class RfbPixelFormat {
 	}
 
 	public int getRedShift () {
-		return redShift;
+		return this.redShift;
 	}
 
 	public void setRedShift (int redShift) {
@@ -220,7 +210,7 @@ public class RfbPixelFormat {
 	}
 
 	public int getGreenShift () {
-		return greenShift;
+		return this.greenShift;
 	}
 
 	public void setGreenShift (int greenShift) {
@@ -228,7 +218,7 @@ public class RfbPixelFormat {
 	}
 
 	public int getBlueShift () {
-		return blueShift;
+		return this.blueShift;
 	}
 
 	public void setBlueShift (int blueShift) {
@@ -240,19 +230,19 @@ public class RfbPixelFormat {
 
 		int[] innerPixels = new int[length];
 
-		int bytesPerPixel = getBitsPerPixel () / 8;
+		int bytesPerPixel = this.getBitsPerPixel () / 8;
 
 		int bytesCount = length * bytesPerPixel;
 		DataInputStream dis = new DataInputStream (in);
 		byte[] bytes = new byte[bytesCount];
 		dis.readFully (bytes);
 
-		if ((bitsPerPixel != 32) || (!trueColor)) {
+		if ((this.bitsPerPixel != 32) || (!this.trueColor)) {
 			throw new IllegalStateException ("Unsupported pixel format");
 		}
 
 		ByteBuffer bb = ByteBuffer.wrap (bytes);
-		bb.order (bigEndian ? ByteOrder.BIG_ENDIAN : ByteOrder.LITTLE_ENDIAN);
+		bb.order (this.bigEndian ? ByteOrder.BIG_ENDIAN : ByteOrder.LITTLE_ENDIAN);
 
 		int pixel;
 		int red;
@@ -263,9 +253,9 @@ public class RfbPixelFormat {
 		for (int innerPixelIndex = 0; innerPixelIndex < innerPixels.length; innerPixelIndex++) {
 			pixel = bb.getInt ();
 
-			red = (((pixel >> redShift) & redMax) * 0xFF / redMax) & 0xFF;
-			green = (((pixel >> greenShift) & greenMax) * 0xFF / greenMax) & 0xFF;
-			blue = (((pixel >> blueShift) & blueMax) * 0xFF / blueMax) & 0xFF;
+			red = (((pixel >> this.redShift) & this.redMax) * 0xFF / this.redMax) & 0xFF;
+			green = (((pixel >> this.greenShift) & this.greenMax) * 0xFF / this.greenMax) & 0xFF;
+			blue = (((pixel >> this.blueShift) & this.blueMax) * 0xFF / this.blueMax) & 0xFF;
 
 			innerPixel = (0xFF << 24) | (red << 16) | (green << 8) | blue;
 
@@ -279,7 +269,7 @@ public class RfbPixelFormat {
 		BufferedImage innerImage;
 		if (width > 0 && height > 0) {
 			innerImage = new BufferedImage (width, height, BufferedImage.TYPE_INT_ARGB);
-			int[] innerPixels = readArgbPixels (in, width * height);
+			int[] innerPixels = this.readArgbPixels (in, width * height);
 			innerImage.setRGB (0, 0, width, height, innerPixels, 0, width);
 		} else {
 			innerImage = new BufferedImage (1, 1, BufferedImage.TYPE_INT_ARGB);
@@ -291,15 +281,15 @@ public class RfbPixelFormat {
 	public int[] readArgbCompressedPixels (InputStream in, int length) throws IOException {
 		Objects.requireNonNull (in, "in");
 
-		if (!mayApplyCompressedPixel ()) {
-			return readArgbPixels (in, length);
+		if (!this.mayApplyTightPixel ()) {
+			return this.readArgbPixels (in, length);
 		}
 
-		if ((bitsPerPixel != 32) || (!trueColor)) {
-			throw new IllegalStateException ("Unsupported pixel format");
+		if ((this.bitsPerPixel != 32) || (!this.trueColor)) {
+			throw new IllegalStateException ("Unsupported actual pixel format for readArgbCompressedPixels()");
 		}
 
-		int additionalShift = holdAllIn3FirstBytes () ? 8 : 0;
+		int additionalShift = this.holdAllIn3FirstBytes () ? 8 : 0;
 
 		int bytesPerPixel = 3;
 		int bytesLength = bytesPerPixel * length;
@@ -324,9 +314,9 @@ public class RfbPixelFormat {
 			pixel |= compressedBais.read ();
 			pixel <<= additionalShift;
 
-			red = (((pixel >> redShift) & redMax) * 0xFF / redMax) & 0xFF;
-			green = (((pixel >> greenShift) & greenMax) * 0xFF / greenMax) & 0xFF;
-			blue = (((pixel >> blueShift) & blueMax) * 0xFF / blueMax) & 0xFF;
+			red = (((pixel >> this.redShift) & this.redMax) * 0xFF / this.redMax) & 0xFF;
+			green = (((pixel >> this.greenShift) & this.greenMax) * 0xFF / this.greenMax) & 0xFF;
+			blue = (((pixel >> this.blueShift) & this.blueMax) * 0xFF / this.blueMax) & 0xFF;
 
 			argbPixel = (0xFF << 24) | (red << 16) | (green << 8) | blue;
 
@@ -338,35 +328,93 @@ public class RfbPixelFormat {
 
 	public BufferedImage readArgbCompressedImage (int width, int height, InputStream in) throws IOException {
 		BufferedImage innerImage = new BufferedImage (width, height, BufferedImage.TYPE_INT_ARGB);
-		int[] innerPixels = readArgbCompressedPixels (in, width * height);
+		int[] innerPixels = this.readArgbCompressedPixels (in, width * height);
 		innerImage.setRGB (0, 0, width, height, innerPixels, 0, width);
 		return innerImage;
 	}
 
 	public boolean mayApplyCompressedPixel () {
-		if (!trueColor) {
+		if (!this.trueColor) {
 			return false;
 		}
-		if (bitsPerPixel != 32) {
+		if (this.bitsPerPixel != 32) {
 			return false;
 		}
-		if (depth > 24) {
+		if (this.depth > 24) {
 			return false;
 		}
 
-		return holdAllIn3LatterBytes () || holdAllIn3FirstBytes ();
+		return this.holdAllIn3LatterBytes () || this.holdAllIn3FirstBytes ();
+	}
+
+	public int[] readArgbTightPixels (InputStream in, int length) throws IOException {
+		Objects.requireNonNull (in, "in");
+
+		if (!this.mayApplyTightPixel ()) {
+			return this.readArgbPixels (in, length);
+		}
+
+		int bytesPerPixel = 3;
+		int bytesLength = bytesPerPixel * length;
+
+		DataInputStream dis = new DataInputStream (in);
+		byte[] bytes = new byte[bytesLength];
+		dis.readFully (bytes);
+
+		ByteArrayInputStream tightBais = new ByteArrayInputStream (bytes);
+
+		int[] argbPixels = new int[length];
+
+		for (int argbIndex = 0; argbIndex < length; argbIndex++) {
+			int red = tightBais.read ();
+			int green = tightBais.read ();
+			int blue = tightBais.read ();
+
+			argbPixels[argbIndex] = ((red * this.getRedMax () / 255) << this.getRedShift ()) |
+					((green * this.getGreenMax () / 255) << this.getGreenShift ()) |
+					((blue * this.getBlueMax () / 255) << this.getBlueShift ());
+		}
+
+		return argbPixels;
+	}
+
+	public BufferedImage readArgbTightImage (int width, int height, InputStream in) throws IOException {
+		BufferedImage innerImage = new BufferedImage (width, height, BufferedImage.TYPE_INT_ARGB);
+		int[] innerPixels = this.readArgbTightPixels (in, width * height);
+		innerImage.setRGB (0, 0, width, height, innerPixels, 0, width);
+		return innerImage;
+	}
+
+	public boolean mayApplyTightPixel () {
+		if (!this.trueColor) {
+			return false;
+		}
+		if (this.bitsPerPixel != 32) {
+			return false;
+		}
+		if (this.depth > 24) {
+			return false;
+		}
+
+		return true;
 	}
 
 	public int getMaxColor () {
-		return ((redMax << redShift) | (greenMax << greenShift) | (blueMax << blueShift));
+		return ((this.redMax << this.redShift) | (this.greenMax << this.greenShift) | (this.blueMax << this.blueShift));
 	}
 
 	public boolean holdAllIn3LatterBytes () {
-		return (getMaxColor () | 0x00FFFFFF) == 0x00FFFFFF;
+		return (this.getMaxColor () | 0x00FFFFFF) == 0x00FFFFFF;
 	}
 
 	public boolean holdAllIn3FirstBytes () {
-		return (getMaxColor () | 0xFFFFFF00) == 0xFFFFFF00;
+		return (this.getMaxColor () | 0xFFFFFF00) == 0xFFFFFF00;
+	}
+
+	public int createPixel (int red, int green, int blue) {
+		return ((red & this.redMax) << this.redShift) |
+				((green & this.greenMax) << this.greenShift) |
+				((blue & this.blueMax) << this.blueShift);
 	}
 
 }
