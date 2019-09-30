@@ -9,7 +9,7 @@ It is an alternative to a few Java VNC viewers ([TightVNC](http://tightvnc.com),
   - complete support for zlib and Tight encodings used by the widely-spread TightVNC server 
   - ability to view several remote framebuffers at once
   - thumbnail views
-  - Java source not based on C
+  - readable Java source not based on the C source of the VNC viewer
   
 **contra**:
   - no support for a few RFB protocol features, such as
@@ -33,4 +33,5 @@ Developer contacts
 Dmitriy Merkushov  
 Moscow, Russia  
 [d.merkushov@gmail.com](mailto:d.merkushov@gmail.com)  
-https://github.com/dmerkushov/vnc-client
+http://dmerkushov.ru  
+GitHub repository for the project: https://github.com/dmerkushov/vnc-client  
