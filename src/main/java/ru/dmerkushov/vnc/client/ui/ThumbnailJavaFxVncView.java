@@ -38,7 +38,7 @@ import static ru.dmerkushov.vnc.client.VncCommon.logger;
 /**
  * @author dmerkushov
  */
-public class ThumbnailJavafxVncView extends VncCanvas implements VncView {
+public class ThumbnailJavaFxVncView extends VncCanvas implements VncView {
 
 	private RfbClientSession session;
 
@@ -106,10 +106,10 @@ public class ThumbnailJavafxVncView extends VncCanvas implements VncView {
 		Platform.runLater (() -> {
 			try {
 
-				GraphicsContext gc = ThumbnailJavafxVncView.this.getGraphicsContext2D ();
+				GraphicsContext gc = ThumbnailJavaFxVncView.this.getGraphicsContext2D ();
 
-				double thumbWidth = ThumbnailJavafxVncView.this.getWidth ();
-				double thumbHeight = ThumbnailJavafxVncView.this.getHeight ();
+				double thumbWidth = ThumbnailJavaFxVncView.this.getWidth ();
+				double thumbHeight = ThumbnailJavaFxVncView.this.getHeight ();
 
 				gc.drawImage (fxImg, 0, 0, thumbWidth, thumbHeight);
 			} finally {

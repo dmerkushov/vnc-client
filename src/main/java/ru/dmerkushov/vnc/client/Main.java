@@ -25,6 +25,7 @@ import javafx.stage.Stage;
 import ru.dmerkushov.vnc.client.rfb.session.RfbClientSession;
 import ru.dmerkushov.vnc.client.rfb.session.RfbSessionException;
 import ru.dmerkushov.vnc.client.rfb.session.RfbSessionState;
+import ru.dmerkushov.vnc.client.rfb.session.password.UiPasswordSupplier;
 import ru.dmerkushov.vnc.client.ui.DefaultJavaFxVncView;
 import ru.dmerkushov.vnc.client.ui.VncView;
 
@@ -45,7 +46,7 @@ public class Main extends Application {
 	public static void main (String[] args) {
 		Main.host = JOptionPane.showInputDialog ("Host", "localhost");
 		Main.port = Integer.parseInt (JOptionPane.showInputDialog ("Port", "5901"));
-		Main.password = JOptionPane.showInputDialog ("Password");
+//		Main.password = JOptionPane.showInputDialog ("Password");
 
 		Application.launch (args);
 	}
@@ -61,7 +62,7 @@ public class Main extends Application {
 			Logger.getLogger (Main.class.getName ()).log (Level.SEVERE, null, ex);
 			return;
 		}
-		session.setPasswordSupplier (() -> ru.dmerkushov.vnc.client.Main.password);
+		session.setPasswordSupplier (new UiPasswordSupplier ());
 
 		VncView vncView = new DefaultJavaFxVncView ();
 		vncView.setSession (session);
