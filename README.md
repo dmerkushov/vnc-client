@@ -2,7 +2,7 @@
 
 `vnc-client` is an original, pure-Java implementation of a VNC client, written from scratch.
 
-It is an alternative to a few Java VNC viewers ([TightVNC](http://tightvnc.com), [TigerVNC](https://tigervnc.org), etc.) totally repeating the Java viewer shipped with [RealVNC](https://www.realvnc.com).
+It is an alternative to a few Java VNC viewers ([TightVNC](http://tightvnc.com), [TigerVNC](https://tigervnc.org), etc.) as they are all just copies of the Java viewer shipped with [RealVNC](https://www.realvnc.com).
 
 **pro**:
   - designed to use as a library in your own Java application
